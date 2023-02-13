@@ -25,7 +25,7 @@ class SimpleRSIScript(ScriptStrategyBase):
     quote = os.getenv("QUOTE", "BUSD")
     timeframe = os.getenv("TIMEFRAME", "3m")
 
-    position_amount_usd = Decimal(os.getenv("POSITION_AMOUNT_USD", "150"))
+    position_amount_usd = Decimal(os.getenv("POSITION_AMOUNT_USD", "500"))
 
     rsi_length = int(os.getenv("RSI_LENGTH", "5"))
 
