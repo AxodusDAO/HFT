@@ -1,75 +1,35 @@
 import math
 import os
-
-import logging
-from itertools import chain
-from math import ceil, floor
-from typing import Dict, List
-
-from decimal import Decimal
-from typing import Optional
-
-import numpy as np
 import pandas as pd
 
 from hummingbot.client.hummingbot_application import HummingbotApplication
-from hummingbot.connector.derivative.position import Position
-from hummingbot.connector.derivative_base import DerivativeBase
 from hummingbot.connector.connector_base import ConnectorBase
 from hummingbot.connector.utils import combine_to_hb_trading_pair
-from hummingbot.core.network_iterator import NetworkStatus
-from hummingbot.core.utils import map_df_to_str
-from hummingbot.core.data_type.common import OrderType, PositionAction, PositionMode, PriceType, TradeType
-from hummingbot.core.data_type.limit_order import LimitOrder
-from hummingbot.core.data_type.order_candidate import OrderCandidate, PerpetualOrderCandidate
-from hummingbot.core.event.events import (
-    BuyOrderCompletedEvent,
-    OrderFilledEvent,
-    PositionModeChangeEvent,
-    SellOrderCompletedEvent,
-)
+from hummingbot.core.data_type.common import OrderType, TradeType
+from hummingbot.core.data_type.order_candidate import OrderCandidate
 from hummingbot.core.event.event_forwarder import SourceInfoEventForwarder
 from hummingbot.core.event.events import OrderBookEvent, OrderBookTradeEvent, OrderFilledEvent
 from hummingbot.core.rate_oracle.rate_oracle import RateOracle
-from hummingbot.strategy.asset_price_delegate import AssetPriceDelegate
-from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
-from hummingbot.strategy.order_book_asset_price_delegate import OrderBookAssetPriceDelegate
-from hummingbot.strategy.perpetual_market_making.data_types import PriceSize, Proposal
-from hummingbot.strategy.perpetual_market_making.perpetual_market_making_order_tracker import (
-    PerpetualMarketMakingOrderTracker,
-)
-from hummingbot.strategy.script_strategy_base import ScriptStrategyBase
-from hummingbot.strategy.strategy_py_base import StrategyPyBase
-from hummingbot.strategy.utils import order_age
 
-NaN = float("nan")
-s_decimal_zero = Decimal(0)
-s_decimal_neg_one = Decimal(-1) 
+from hummingbot.pmm_script.pmm_script_base import PMMScriptBase
 
-class SimpleRSIScript(ScriptStrategyBase):
+
+class SimpleRSIScript(PMMScriptBase):
     """
     The strategy is to buy on overbought signal and sell on oversold.
     """
-    connector_name = os.getenv("CONNECTOR_NAME", "binance_perpetual")
-    base = os.getenv("BASE", "BTC")
-    quote = os.getenv("QUOTE", "BUSD")
-    timeframe = os.getenv("TIMEFRAME", "3m")
 
-    position_amount_usd = Decimal(os.getenv("POSITION_AMOUNT_USD", "500"))
-
-    rsi_length = int(os.getenv("RSI_LENGTH", "5"))
+    timeframe = os.getenv("TIMEFRAME", "1m")
+    rsi_length = int(os.getenv("RSI_LENGTH", "14"))
 
     # If true - uses Exponential Moving Average, if false - Simple Moving Average.
-    rsi_is_ema = os.getenv("RSI_IS_EMA", 'False').lower() in ('true', '1', 't')
+    rsi_is_ema = os.getenv("RSI_IS_EMA", 'True').lower() in ('true', '1', 't')
 
-    buy_rsi = int(os.getenv("BUY_RSI", "3"))
-    sell_rsi = int(os.getenv("SELL_RSI", "97"))
+    buy_rsi = int(os.getenv("BUY_RSI", "15"))
+    sell_rsi = int(os.getenv("SELL_RSI", "85"))
 
     # It depends on a timeframe. Make sure you have enough trades to calculate rsi_length number of candlesticks.
-    trade_count_limit = int(os.getenv("TRADE_COUNT_LIMIT", "10000"))
-
-    trading_pair = combine_to_hb_trading_pair(base, quote)
-    markets = {connector_name: {trading_pair}}
+    trade_count_limit = int(os.getenv("TRADE_COUNT_LIMIT", "100000"))
 
     subscribed_to_order_book_trade_event: bool = False
     position: Optional[OrderFilledEvent] = None
@@ -115,8 +75,6 @@ class SimpleRSIScript(ScriptStrategyBase):
             "10s": "10S",
             "30s": "30S",
             "1m": "1T",
-            "3m": "3T",
-            "5m": "5T",
             "15m": "15T"
         }
         if timeframe not in timeframe_to_rule.keys():
@@ -222,7 +180,7 @@ class SimpleRSIScript(ScriptStrategyBase):
             self.logger().warn(f"Unsupported order type filled: {event.trade_type}")
 
     @staticmethod
-    def calculate_rsi(df: pd.DataFrame, length: int = 5, is_ema: bool = True):
+    def calculate_rsi(df: pd.DataFrame, length: int = 14, is_ema: bool = True):
         """
         Calculate relative strength index and add it to the dataframe.
         """
