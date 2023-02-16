@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 from itertools import chain
 from math import ceil, floor
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -29,6 +29,7 @@ from hummingbot.strategy.perpetual_market_making.perpetual_market_making_order_t
 )
 from hummingbot.strategy.strategy_py_base import StrategyPyBase
 from hummingbot.strategy.utils import order_age
+from .moving_price_band import MovingPriceBand
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
@@ -77,8 +78,11 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
                     status_report_interval: float = 900,
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
+                    moving_price_band: Optional[MovingPriceBand] = None,
                     order_override: Dict[str, List[str]] = {},
                     ):
+        if moving_price_band is None:
+            moving_price_band = MovingPriceBand()
 
         if price_ceiling != s_decimal_neg_one and price_ceiling < price_floor:
             raise ValueError("Parameter price_ceiling cannot be lower than price_floor.")
@@ -226,6 +230,10 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
     @order_refresh_time.setter
     def order_refresh_time(self, value: float):
         self._order_refresh_time = value
+
+    @property
+    def moving_price_band(self) -> MovingPriceBand:
+        return self._moving_price_band
 
     @property
     def filled_order_delay(self) -> float:
