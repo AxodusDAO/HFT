@@ -1,5 +1,8 @@
 from decimal import Decimal
-
+from hummingbot.core.event.events import (
+    BuyOrderCompletedEvent,
+    SellOrderCompletedEvent
+)
 from hummingbot.pmm_script.pmm_script_base import PMMScriptBase
 
 s_decimal_1 = Decimal("1")
@@ -17,7 +20,7 @@ class DynamicPriceBandPMMScript(PMMScriptBase):
     band_lower_bound_pct = Decimal("0.025")
     # Let's sample mid prices once every 10 seconds
     avg_interval = 10
-    # Let's average the last 9 samples
+    # Let's average the last xxx samples
     avg_length = 100
 
     def __init__(self):
@@ -43,13 +46,6 @@ class DynamicPriceBandPMMScript(PMMScriptBase):
             self.pmm_parameters.sell_levels = 0
         else:
             self.pmm_parameters.sell_levels = self.pmm_parameters.order_levels
-
-from hummingbot.core.event.events import (
-    BuyOrderCompletedEvent,
-    SellOrderCompletedEvent
-)
-from hummingbot.pmm_script.pmm_script_base import PMMScriptBase
-
 
 class PingPongPMMScript(PMMScriptBase):
     """
