@@ -25,15 +25,20 @@ class SimpleRSIScript(ScriptStrategyBase):
     quote = os.getenv("QUOTE", "BUSD")
     timeframe = os.getenv("TIMEFRAME", "5m")
 
-    position_amount_usd = Decimal(os.getenv("POSITION_AMOUNT_USD", "50"))
+    position_amount_usd = Decimal(os.getenv("POSITION_AMOUNT_USD", "1000.00"))
 
     rsi_length = int(os.getenv("RSI_LENGTH", "6"))
 
     # If true - uses Exponential Moving Average, if false - Simple Moving Average.
     rsi_is_ema = os.getenv("RSI_IS_EMA", 'True').lower() in ('true', '1', 't')
 
-    buy_rsi = int(os.getenv("BUY_RSI", "10"))
-    sell_rsi = int(os.getenv("SELL_RSI", "90"))
+    # buy in to open position \ buy out to close position
+    buyin_rsi = int(os.getenv("BUY_RSI", "12"))
+    buyout_rsi = int(os.getenv("BUY_RSI", "68"))
+
+    # sell in to open position \ sell out to close position  
+    sellin_rsi = int(os.getenv("SELL_RSI", "88"))
+    sellout_rsi = int(os.getenv("SELL_RSI", "42"))
 
     # It depends on a timeframe. Make sure you have enough trades to calculate rsi_length number of candlesticks.
     trade_count_limit = int(os.getenv("TRADE_COUNT_LIMIT", "100000"))
@@ -99,7 +104,7 @@ class SimpleRSIScript(ScriptStrategyBase):
         """
         rsi: float = df.iloc[-1]['rsi']
         rsi_is_calculated = pd.notna(rsi)
-        time_to_buy = rsi_is_calculated and rsi <= self.buy_rsi
+        time_to_buy = rsi_is_calculated and rsi <= self.buyin_rsi or rsi <= self.sellin_rsi
         can_buy = self.position is None and not self._filling_position
         return can_buy and time_to_buy
 
@@ -109,7 +114,7 @@ class SimpleRSIScript(ScriptStrategyBase):
         """
         rsi: float = df.iloc[-1]['rsi']
         rsi_is_calculated = pd.notna(rsi)
-        time_to_sell = rsi_is_calculated and rsi >= self.sell_rsi
+        time_to_sell = rsi_is_calculated and rsi >= self.sellout_rsi or rsi >= self.buyout_rsi
         can_sell = self.position is not None and not self._filling_position
         return can_sell and time_to_sell
 
@@ -151,9 +156,9 @@ class SimpleRSIScript(ScriptStrategyBase):
         )
         self._filling_position = True
         if is_buy:
-            msg = f"RSI is below {self.buy_rsi:.2f}, buying {order.amount:.5f} {self.base} with limit order at {order.price:.2f} ."
+            msg = f"RSI is below {self.buyin_rsi:.2f}, buying {order.amount:.5f} {self.base} with limit order at {order.price:.2f} ."
         else:
-            msg = (f"RSI is above {self.sell_rsi:.2f}, selling {self.position.amount:.5f} {self.base}"
+            msg = (f"RSI is above {self.sellin_rsi:.2f}, selling {self.position.amount:.5f} {self.base}"
                    f" with limit order at ~ {order.price:.2f}, entry price was {self.position.price:.2f}.")
         self.notify_hb_app_with_timestamp(msg)
         self.logger().info(msg)
@@ -191,7 +196,7 @@ class SimpleRSIScript(ScriptStrategyBase):
             self.logger().warn(f"Unsupported order type filled: {event.trade_type}")
 
     @staticmethod
-    def calculate_rsi(df: pd.DataFrame, length: int = 14, is_ema: bool = True):
+    def calculate_rsi(df: pd.DataFrame, length: int = 6, is_ema: bool = True):
         """
         Calculate relative strength index and add it to the dataframe.
         """
