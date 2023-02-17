@@ -104,7 +104,7 @@ class SimpleRSIScript(ScriptStrategyBase):
         """
         rsi: float = df.iloc[-1]['rsi']
         rsi_is_calculated = pd.notna(rsi)
-        time_to_buy = rsi_is_calculated and rsi <= self.buyin_rsi or rsi <= self.sellin_rsi
+        time_to_buy = rsi_is_calculated and rsi <= self.buyin_rsi or rsi >= self.sellin_rsi
         can_buy = self.position is None and not self._filling_position
         return can_buy and time_to_buy
 
@@ -114,7 +114,7 @@ class SimpleRSIScript(ScriptStrategyBase):
         """
         rsi: float = df.iloc[-1]['rsi']
         rsi_is_calculated = pd.notna(rsi)
-        time_to_sell = rsi_is_calculated and rsi >= self.sellout_rsi or rsi >= self.buyout_rsi
+        time_to_sell = rsi_is_calculated and rsi >= self.sellout_rsi or rsi <= self.buyout_rsi
         can_sell = self.position is not None and not self._filling_position
         return can_sell and time_to_sell
 
