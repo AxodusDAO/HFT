@@ -18,15 +18,15 @@ class SimpleRSIScript(PMMScriptBase):
     """
     The strategy is to buy on overbought signal and sell on oversold.
     """
-
-    timeframe = os.getenv("TIMEFRAME", "15s")
-    rsi_length = int(os.getenv("RSI_LENGTH", "14"))
+    trading_pair = str()
+    timeframe = os.getenv("TIMEFRAME", "15m")
+    rsi_length = int(os.getenv("RSI_LENGTH", "6"))
 
     # If true - uses Exponential Moving Average, if false - Simple Moving Average.
     rsi_is_ema = os.getenv("RSI_IS_EMA", 'True').lower() in ('true', '1', 't')
 
-    buy_rsi = int(os.getenv("BUY_RSI", "15"))
-    sell_rsi = int(os.getenv("SELL_RSI", "85"))
+    buy_rsi = int(os.getenv("BUY_RSI", "10"))
+    sell_rsi = int(os.getenv("SELL_RSI", "90"))
 
     # It depends on a timeframe. Make sure you have enough trades to calculate rsi_length number of candlesticks.
     trade_count_limit = int(os.getenv("TRADE_COUNT_LIMIT", "100000"))
@@ -76,6 +76,8 @@ class SimpleRSIScript(PMMScriptBase):
             "15s": "15S",
             "30s": "30S",
             "1m": "1T",
+            "3m": "3T",
+            "5m": "5T",
             "15m": "15T"
         }
         if timeframe not in timeframe_to_rule.keys():
