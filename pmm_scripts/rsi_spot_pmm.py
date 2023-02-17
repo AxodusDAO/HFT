@@ -19,7 +19,7 @@ class SimpleRSIScript(PMMScriptBase):
     The strategy is to buy on overbought signal and sell on oversold.
     """
 
-    timeframe = os.getenv("TIMEFRAME", "1m")
+    timeframe = os.getenv("TIMEFRAME", "15s")
     rsi_length = int(os.getenv("RSI_LENGTH", "14"))
 
     # If true - uses Exponential Moving Average, if false - Simple Moving Average.
@@ -73,6 +73,7 @@ class SimpleRSIScript(PMMScriptBase):
         timeframe_to_rule = {
             "1s": "1S",
             "10s": "10S",
+            "15s": "15S",
             "30s": "30S",
             "1m": "1T",
             "15m": "15T"

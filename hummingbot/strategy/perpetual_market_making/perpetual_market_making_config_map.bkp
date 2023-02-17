@@ -1,4 +1,3 @@
-
 from decimal import Decimal
 from typing import Optional
 
@@ -224,26 +223,6 @@ perpetual_market_making_config_map = {
                   type_str="decimal",
                   default=Decimal("-1"),
                   validator=validate_price_floor_ceiling),
-   "moving_price_band_enabled":
-        ConfigVar(key="moving_price_band_enabled",
-                  prompt="Would you like to enable moving price floor and ceiling? (Yes/No) >>> ",
-                  type_str="bool",
-                  default=False,
-                  validator=validate_bool),
-    "price_band_refresh_time":
-        ConfigVar(key="price_band_refresh_time",
-                  prompt="After this amount of time (in seconds), the price bands are reset based on the current price >>> ",
-                  type_str="float",
-                  default=86400,
-                  required_if=lambda: perpetual_market_making_config_map.get("moving_price_band_enabled").value,
-                  validator=validate_decimal),
-    "ping_pong_enabled":
-        ConfigVar(key="ping_pong_enabled",
-                  prompt="Would you like to use the ping pong feature and alternate between buy and sell orders after fills? (Yes/No) >>> ",
-                  type_str="bool",
-                  default=False,
-                  prompt_on_new=True,
-                  validator=validate_bool),
     "order_levels":
         ConfigVar(key="order_levels",
                   prompt="How many orders do you want to place on both sides? >>> ",
@@ -297,12 +276,6 @@ perpetual_market_making_config_map = {
                   type_str="decimal",
                   validator=lambda v: validate_decimal(v, min_value=0),
                   default=0),
-    "add_transaction_costs":
-        ConfigVar(key="add_transaction_costs",
-                  prompt="Do you want to add transaction costs automatically to order prices? (Yes/No) >>> ",
-                  type_str="bool",
-                  default=False,
-                  validator=validate_bool),
     "price_source":
         ConfigVar(key="price_source",
                   prompt="Which price source to use? (current_market/external_market/custom_api) >>> ",
