@@ -23,9 +23,10 @@ class SimpleRSIScript(ScriptStrategyBase):
     connector_name = os.getenv("CONNECTOR_NAME", "binance_perpetual")
     base = os.getenv("BASE", "BTC")
     quote = os.getenv("QUOTE", "BUSD")
-    timeframe = os.getenv("TIMEFRAME", "5m")
+    timeframe = os.getenv("TIMEFRAME", "1m")
 
-    position_amount_usd = Decimal(os.getenv("POSITION_AMOUNT_USD", "1000"))
+    position_amount_usd = Decimal(os.getenv("POSITION_AMOUNT_USD", "500"))
+    order_amount = Decimal(os.getenv("BTC","0.02"))
 
     rsi_length = int(os.getenv("RSI_LENGTH", "6"))
 
@@ -104,7 +105,8 @@ class SimpleRSIScript(ScriptStrategyBase):
         """
         rsi: float = df.iloc[-1]['rsi']
         rsi_is_calculated = pd.notna(rsi)
-        time_to_buy = rsi_is_calculated and rsi <= self.buyin_rsi or rsi >= self.sellin_rsi
+        time_to_buy = rsi_is_calculated and rsi <= self.buyin_rsi 
+        time_to_buy = rsi_is_calculated and rsi >= self.sellin_rsi
         can_buy = self.position is None and not self._filling_position
         return can_buy and time_to_buy
 
@@ -114,7 +116,8 @@ class SimpleRSIScript(ScriptStrategyBase):
         """
         rsi: float = df.iloc[-1]['rsi']
         rsi_is_calculated = pd.notna(rsi)
-        time_to_sell = rsi_is_calculated and rsi >= self.sellout_rsi or rsi <= self.buyout_rsi
+        time_to_sell = rsi_is_calculated and rsi >= self.sellout_rsi
+        time_to_sell = rsi_is_calculated and rsi <= self.buyout_rsi
         can_sell = self.position is not None and not self._filling_position
         return can_sell and time_to_sell
 
