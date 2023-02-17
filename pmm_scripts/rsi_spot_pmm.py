@@ -18,7 +18,7 @@ class SimpleRSIScript(PMMScriptBase):
     """
     The strategy is to buy on overbought signal and sell on oversold.
     """
-    trading_pair = str()
+    trading_pair = combine_to_hb_trading_pair
     timeframe = os.getenv("TIMEFRAME", "15m")
     rsi_length = int(os.getenv("RSI_LENGTH", "6"))
 
