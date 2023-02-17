@@ -27,7 +27,7 @@ from hummingbot.strategy.perpetual_market_making.data_types import PriceSize, Pr
 from hummingbot.strategy.perpetual_market_making.perpetual_market_making_order_tracker import (
     PerpetualMarketMakingOrderTracker,
 )
-from hummingbot.strategy.strategy_base import StrategyPyBase
+from hummingbot.strategy.strategy_py_base import StrategyPyBase
 from hummingbot.strategy.utils import order_age
 from .moving_price_band import MovingPriceBand
 
