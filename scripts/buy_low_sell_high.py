@@ -20,7 +20,7 @@ class buyLowSellHigh(ScriptStrategyBase):
     de_slow_ma = deque([], maxlen=20)
 
     def on_tick(self):
-        p = self.connectors["binance_perpertual"].get_price("BTC-BUSD", True)
+        p = self.connectors["binance"].get_price("BTC-BUSD", True)
 
         #: with every tick, the new price of the trading_pair will be appended to the deque and MA will be calculated
         self.de_fast_ma.append(p)
@@ -31,7 +31,7 @@ class buyLowSellHigh(ScriptStrategyBase):
         #: logic for golden cross
         if (fast_ma > slow_ma) & (self.pingpong == 0):
             self.buy(
-                connector_name="binance_perpertual",
+                connector_name="binance",
                 trading_pair="BTC-BUSD",
                 amount=Decimal(0.01),
                 order_type=OrderType.MARKET,
@@ -42,7 +42,7 @@ class buyLowSellHigh(ScriptStrategyBase):
         #: logic for death cross
         elif (slow_ma > fast_ma) & (self.pingpong == 1):
             self.sell(
-                connector_name="binance_perpertual",
+                connector_name="binance",
                 trading_pair="BTC-BUSD",
                 amount=Decimal(0.01),
                 order_type=OrderType.MARKET,
