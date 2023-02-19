@@ -22,7 +22,7 @@ from .pmm_script_interface import (
 )
 
 
-class PMMScriptBase:
+class PMMScriptBase: 
     """
     PMMScriptBase provides functionality which a script can use to interact with the main HB application.
     A user defined script should derive from this base class to get all its functionality.
