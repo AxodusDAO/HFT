@@ -34,12 +34,12 @@ class SimpleRSIScript(ScriptStrategyBase):
     rsi_is_ema = os.getenv("RSI_IS_EMA", 'True').lower() in ('true', '1', 't')
 
     # buy in to open position \ buy out to close position
-    buyin_rsi = int(os.getenv("BUY_RSI", "12"))
-    buyout_rsi = int(os.getenv("BUY_RSI", "68"))
+    buyin_rsi = int(os.getenv("BUYIN_RSI", "12"))
+    sellin_rsi = int(os.getenv("SELLIN_RSI", "88"))
 
     # sell in to open position \ sell out to close position  
-    sellin_rsi = int(os.getenv("SELL_RSI", "88"))
-    sellout_rsi = int(os.getenv("SELL_RSI", "42"))
+    buyout_rsi = int(os.getenv("BUYOUT_RSI", "68"))
+    sellout_rsi = int(os.getenv("SELLOUT_RSI", "42"))
 
     # It depends on a timeframe. Make sure you have enough trades to calculate rsi_length number of candlesticks.
     trade_count_limit = int(os.getenv("TRADE_COUNT_LIMIT", "100000"))
