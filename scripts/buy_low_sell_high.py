@@ -20,7 +20,7 @@ class buyLowSellHigh(ScriptStrategyBase):
     """
     timeframe = os.getenv("TIMEFRAME", "1s")
     de_fast_ma = deque([], maxlen=17)
-    de_slow_ma = deque([], maxlen=144)
+    de_slow_ma = deque([], maxlen=75)
 
     def _set_resample_rule(self, timeframe):
         """
