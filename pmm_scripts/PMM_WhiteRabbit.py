@@ -1,12 +1,12 @@
-#from collections import deque
-import os
+from collections import deque
+import pandas as pd
+from statistics import mean
+
 from hummingbot.core.event.events import (
     BuyOrderCompletedEvent,
     SellOrderCompletedEvent
 )
 from hummingbot.pmm_script.pmm_script_base import PMMScriptBase
-
-
 
 class WhiteRabbitScript(PMMScriptBase):
     """
@@ -15,10 +15,9 @@ class WhiteRabbitScript(PMMScriptBase):
     If a sell order is filled, there will be one less sell order submitted at the next refresh cycle.
     The balance is positive if there are more completed buy orders than sell orders.
     """
-    #de_fast_ma = deque([], maxlen=7)
-    #de_slow_ma = deque([], maxlen=75)
-    fast_ma = int(os.getenv("FAST_MA","7"))
-    slow_ma = int(os.getenv("SLOW_MA","75"))
+    de_fast_ma = deque([], maxlen=7)
+    de_slow_ma = deque([], maxlen=75)
+
 
     def __init__(self):
         super().__init__()
@@ -30,10 +29,10 @@ class WhiteRabbitScript(PMMScriptBase):
         sells = strategy.order_levels
     
     #: with every tick, the new price of the trading_pair will be appended to the deque and MA will be calculated
-        #self.de_fast_ma.append()
-        #self.de_slow_ma.append(mid_price)
-        #fast_ma = mean(self.de_fast_ma)
-        #slow_ma = mean(self.de_slow_ma)
+        self.de_fast_ma.append(pd)
+        self.de_slow_ma.append(pd)
+        fast_ma = mean(self.de_fast_ma)
+        slow_ma = mean(self.de_slow_ma)
 
         if (fast_ma > slow_ma) & (self.ping_pong_balance > 0):
             buys -= self.ping_pong_balance
@@ -43,7 +42,7 @@ class WhiteRabbitScript(PMMScriptBase):
             sells = max(0, sells)
         strategy.buy_levels = buys
         strategy.sell_levels = sells
-
+        
         
 # Alter pingpong status after order filled
     def on_buy_order_completed(self, event: BuyOrderCompletedEvent):
