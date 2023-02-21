@@ -55,7 +55,7 @@ class buyLowSellHigh(ScriptStrategyBase):
                 connector_name="binance",
                 trading_pair="BTC-BUSD",
                 amount=Decimal(0.003),
-                order_type=OrderType.MARKET,
+                order_type=OrderType.LIMIT,
             )
             self.logger().info(f'{"0.003 BTC bought"}')
             self.pingpong = 1
@@ -66,7 +66,7 @@ class buyLowSellHigh(ScriptStrategyBase):
                 connector_name="binance",
                 trading_pair="BTC-BUSD",
                 amount=Decimal(0.003),
-                order_type=OrderType.MARKET,
+                order_type=OrderType.LIMIT,
             )
             self.logger().info(f'{"0.003 BTC sold"}')
             self.pingpong = 0
