@@ -42,8 +42,6 @@ class WhiteRabbitScript(PMMScriptBase):
         strategy.buy_levels = buys
         strategy.sell_levels = sells
     
-    def calculate_ma(df: pd.DataFrame, )
-
 # Alter pingpong status after order filled
     def on_buy_order_completed(self, event: BuyOrderCompletedEvent):
         self.ping_pong_balance += 1
