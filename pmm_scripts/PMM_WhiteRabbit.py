@@ -27,8 +27,9 @@ class WhiteRabbitScript(PMMScriptBase):
         sells = strategy.order_levels
     
     #: with every tick, the new price of the trading_pair will be appended to the deque and MA will be calculated
-        self.de_fast_ma.append(mid_price)
-        self.de_slow_ma.append(mid_price)
+        #self.de_fast_ma.append(mid_price)
+        #self.de_slow_ma.append(mid_price)
+        
         fast_ma = mean(self.de_fast_ma)
         slow_ma = mean(self.de_slow_ma)
 
