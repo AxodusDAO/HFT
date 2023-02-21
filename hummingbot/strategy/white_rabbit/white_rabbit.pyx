@@ -86,6 +86,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     moving_price_band: Optional[MovingPriceBand] = None
+
                     ):
         if order_override is None:
             order_override = {}
@@ -164,7 +165,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     @property
     def ping_pong_enabled(self) -> bool:
         return self._ping_pong_enabled
-
+    
     @property
     def ask_order_optimization_depth(self) -> Decimal:
         return self._ask_order_optimization_depth
@@ -874,7 +875,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             self._ping_pong_warning_lines.extend(
                 [f"  Ping-pong removed {self._filled_sells_balance} sell orders."]
             )
-
+    
     cdef c_apply_order_price_modifiers(self, object proposal):
         if self._order_optimization_enabled:
             self.c_apply_order_optimization(proposal)
