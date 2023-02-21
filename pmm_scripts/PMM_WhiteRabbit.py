@@ -5,7 +5,6 @@ from hummingbot.core.event.events import (
 )
 from hummingbot.pmm_script.pmm_script_base import PMMScriptBase
 from statistics import mean
-import pandas as pd
 
 
 class WhiteRabbitScript(PMMScriptBase):
