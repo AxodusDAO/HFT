@@ -17,7 +17,12 @@ class WhiteRabbitScript(PMMScriptBase):
     """
     de_fast_ma = deque([], maxlen=7)
     de_slow_ma = deque([], maxlen=75)
-
+    
+    #: with every tick, the new price of the trading_pair will be appended to the deque and MA will be calculated
+        self.de_fast_ma.append(pd)
+        self.de_slow_ma.append(pd)
+        fast_ma = mean(self.de_fast_ma)
+        slow_ma = mean(self.de_slow_ma)
 
     def __init__(self):
         super().__init__()
@@ -27,12 +32,6 @@ class WhiteRabbitScript(PMMScriptBase):
         strategy = self.pmm_parameters
         buys = strategy.order_levels
         sells = strategy.order_levels
-    
-    #: with every tick, the new price of the trading_pair will be appended to the deque and MA will be calculated
-        self.de_fast_ma.append(pd)
-        self.de_slow_ma.append(pd)
-        fast_ma = mean(self.de_fast_ma)
-        slow_ma = mean(self.de_slow_ma)
 
         if (fast_ma > slow_ma) & (self.ping_pong_balance > 0):
             buys -= self.ping_pong_balance
