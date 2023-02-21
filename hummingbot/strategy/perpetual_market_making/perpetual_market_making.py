@@ -29,7 +29,7 @@ from hummingbot.strategy.perpetual_market_making.perpetual_market_making_order_t
 )
 from hummingbot.strategy.strategy_py_base import StrategyPyBase
 from hummingbot.strategy.utils import order_age
-from .moving_price_band import MovingPriceBand
+from hummingbot.strategy.perpetual_market_making.moving_price_band import MovingPriceBand
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
