@@ -21,6 +21,7 @@ class buyLowSellHigh(ScriptStrategyBase):
     timeframe = os.getenv("TIMEFRAME", "1s")
     de_fast_ma = deque([], maxlen=17)
     de_slow_ma = deque([], maxlen=75)
+    order_amount = Decimal(os.getenv("BTC","0.003"))
 
     def _set_resample_rule(self, timeframe):
         """
@@ -54,7 +55,7 @@ class buyLowSellHigh(ScriptStrategyBase):
             self.buy(
                 connector_name="binance",
                 trading_pair="BTC-BUSD",
-                amount=Decimal(0.003),
+                amount=order_amount,
                 order_type=OrderType.LIMIT,
             )
             self.logger().info(f'{"0.003 BTC bought"}')
@@ -65,7 +66,7 @@ class buyLowSellHigh(ScriptStrategyBase):
             self.sell(
                 connector_name="binance",
                 trading_pair="BTC-BUSD",
-                amount=Decimal(0.003),
+                amount=order_amount,
                 order_type=OrderType.LIMIT,
             )
             self.logger().info(f'{"0.003 BTC sold"}')
