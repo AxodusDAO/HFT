@@ -5,6 +5,8 @@ from hummingbot.core.event.events import (
 )
 from hummingbot.pmm_script.pmm_script_base import PMMScriptBase
 from statistics import mean
+import pandas as pd
+
 
 class WhiteRabbitScript(PMMScriptBase):
     """
@@ -26,8 +28,8 @@ class WhiteRabbitScript(PMMScriptBase):
         sells = strategy.order_levels
     
     #: with every tick, the new price of the trading_pair will be appended to the deque and MA will be calculated
-        self.de_fast_ma.append(p)
-        self.de_slow_ma.append(p)
+        self.de_fast_ma.append(mid_price)
+        self.de_slow_ma.append(mid_price)
         fast_ma = mean(self.de_fast_ma)
         slow_ma = mean(self.de_slow_ma)
 
@@ -39,6 +41,8 @@ class WhiteRabbitScript(PMMScriptBase):
             sells = max(0, sells)
         strategy.buy_levels = buys
         strategy.sell_levels = sells
+    
+    def calculate_ma(df: pd.DataFrame, )
 
 # Alter pingpong status after order filled
     def on_buy_order_completed(self, event: BuyOrderCompletedEvent):
