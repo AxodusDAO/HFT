@@ -12,26 +12,26 @@ class WhiteRabbitScript(PMMScriptBase):
     """
     pingpong strategy with double Moving Averange 
     """    
-    
+    de_fast_ma = deque([], maxlen=7)
+    de_slow_ma = deque([], maxlen=75)   
+
     def __init__(self):
         super().__init__()
         self.ping_pong_balance = 0
 
-    #: with every tick, the new price of the trading_pair will be appended to the deque and MA will be calculated
     
-
     
     def on_tick(self):
         strategy = self.pmm_parameters
         buys = strategy.order_levels
         sells = strategy.order_levels
         
-        de_fast_ma = deque([], maxlen=7)
-        de_slow_ma = deque([], maxlen=75)
+    #: with every tick, the new price of the trading_pair will be appended to the deque and MA will be calculated
+        fast_ma = mean(self.de_fast_ma)
+        slow_ma = mean(self.de_slow_ma)         
         self.de_fast_ma.append(p)
         self.de_slow_ma.append(p)
-        fast_ma = mean(self.de_fast_ma)
-        slow_ma = mean(self.de_slow_ma)
+
         p = exchange().get_price()       
                
     if [fast_ma > slow_ma] & (self.ping_pong_balance > 0):
