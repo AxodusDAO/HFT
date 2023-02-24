@@ -1,0 +1,12 @@
+#!/bin/bash
+# init
+# =============================================
+# SCRIPT COMMANDS
+echo
+echo "===============  START HFT WhiteRabbit ==============="
+echo "- RSI Scalper strategy spot                           "
+echo "- Starting instance ...                               "
+echo "- Loading configuration files ...                     "
+# =============================================
+# EXECUTE SCRIPT
+bin/hummingbot.py
