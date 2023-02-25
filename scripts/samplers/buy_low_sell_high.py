@@ -7,7 +7,7 @@ from hummingbot.strategy.script_strategy_base import ScriptStrategyBase
 
 
 class buyLowSellHigh(ScriptStrategyBase):
-    markets = {"binance_perpertual": {"BTC-BUSD"}}
+    markets = {"binance": {"BTC-BUSD"}}
     #: pingpong is a variable to allow alternating between buy & sell signals
     pingpong = 0
 
