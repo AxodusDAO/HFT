@@ -751,8 +751,8 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     
         def sell_at_market_price(self):
             for market in self.active_markets:
-            amount = self.get_balance(market.base_asset)  # get the amount of the base asset available for selling
-            self.submit_sell_order(market, amount, OrderSpec.market_price())  # submit a sell order at market price
+                amount = self.get_balance(market.base_asset)  # get the amount of the base asset available for selling
+                self.submit_sell_order(market, amount, OrderSpec.market_price())  # submit a sell order at market price
 
     cdef c_tick(self, double timestamp):
         StrategyBase.c_tick(self, timestamp)
