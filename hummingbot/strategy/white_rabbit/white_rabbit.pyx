@@ -1373,9 +1373,11 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             raise ValueError(f"Unrecognized price type string {price_type_str}.")
 
 # Added RSI by Axodus DEV
-    cdef double calculate_rsi(double* closes, int length, int period):
-        cdef int i
-        cdef double up_periods, down_periods, avg_gain, avg_loss, rs, rsi
+    cdef double calculate_rsi(WhiteRabbitStrategy self, double* closes, int length, int period):
+        cdef int i, up_periods, down_periods
+        cdef double avg_gain, avg_loss, rs, rsi
+
+        rsi_enabled = self.rsi_enabled
 
         # Calculate the initial average gain and loss for the first "period" periods
         avg_gain = 0
