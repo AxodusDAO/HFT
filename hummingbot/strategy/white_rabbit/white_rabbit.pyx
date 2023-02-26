@@ -1373,8 +1373,8 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
 # Added RSI by Axodus DEV
     cdef double calculate_rsi(double* closes, int length, int period):
-        cdef int i, up_periods, down_periods
-        cdef double avg_gain, avg_loss, rs, rsi
+        cdef int i
+        cdef double up_periods, down_periods, avg_gain, avg_loss, rs, rsi
 
         # Calculate the initial average gain and loss for the first "period" periods
         avg_gain = 0
