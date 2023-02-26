@@ -1,72 +1,178 @@
+import logging
 import math
 import os
 
-import logging
-from itertools import chain
-from math import ceil, floor
-from typing import Dict, List
-
-from decimal import Decimal
-from typing import Optional
-
-import numpy as np
-import pandas as pd
-
-from hummingbot.client.hummingbot_application import HummingbotApplication
-from hummingbot.connector.derivative.position import Position
-from hummingbot.connector.derivative_base import DerivativeBase
-from hummingbot.connector.connector_base import ConnectorBase
-from hummingbot.connector.utils import combine_to_hb_trading_pair
-from hummingbot.core.network_iterator import NetworkStatus
-from hummingbot.core.utils import map_df_to_str
-from hummingbot.core.data_type.common import OrderType, PositionAction, PositionMode, PriceType, TradeType
-from hummingbot.core.data_type.limit_order import LimitOrder
-from hummingbot.core.data_type.order_candidate import OrderCandidate, PerpetualOrderCandidate
 from hummingbot.core.event.events import (
     BuyOrderCompletedEvent,
+    BuyOrderCreatedEvent,
+    MarketOrderFailureEvent,
+    OrderCancelledEvent,
     OrderFilledEvent,
-    PositionModeChangeEvent,
     SellOrderCompletedEvent,
+    SellOrderCreatedEvent,
+    OrderBookEvent,
+    OrderBookTradeEvent,
 )
+from collections import deque
+from decimal import Decimal
+from statistics import mean
+from typing import Optional
+
+import pandas as pd
+
+from hummingbot.core.data_type.order_candidate import OrderCandidate
 from hummingbot.core.event.event_forwarder import SourceInfoEventForwarder
-from hummingbot.core.event.events import OrderBookEvent, OrderBookTradeEvent, OrderFilledEvent
+from hummingbot.client.hummingbot_application import HummingbotApplication
+from hummingbot.connector.connector_base import ConnectorBase
+from hummingbot.connector.utils import combine_to_hb_trading_pair
+from hummingbot.core.data_type.common import OrderType, TradeType
 from hummingbot.core.rate_oracle.rate_oracle import RateOracle
-from hummingbot.strategy.asset_price_delegate import AssetPriceDelegate
-from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
-from hummingbot.strategy.order_book_asset_price_delegate import OrderBookAssetPriceDelegate
-from hummingbot.strategy.perpetual_market_making.data_types import PriceSize, Proposal
-from hummingbot.strategy.perpetual_market_making.perpetual_market_making_order_tracker import (
-    PerpetualMarketMakingOrderTracker,
-)
-from hummingbot.strategy.script_strategy_base import ScriptStrategyBase
-from hummingbot.strategy.strategy_py_base import StrategyPyBase
-from hummingbot.strategy.utils import order_age
+from hummingbot.strategy.script_strategy_base import Decimal, OrderType, ScriptStrategyBase
 
-NaN = float("nan")
-s_decimal_zero = Decimal(0)
-s_decimal_neg_one = Decimal(-1) 
 
-class SimpleRSIScript(ScriptStrategyBase):
+#The code above is a simple buy-low-sell-high strategy that uses Moving Averages as a signal to buy or sell. 
+# It is based on the Golden Cross and Death Cross strategies. The Golden Cross strategy is when the short 
+# term moving average crosses over the long term moving average, which indicates a bullish trend and hence a buy signal. 
+# Similarly, the Death Cross strategy is when the short term moving average crosses below the long term 
+# moving average, which indicates a bearish trend and hence a sell signal. In this case, we have defined 
+# fast MA as 5-secondly-MA and slow MA as 20-secondly-MA. This can be changed by users according to their preference. 
+# The pingpong variable allows us to alternate between buy and sell signals. When pingpong = 0, it means that we are 
+# waiting for a buy signal (i.e., Golden Cross). When pingpong = 1, it means that we are waiting for a 
+# sell signal (i.e., Death Cross). Whenever there is no signal generated (i.e., neither Golden Cross nor Death Cross), 
+# we will just wait for one of them to be generated in order to execute our trade (buy or sell).
+
+class buyLowSellHigh(ScriptStrategyBase):
+    markets = {"binance": {"BTC-BUSD"}}
+    #: pingpong is a variable to allow alternating between buy & sell signals
+    pingpong = 0
+
+    """
+    for the sake of simplicity in testing, we will define fast MA as the 5-secondly-MA, and slow MA as the
+    20-secondly-MA. User can change this as desired
+    """
+
+    de_fast_ma = deque([], maxlen=50)
+    de_slow_ma = deque([], maxlen=200)
+
+    def on_tick(self):
+        p = self.connectors["binance"].get_price("BTC-BUSD", True)
+
+        #: with every tick, the new price of the trading_pair will be appended to the deque and MA will be calculated
+        self.de_fast_ma.append(p)
+        self.de_slow_ma.append(p)
+        fast_ma = mean(self.de_fast_ma)
+        slow_ma = mean(self.de_slow_ma)
+
+        #: logic for golden cross
+        if (fast_ma > slow_ma) & (self.pingpong == 0):
+            self.buy(
+                connector_name="binance",
+                trading_pair="BTC-BUSD",
+                amount=Decimal(0.01),
+                order_type=OrderType.MARKET,
+            )
+            self.logger().info(f'{"0.01 BTC bought"}')
+            self.pingpong = 1
+
+        #: logic for death cross
+        elif (slow_ma > fast_ma) & (self.pingpong == 1):
+            self.sell(
+                connector_name="binance",
+                trading_pair="BTC-BUSD",
+                amount=Decimal(0.01),
+                order_type=OrderType.MARKET,
+            )
+            self.logger().info(f'{"0.01 BTC sold"}')
+            self.pingpong = 0
+
+        else:
+            self.logger().info(f'{"wait for a signal to be generated"}')
+
+class DCAScript(ScriptStrategyBase):
+    """
+    This example shows how to set up a simple strategy to buy a token on fixed (dollar) amount on a regular basis
+    """
+    #: Define markets to instruct Hummingbot to create connectors on the exchanges and markets you need
+    markets = {"binance": {"BTC-USDT"}}
+    #: The last time the strategy places a buy order
+    last_ordered_ts = 0.
+    #: Buying interval (in seconds)
+    buy_interval = 10.
+    #: Buying amount (in dollars - USDT)
+    buy_quote_amount = Decimal("100")
+
+    def on_tick(self):
+        # Check if it is time to buy
+        if self.last_ordered_ts < (self.current_timestamp - self.buy_interval):
+            # Lets set the order price to the best bid
+            price = self.connectors["binance"].get_price("BTC-USDT", False)
+            amount = self.buy_quote_amount / price
+            self.buy("binance", "BTC-USDT", amount, OrderType.LIMIT, price)
+            self.last_ordered_ts = self.current_timestamp
+
+    def did_create_buy_order(self, event: BuyOrderCreatedEvent):
+        """
+        Method called when the connector notifies a buy order has been created
+        """
+        self.logger().info(logging.INFO, f"The buy order {event.order_id} has been created")
+
+    def did_create_sell_order(self, event: SellOrderCreatedEvent):
+        """
+        Method called when the connector notifies a sell order has been created
+        """
+        self.logger().info(logging.INFO, f"The sell order {event.order_id} has been created")
+
+    def did_fill_order(self, event: OrderFilledEvent):
+        """
+        Method called when the connector notifies that an order has been partially or totally filled (a trade happened)
+        """
+        self.logger().info(logging.INFO, f"The order {event.order_id} has been filled")
+
+    def did_fail_order(self, event: MarketOrderFailureEvent):
+        """
+        Method called when the connector notifies an order has failed
+        """
+        self.logger().info(logging.INFO, f"The order {event.order_id} failed")
+
+    def did_cancel_order(self, event: OrderCancelledEvent):
+        """
+        Method called when the connector notifies an order has been cancelled
+        """
+        self.logger().info(f"The order {event.order_id} has been cancelled")
+
+    def did_complete_buy_order(self, event: BuyOrderCompletedEvent):
+        """
+        Method called when the connector notifies a buy order has been completed (fully filled)
+        """
+        self.logger().info(f"The buy order {event.order_id} has been completed")
+
+    def did_complete_sell_order(self, event: SellOrderCompletedEvent):
+        """
+        Method called when the connector notifies a sell order has been completed (fully filled)
+        """
+        self.logger().info(f"The sell order {event.order_id} has been completed")
+
+class RSIScript(ScriptStrategyBase):
     """
     The strategy is to buy on overbought signal and sell on oversold.
     """
-    connector_name = os.getenv("CONNECTOR_NAME", "binance_perpetual")
+    connector_name = os.getenv("CONNECTOR_NAME", "binance")
     base = os.getenv("BASE", "BTC")
     quote = os.getenv("QUOTE", "BUSD")
-    timeframe = os.getenv("TIMEFRAME", "3m")
+    timeframe = os.getenv("TIMEFRAME", "1s")
 
-    position_amount_usd = Decimal(os.getenv("POSITION_AMOUNT_USD", "500"))
+    position_amount_usd = Decimal(os.getenv("POSITION_AMOUNT_USD", "50"))
 
     rsi_length = int(os.getenv("RSI_LENGTH", "5"))
 
     # If true - uses Exponential Moving Average, if false - Simple Moving Average.
-    rsi_is_ema = os.getenv("RSI_IS_EMA", 'False').lower() in ('true', '1', 't')
+    rsi_is_ema = os.getenv("RSI_IS_EMA", 'True').lower() in ('true', '1', 't')
 
-    buy_rsi = int(os.getenv("BUY_RSI", "3"))
-    sell_rsi = int(os.getenv("SELL_RSI", "97"))
+    buy_rsi = int(os.getenv("BUY_RSI", "05"))
+    sell_rsi = int(os.getenv("SELL_RSI", "95"))
 
     # It depends on a timeframe. Make sure you have enough trades to calculate rsi_length number of candlesticks.
-    trade_count_limit = int(os.getenv("TRADE_COUNT_LIMIT", "10000"))
+    trade_count_limit = int(os.getenv("TRADE_COUNT_LIMIT", "100000"))
 
     trading_pair = combine_to_hb_trading_pair(base, quote)
     markets = {connector_name: {trading_pair}}
@@ -222,7 +328,7 @@ class SimpleRSIScript(ScriptStrategyBase):
             self.logger().warn(f"Unsupported order type filled: {event.trade_type}")
 
     @staticmethod
-    def calculate_rsi(df: pd.DataFrame, length: int = 5, is_ema: bool = True):
+    def calculate_rsi(df: pd.DataFrame, length: int = 14, is_ema: bool = True):
         """
         Calculate relative strength index and add it to the dataframe.
         """
