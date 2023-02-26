@@ -86,7 +86,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     moving_price_band: Optional[MovingPriceBand] = None,
-                    rsi_enable = bool = False,
+                    rsi_enable: bool = False,
                     rsi_period: int = 14,
                     rsi_oversold: Decimal = 20,
                     rsi_overbought: Decimal = 80,
