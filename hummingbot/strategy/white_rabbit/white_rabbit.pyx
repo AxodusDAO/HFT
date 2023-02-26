@@ -1371,38 +1371,33 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         else:
             raise ValueError(f"Unrecognized price type string {price_type_str}.")
 
-   
-# This function takes in an array of double prices, an integer n for the length of the array, and a double alpha value for the smoothing parameter. 
-# It calculates the up and down movements of the prices, calculates the average gain and average loss over a rolling window of alpha, 
-# and then calculates the relative strength and RSI. The final RSI value is returned as a double  
-
+# Added RSI by Axodus DEV
     cdef double calculate_rsi(double* closes, int length, int period):
-        cdef int i
-        cdef double avg_gain, avg_loss, rs, rsi, up_periods, down_periods
+        cdef int i, up_periods, down_periods
+        cdef double avg_gain, avg_loss, rs, rsi
 
         # Calculate the initial average gain and loss for the first "period" periods
         avg_gain = 0
         avg_loss = 0
         for i in range(period):
             if closes[i] < closes[i+1]:
-                up_periods += closes[i+1] - closes[i]
+                avg_gain += closes[i+1] - closes[i]
             else:
-                down_periods += closes[i] - closes[i+1]
+                avg_loss += closes[i] - closes[i+1]
         avg_gain /= period
         avg_loss /= period
 
-    # Calculate the RS and RSI for the remaining periods
+        # Calculate the RS and RSI for the remaining periods
         for i in range(period, length):
-            if closes[i] < closes[i-1]:
-                up_periods = 0
-                down_periods = closes[i-1] - closes[i]
-            else:
-                up_periods = closes[i] - closes[i-1]
+            if closes[i] < closes[i+1]:
+                up_periods = closes[i+1] - closes[i]
                 down_periods = 0
+            else:
+                up_periods = 0
+                down_periods = closes[i] - closes[i+1]
             avg_gain = ((period - 1) * avg_gain + up_periods) / period
             avg_loss = ((period - 1) * avg_loss + down_periods) / period
             rs = avg_gain / avg_loss if avg_loss != 0 else 0
             rsi = 100 - (100 / (1 + rs))
 
         return rsi
-    
