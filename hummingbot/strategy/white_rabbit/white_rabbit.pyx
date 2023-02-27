@@ -198,16 +198,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._slow_ma = value
 
     @property
-    def ma_cross(self):
-        """
-        Determines when a golden cross or death cross occurs.
-
-        Args:
-        - data: pandas DataFrame with OHLC data
-
-        Returns:
-        - A list of trading signals (1 for long, -1 for short, 0 for no action)
-        """
+    def ma_cross(self, data):
         signals = []
         positions = 0
         fast_ma = self._fast_ma
