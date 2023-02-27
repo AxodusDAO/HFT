@@ -192,7 +192,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     @slow_ma.setter
     def slow_ma(self, value):
         self._slow_ma = value
-        self._compute_signal()
 
     @property
     def ma_cross(self, data):
