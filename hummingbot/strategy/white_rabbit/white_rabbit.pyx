@@ -173,7 +173,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             else:
                 signals.append(0)
             
-    return signals, positions
+        return signals, positions
 
     @property
     def fast_ma(self):
