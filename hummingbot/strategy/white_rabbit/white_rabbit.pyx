@@ -151,40 +151,31 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self.c_add_markets([market_info.market])
 
     def ma_cross(self, data):
-    """
-    Determines when a golden cross or death cross occurs.
-
-    Args:
-    - data: pandas DataFrame with OHLC data
-
-    Returns:
-    - A list of trading signals (1 for long, -1 for short, 0 for no action)
-    """
-    signals = []
-    positions = 0
-    fast_ma = self.fast_ma
-    slow_ma = self.slow_ma
-    for i in range(len(data)):
-        if i == 0:
-            continue
-        elif data[fast_ma][i] > data[slow_ma][i] and data[fast_ma][i-1] <= data[slow_ma][i-1]:
-            signals.append(1)
-            positions += 1
-        elif data[fast_ma][i] < data[slow_ma][i] and data[fast_ma][i-1] >= data[slow_ma][i-1]:
-            signals.append(-1)
-            positions -= 1
+        signals = []
+        positions = 0
+        fast_ma = self.fast_ma
+        slow_ma = self.slow_ma
+        for i in range(len(data)):
+            if i == 0:
+                continue
+            elif data[fast_ma][i] > data[slow_ma][i] and data[fast_ma][i-1] <= data[slow_ma][i-1]:
+                signals.append(1)
+                positions += 1
+            elif data[fast_ma][i] < data[slow_ma][i] and data[fast_ma][i-1] >= data[slow_ma][i-1]:
+                signals.append(-1)
+                positions -= 1
+            else:
+                signals.append(0)
+        
+        if positions == 0:
+            return signals
+        elif positions > 0:
+            return signals + [-1] * positions
         else:
-            signals.append(0)
-    
-    if positions == 0:
-        return signals
-    elif positions > 0:
-        return signals + [-1] * positions
-    else:
-        return signals + [1] * abs(positions)
+            return signals + [1] * abs(positions)
 
-    def all_markets_ready(self):
-        return all([market.ready for market in self._sb_markets])
+        def all_markets_ready(self):
+            return all([market.ready for market in self._sb_markets])
 
     @property
     def fast_ma(self):
@@ -239,7 +230,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             return signals + [-1] * positions
         else:
             return signals + [1] * abs(positions)
-            
+
     @property
     def market_info(self) -> MarketTradingPairTuple:
         return self._market_info
