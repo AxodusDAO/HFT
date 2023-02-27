@@ -150,32 +150,30 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._slow_ma = slow_ma
         self.c_add_markets([market_info.market])
 
-    def ma_cross(self, data):
-        signals = []
-        positions = 0
-        fast_ma = self.fast_ma
-        slow_ma = self.slow_ma
-        for i in range(len(data)):
-            if i == 0:
-                continue
-            elif data[fast_ma][i] > data[slow_ma][i] and data[fast_ma][i-1] <= data[slow_ma][i-1]:
+    def ma_cross(self, data, ping_pong_balance):
+    signals = []
+    positions = ping_pong_balance
+    fast_ma = self.fast_ma
+    slow_ma = self.slow_ma
+    
+    for i in range(1, len(data)):
+        if data[fast_ma][i] > data[slow_ma][i] and data[fast_ma][i-1] <= data[slow_ma][i-1]:
+            if positions <= 0:
                 signals.append(1)
-                positions += 1
-            elif data[fast_ma][i] < data[slow_ma][i] and data[fast_ma][i-1] >= data[slow_ma][i-1]:
-                signals.append(-1)
-                positions -= 1
             else:
                 signals.append(0)
+            positions += 1
         
-        if positions == 0:
-            return signals
-        elif positions > 0:
-            return signals + [-1] * positions
+        elif data[fast_ma][i] < data[slow_ma][i] and data[fast_ma][i-1] >= data[slow_ma][i-1]:
+            if positions >= 0:
+                signals.append(-1)
+            else:
+                signals.append(0)
+            positions -= 1
         else:
-            return signals + [1] * abs(positions)
-
-        def all_markets_ready(self):
-            return all([market.ready for market in self._sb_markets])
+            signals.append(0)
+            
+    return signals, positions
 
     @property
     def fast_ma(self):
