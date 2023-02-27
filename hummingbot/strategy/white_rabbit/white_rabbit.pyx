@@ -86,8 +86,14 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     moving_price_band: Optional[MovingPriceBand] = None,
-                    fast_ma: int = None,
-                    slow_ma: int = None,
+                    ma_cross_enabled: bool = False,
+                    fast_ma: int = 50,
+                    slow_ma: int = 200,
+                    rsi_enabled: bool = False,
+                    rsi_timeframe: str = "1h",
+                    rsi_length: int = 14,
+                    rsi_oversold_level: float = 30,
+                    rsi_overbought_level: float = 70,
                     ):
         if order_override is None:
             order_override = {}
@@ -146,8 +152,14 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         self._moving_price_band = moving_price_band
+        self._ma_cross_enabled = ma_cross_enabled
         self._fast_ma = fast_ma
         self._slow_ma = slow_ma
+        self._rsi_enabled = rsi_enabled
+        self._rsi_timeframe = rsi_timeframe
+        self._rsi_length = rsi_length
+        self._rsi_oversold_level = rsi_oversold_level
+        self._rsi_overbought_level = rsi_overbought_level
         self.c_add_markets([market_info.market])
 
     def ma_cross(data, fast_ma, slow_ma):
