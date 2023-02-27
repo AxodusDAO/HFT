@@ -105,6 +105,20 @@ def on_validated_price_type(value: str):
 def exchange_on_validated(value: str):
     required_exchanges.add(value)
 
+def ma_cross_enabled_prompt() -> str:
+    return "Enable Moving Average Crossover? (y/n) >>> "
+
+def validate_ma_cross_enabled(value: str) -> Optional[str]:
+    if value.lower() not in {"y", "n"}:
+        return "Invalid input. Please enter 'y' or 'n'"
+        
+def on_validated_ma_cross_enabled(value: str):
+    if value.lower() == "y":
+        white_rabbit_config_map["fast_ma"].prompt = "Enter the fast MA time period >>> "
+        white_rabbit_config_map["slow_ma"].prompt = "Enter the slow MA time period >>> "
+    else:
+        white_rabbit_config_map["fast_ma"].value = None
+        white_rabbit_config_map["slow_ma"].value = None
 
 def validate_decimal_list(value: str) -> Optional[str]:
     decimal_list = list(value.split(","))
@@ -195,6 +209,23 @@ white_rabbit_config_map = {
                   type_str="decimal",
                   default=Decimal("-1"),
                   validator=validate_price_floor_ceiling),
+    "ma_cross_enabled":
+        ConfigVar(key="ma_cross_enabled",
+                  prompt=ma_cross_enabled_prompt,
+                  validator=validate_ma_cross_enabled,
+                  on_validated=on_validated_ma_cross_enabled,
+                  default="n",
+                  prompt_on_new=True),
+    "fast_ma":
+        ConfigVar(key="fast_ma",
+                  prompt=None,
+                  validator=validate_int,
+                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value == "y"),
+    "slow_ma":
+        ConfigVar(key="slow_ma",
+                  prompt=None,
+                  validator=validate_int,
+                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value == "y"),    
     "moving_price_band_enabled":
         ConfigVar(key="moving_price_band_enabled",
                   prompt="Would you like to enable moving price floor and ceiling? (Yes/No) >>> ",

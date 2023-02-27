@@ -29,7 +29,6 @@ from .inventory_skew_calculator import calculate_total_order_size
 from .white_rabbit_order_tracker import WhiteRabbitOrderTracker
 from .moving_price_band import MovingPriceBand
 
-
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
 s_decimal_neg_one = Decimal(-1)
@@ -87,18 +86,9 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     moving_price_band: Optional[MovingPriceBand] = None,
-                    rsi_enable: bool = False,
-                    rsi_period: int = 14,
-                    rsi_oversold: Decimal = 20,
-                    rsi_overbought: Decimal = 80,
-                    rsi_price_type: str = "mid_price",
-                    ma_cross_enable: bool = False,
-                    fast_ma: int = 10,
-                    slow_ma: int = 20):
-        if ma_cross_enable:
-            self.ma_cross = MACross(fast_ma, slow_ma)
-        else:
-            self.ma_cross = None
+                    fast_ma: int = None,
+                    slow_ma: int = None,
+                    ):
         if order_override is None:
             order_override = {}
         if moving_price_band is None:
@@ -156,21 +146,100 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         self._moving_price_band = moving_price_band
-
-#added by Axodus
-        self.ma_cross_enable = ma_cross_enable
-        self.fast_ma = fast_ma
-        self.slow_ma = slow_ma
-        self._rsi_enabled = rsi_enabled
-        self._rsi_period = rsi_period
-        self._rsi_oversold = rsi_oversold
-        self._rsi_overbought = rsi_overbought
-        self._rsi_price_type = self.get_price_type(rsi_price_type)
+        self._fast_ma = fast_ma
+        self._slow_ma = slow_ma
         self.c_add_markets([market_info.market])
+
+    def ma_cross(self, data):
+    """
+    Determines when a golden cross or death cross occurs.
+
+    Args:
+    - data: pandas DataFrame with OHLC data
+
+    Returns:
+    - A list of trading signals (1 for long, -1 for short, 0 for no action)
+    """
+    signals = []
+    positions = 0
+    fast_ma = self.fast_ma
+    slow_ma = self.slow_ma
+    for i in range(len(data)):
+        if i == 0:
+            continue
+        elif data[fast_ma][i] > data[slow_ma][i] and data[fast_ma][i-1] <= data[slow_ma][i-1]:
+            signals.append(1)
+            positions += 1
+        elif data[fast_ma][i] < data[slow_ma][i] and data[fast_ma][i-1] >= data[slow_ma][i-1]:
+            signals.append(-1)
+            positions -= 1
+        else:
+            signals.append(0)
+    
+    if positions == 0:
+        return signals
+    elif positions > 0:
+        return signals + [-1] * positions
+    else:
+        return signals + [1] * abs(positions)
 
     def all_markets_ready(self):
         return all([market.ready for market in self._sb_markets])
 
+    @property
+    def fast_ma(self):
+        return self._fast_ma
+
+    @fast_ma.setter
+    def fast_ma(self, value):
+        if value <= 0:
+            raise ValueError("fast_ma must be positive")
+        self._fast_ma = value
+
+    @property
+    def slow_ma(self):
+        return self._slow_ma
+
+    @slow_ma.setter
+    def slow_ma(self, value):
+        if value <= 0:
+            raise ValueError("slow_ma must be positive")
+        self._slow_ma = value
+
+    @property
+    def ma_cross(self):
+        """
+        Determines when a golden cross or death cross occurs.
+
+        Args:
+        - data: pandas DataFrame with OHLC data
+
+        Returns:
+        - A list of trading signals (1 for long, -1 for short, 0 for no action)
+        """
+        signals = []
+        positions = 0
+        fast_ma = self._fast_ma
+        slow_ma = self._slow_ma
+        for i in range(len(data)):
+            if i == 0:
+                continue
+            elif data[fast_ma][i] > data[slow_ma][i] and data[fast_ma][i-1] <= data[slow_ma][i-1]:
+                signals.append(1)
+                positions += 1
+            elif data[fast_ma][i] < data[slow_ma][i] and data[fast_ma][i-1] >= data[slow_ma][i-1]:
+                signals.append(-1)
+                positions -= 1
+            else:
+                signals.append(0)
+
+        if positions == 0:
+            return signals
+        elif positions > 0:
+            return signals + [-1] * positions
+        else:
+            return signals + [1] * abs(positions)
+            
     @property
     def market_info(self) -> MarketTradingPairTuple:
         return self._market_info
@@ -431,22 +500,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     @property
     def moving_price_band(self) -> MovingPriceBand:
         return self._moving_price_band
-    
-    @property
-    def rsi(self) -> int:
-        return self._rsi
-
-    @property
-    def ma_cross_enabled(self) -> bool:
-        return self.ma_cross is not None
-
-    @property
-    def fast_ma(self) -> int:
-        return self.ma_cross.fast_ma if self.ma_cross_enabled else 0
-
-    @property
-    def slow_ma(self) -> int:
-        return self.ma_cross.slow_ma if self.ma_cross_enabled else 0
 
     def get_price(self) -> Decimal:
         price_provider = self._asset_price_delegate or self._market_info
@@ -747,13 +800,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_stop(self, Clock clock):
         self._hanging_orders_tracker.unregister_events(self.active_markets)
-        self.sell_at_market_price() # add this line to submit a sell order at market price
         StrategyBase.c_stop(self, clock)
-    
-        def sell_at_market_price(self):
-            for market in self.active_markets:
-                amount = self.get_balance(market.base_asset)  # get the amount of the base asset available for selling
-                self.submit_sell_order(market, amount, OrderSpec.market_price())  # submit a sell order at market price
 
     cdef c_tick(self, double timestamp):
         StrategyBase.c_tick(self, timestamp)
@@ -1371,36 +1418,3 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             return PriceType.Custom
         else:
             raise ValueError(f"Unrecognized price type string {price_type_str}.")
-
-# Added RSI by Axodus DEV
-    cdef double calculate_rsi(WhiteRabbitStrategy self, double* closes, int length, int period):
-        cdef int i, up_periods, down_periods
-        cdef double avg_gain, avg_loss, rs, rsi
-
-        rsi_enabled = self.rsi_enabled
-
-        # Calculate the initial average gain and loss for the first "period" periods
-        avg_gain = 0
-        avg_loss = 0
-        for i in range(period):
-            if closes[i] < closes[i+1]:
-                avg_gain += closes[i+1] - closes[i]
-            else:
-                avg_loss += closes[i] - closes[i+1]
-        avg_gain /= period
-        avg_loss /= period
-
-        # Calculate the RS and RSI for the remaining periods
-        for i in range(period, length):
-            if closes[i] < closes[i+1]:
-                up_periods = closes[i+1] - closes[i]
-                down_periods = 0
-            else:
-                up_periods = 0
-                down_periods = closes[i] - closes[i+1]
-            avg_gain = ((period - 1) * avg_gain + up_periods) / period
-            avg_loss = ((period - 1) * avg_loss + down_periods) / period
-            rs = avg_gain / avg_loss if avg_loss != 0 else 0
-            rsi = 100 - (100 / (1 + rs))
-
-        return rsi
