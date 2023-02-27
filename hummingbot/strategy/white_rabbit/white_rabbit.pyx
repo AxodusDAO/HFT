@@ -150,36 +150,32 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._slow_ma = slow_ma
         self.c_add_markets([market_info.market])
 
-    def ma_cross(self, data):
-        fast_ma = self.fast_ma
-        slow_ma = self.slow_ma
-        
-        # Create a DataFrame with the data
-        df = pd.DataFrame(data)
-        
-        # Calculate the moving averages
-        df['fast_ma'] = df.iloc[:, fast_ma].rolling(window=self.ma_length).mean()
-        df['slow_ma'] = df.iloc[:, slow_ma].rolling(window=self.ma_length).mean()
-        
-        # Determine the signals
-        df['signal'] = 0
-        df.loc[df['fast_ma'] > df['slow_ma'], 'signal'] = 1
-        df.loc[df['fast_ma'] < df['slow_ma'], 'signal'] = -1
-        
-        # Determine the positions
-        df['position'] = df['signal'].diff().fillna(0)
-        
-        # Convert the signals and positions to lists
-        signals = df['signal'].tolist()
-        positions = df['position'].cumsum().tolist()
-        
-        # Add additional positions to the signals list as necessary
-        if positions[-1] == 0:
-            return signals
-        elif positions[-1] > 0:
-            return signals + [-1] * positions[-1]
+    def ma_cross(data, fast_ma, slow_ma):
+    signals = pd.Series(index=data.index, dtype=int)
+    positions = 0
+
+    # Calculate fast and slow moving averages
+    fast_ma_series = data.rolling(window=fast_ma).mean()
+    slow_ma_series = data.rolling(window=slow_ma).mean()
+
+    # Determine signal and position at each timestamp
+    for i in range(1, len(data)):
+        if fast_ma_series.iloc[i] > slow_ma_series.iloc[i] and fast_ma_series.iloc[i-1] <= slow_ma_series.iloc[i-1]:
+            signals.iloc[i] = 1
+            positions += 1
+        elif fast_ma_series.iloc[i] < slow_ma_series.iloc[i] and fast_ma_series.iloc[i-1] >= slow_ma_series.iloc[i-1]:
+            signals.iloc[i] = -1
+            positions -= 1
         else:
-            return signals + [1] * abs(positions[-1])
+            signals.iloc[i] = 0
+
+    # Adjust signals based on position at last timestamp
+    if positions == 0:
+        return signals
+    elif positions > 0:
+        return signals.append(pd.Series([-1]*positions, index=signals.index[-positions:]))
+    else:
+        return signals.append(pd.Series([1]*abs(positions), index=signals.index[-abs(positions):]))
 
     @property
     def fast_ma(self):
