@@ -28,6 +28,7 @@ from hummingbot.connector.utils import combine_to_hb_trading_pair
 from hummingbot.core.data_type.common import OrderType, TradeType
 from hummingbot.core.rate_oracle.rate_oracle import RateOracle
 from hummingbot.strategy.script_strategy_base import Decimal, OrderType, ScriptStrategyBase
+from hummingbot.strategy.white_rabbit import WhiteRabbitStrategy 
 
 
 #The code above is a simple buy-low-sell-high strategy that uses Moving Averages as a signal to buy or sell. 
@@ -41,7 +42,7 @@ from hummingbot.strategy.script_strategy_base import Decimal, OrderType, ScriptS
 # sell signal (i.e., Death Cross). Whenever there is no signal generated (i.e., neither Golden Cross nor Death Cross), 
 # we will just wait for one of them to be generated in order to execute our trade (buy or sell).
 
-class buyLowSellHigh(ScriptStrategyBase):
+class MACross(WhiteRabbitStrategy):
     markets = {"binance": {"BTC-BUSD"}}
     #: pingpong is a variable to allow alternating between buy & sell signals
     pingpong = 0
@@ -54,8 +55,8 @@ class buyLowSellHigh(ScriptStrategyBase):
     de_fast_ma = deque([], maxlen=50)
     de_slow_ma = deque([], maxlen=200)
 
-    def on_tick(self):
-        p = self.connectors["binance"].get_price("BTC-BUSD", True)
+    def on_tick(self, data):
+        p = data["binance"]["BTC-BUSD"]["price"]
 
         #: with every tick, the new price of the trading_pair will be appended to the deque and MA will be calculated
         self.de_fast_ma.append(p)
@@ -66,7 +67,6 @@ class buyLowSellHigh(ScriptStrategyBase):
         #: logic for golden cross
         if (fast_ma > slow_ma) & (self.pingpong == 0):
             self.buy(
-                connector_name="binance",
                 trading_pair="BTC-BUSD",
                 amount=Decimal(0.01),
                 order_type=OrderType.MARKET,
@@ -77,7 +77,6 @@ class buyLowSellHigh(ScriptStrategyBase):
         #: logic for death cross
         elif (slow_ma > fast_ma) & (self.pingpong == 1):
             self.sell(
-                connector_name="binance",
                 trading_pair="BTC-BUSD",
                 amount=Decimal(0.01),
                 order_type=OrderType.MARKET,

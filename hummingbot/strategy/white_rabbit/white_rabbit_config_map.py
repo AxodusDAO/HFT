@@ -11,6 +11,7 @@ from hummingbot.client.config.config_validators import (
     validate_market_trading_pair,
 )
 from hummingbot.client.config.config_var import ConfigVar
+from hummingbot.core.event.events import TradeType
 from hummingbot.client.settings import AllConnectorSettings, required_exchanges
 
 
@@ -214,18 +215,46 @@ white_rabbit_config_map = {
                   prompt=ma_cross_enabled_prompt,
                   validator=validate_ma_cross_enabled,
                   on_validated=on_validated_ma_cross_enabled,
-                  default="n",
-                  prompt_on_new=True),
+                  default=False),
+
     "fast_ma":
         ConfigVar(key="fast_ma",
-                  prompt=None,
-                  validator=validate_int,
-                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value == "y"),
+                  prompt="Enter the fast MA time period >>> ",
+                  validator=lambda v: validate_int(v, min_value=1),
+                  default=None),
+
     "slow_ma":
         ConfigVar(key="slow_ma",
-                  prompt=None,
-                  validator=validate_int,
-                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value == "y"),    
+                  prompt="Enter the slow MA time period >>> ",
+                  validator=lambda v: validate_int(v, min_value=1),
+                  default=None), 
+    "rsi_enabled_config_var": 
+        ConfigVar( key="rsi_enabled",
+                  prompt="Enable Relative Strength Index (RSI) indicator? (y/n) >>> ",
+                  type_str="bool",
+                  default=False),
+    "rsi_timeframe_config_var": 
+        ConfigVar(key="rsi_timeframe",
+                  prompt="Enter the RSI timeframe (e.g. 15m, 1h, 1d) >>> ",
+                  type_str="str",
+                  default="1h"),
+    "rsi_length_config_var":
+        ConfigVar(key="rsi_length",
+                  prompt="Enter the RSI time period >>> ",
+                  type_str="int",
+                  default=14),
+
+    "rsi_oversold_level_config_var":
+        ConfigVar(key="rsi_oversold_level",
+                  prompt="Enter the RSI oversold level >>> ",
+                  type_str="decimal",
+                  default=30),
+
+    "rsi_overbought_level_config_var": 
+        ConfigVar(key="rsi_overbought_level",
+                  prompt="Enter the RSI overbought level >>> ",
+                  type_str="decimal",
+                  default=70),   
     "moving_price_band_enabled":
         ConfigVar(key="moving_price_band_enabled",
                   prompt="Would you like to enable moving price floor and ceiling? (Yes/No) >>> ",

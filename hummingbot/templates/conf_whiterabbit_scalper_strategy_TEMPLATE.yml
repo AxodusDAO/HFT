@@ -76,13 +76,14 @@ inventory_range_multiplier: null
 inventory_price: null
 
 # RSI Config Variables
-timeframe: null
-rsi_period: null
-rsi_buy_signal: null
-rsi_sell_signal: null
+rsi_enabled: null
+rsi_timeframe: null
+rsi_length: null
+rsi_oversold_level: null
+rsi_overbought_level: null
 
 # MA Cross Config Variables - cross Moving Averange
-ma_cross_enable: true
+ma_cross_enabled: true
 fast_ma: null
 slow_ma: null
 # Number of levels of orders to place on each side of the order book.
