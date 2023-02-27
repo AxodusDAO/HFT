@@ -151,27 +151,27 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self.c_add_markets([market_info.market])
 
     def ma_cross(self, data, ping_pong_balance):
-    signals = []
-    positions = ping_pong_balance
-    fast_ma = self.fast_ma
-    slow_ma = self.slow_ma
-    
-    for i in range(1, len(data)):
-        if data[fast_ma][i] > data[slow_ma][i] and data[fast_ma][i-1] <= data[slow_ma][i-1]:
-            if positions <= 0:
-                signals.append(1)
-            else:
-                signals.append(0)
-            positions += 1
+        signals = []
+        positions = ping_pong_balance
+        fast_ma = self.fast_ma
+        slow_ma = self.slow_ma
         
-        elif data[fast_ma][i] < data[slow_ma][i] and data[fast_ma][i-1] >= data[slow_ma][i-1]:
-            if positions >= 0:
-                signals.append(-1)
+        for i in range(1, len(data)):
+            if data[fast_ma][i] > data[slow_ma][i] and data[fast_ma][i-1] <= data[slow_ma][i-1]:
+                if positions <= 0:
+                    signals.append(1)
+                else:
+                    signals.append(0)
+                positions += 1
+            
+            elif data[fast_ma][i] < data[slow_ma][i] and data[fast_ma][i-1] >= data[slow_ma][i-1]:
+                if positions >= 0:
+                    signals.append(-1)
+                else:
+                    signals.append(0)
+                positions -= 1
             else:
                 signals.append(0)
-            positions -= 1
-        else:
-            signals.append(0)
             
     return signals, positions
 
