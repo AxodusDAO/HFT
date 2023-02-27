@@ -183,8 +183,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     @fast_ma.setter
     def fast_ma(self, value):
-        if value <= 0:
-            raise ValueError("fast_ma must be positive")
         self._fast_ma = value
 
     @property
@@ -193,9 +191,8 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     @slow_ma.setter
     def slow_ma(self, value):
-        if value <= 0:
-            raise ValueError("slow_ma must be positive")
         self._slow_ma = value
+        self._compute_signal()
 
     @property
     def ma_cross(self, data):
