@@ -922,6 +922,61 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                 [f"  Ping-pong removed {self._filled_sells_balance} sell orders."]
             )
     
+    cdef c_apply_ma_cross(self, proposal):
+        fast_ma = self._fast_ma.compute()
+        slow_ma = self._slow_ma.compute()
+
+        if fast_ma > slow_ma:
+            proposal.sells = []
+        elif slow_ma > fast_ma:
+            proposal.buys = []
+
+    cdef c_apply_fast_ma(self, proposal):
+        price = self.get_price()
+        self._fast_ma.add_sample(price)
+
+    cdef c_apply_slow_ma(self, proposal):
+        price = self.get_price()
+        self._slow_ma.add_sample(price)
+
+    cdef c_apply_rsi_enabled(self, proposal):
+        if self._rsi_enabled:
+            if self._rsi_value > self._rsi_overbought_level:
+                proposal.buys = []
+            elif self._rsi_value < self._rsi_oversold_level:
+                proposal.sells = []
+
+    cdef c_apply_rsi_timeframe(self, proposal):
+        if self._rsi_enabled:
+            self._rsi_timeframe = self._rsi_timeframe.lower()
+            if self._rsi_timeframe not in ["1m", "5m", "15m", "1h", "6h", "1d"]:
+                raise ValueError(f"Invalid RSI timeframe: {self._rsi_timeframe}")
+            timeframe_seconds = {
+                "1m": 60,
+                "5m": 300,
+                "15m": 900,
+                "1h": 3600,
+                "6h": 21600,
+                "1d": 86400
+            }
+            self._rsi_length = min(self._rsi_length, self.get_max_window_size(timeframe_seconds[self._rsi_timeframe]))
+            self._rsi_timeframe_secs = timeframe_seconds[self._rsi_timeframe]
+
+    cdef c_apply_rsi_length(self, proposal):
+        if self._rsi_enabled:
+            self._rsi_length = min(self._rsi_length, self.get_max_window_size(self._rsi_timeframe_secs))
+
+    cdef c_apply_rsi_oversold_level(self, proposal):
+        if self._rsi_enabled:
+            self._rsi_oversold_level = max(0, min(100, self._rsi_oversold_level))
+            self._rsi_overbought_level = max(self._rsi_oversold_level + 1, min(100, self._rsi_overbought_level))
+
+    cdef c_apply_rsi_overbought_level(self, proposal):
+        if self._rsi_enabled:
+            self._rsi_overbought_level = max(self._rsi_oversold_level + 1, min(100, self._rsi_overbought_level))
+            self._rsi_oversold_level = max(0, min(self._rsi_overbought_level - 1, self._rsi_oversold_level))
+
+
     cdef c_apply_order_price_modifiers(self, object proposal):
         if self._order_optimization_enabled:
             self.c_apply_order_optimization(proposal)
