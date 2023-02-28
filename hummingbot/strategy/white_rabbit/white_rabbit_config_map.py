@@ -284,27 +284,27 @@ white_rabbit_config_map = {
                   prompt="Enter the timeframe (e.g 1m, 15m, 1h, 1d) >>> ",
                   validator=validate_rsi_config,
                   type_str="str",
-                  default="1h"),
+                  default=None),
     "rsi_length":
         ConfigVar(key="rsi_length",
                   prompt="Enter the RSI time period >>> ",
                   validator=validate_rsi_config,
                   type_str="int",
-                  default=14),
+                  default=None),
 
     "rsi_oversold_level":
         ConfigVar(key="rsi_oversold_level",
                   prompt="Enter the RSI oversold level >>> ",
                   validator=validate_rsi_config,
                   type_str="int",
-                  default=20),
+                  default=None),
 
     "rsi_overbought_level": 
         ConfigVar(key="rsi_overbought_level",
                   prompt="Enter the RSI overbought level >>> ",
                   validator=validate_rsi_config,
                   type_str="int",
-                  default=80),   
+                  default=None),   
 
     "moving_price_band_enabled":
         ConfigVar(key="moving_price_band_enabled",

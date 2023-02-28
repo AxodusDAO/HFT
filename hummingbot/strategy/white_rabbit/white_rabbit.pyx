@@ -27,7 +27,7 @@ from .inventory_skew_calculator cimport c_calculate_bid_ask_ratios_from_base_ass
 from .inventory_skew_calculator import calculate_total_order_size
 from .white_rabbit_order_tracker import WhiteRabbitOrderTracker
 from .moving_price_band import MovingPriceBand
-from .ma_cross import MACross
+from hummingbot.indicators.moving_average import MovingAverage
 from hummingbot.indicators.rsi import RSIIndicator
 
 NaN = float("nan")
@@ -87,14 +87,15 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     moving_price_band: Optional[MovingPriceBand] = None,
-                    ma_cross_enabled: bool = False,
-                    fast_ma: int = 50,
-                    slow_ma: int = 200,
+                    mma_cross_enabled: bool = False,
+                    fast_ma: int = None,
+                    slow_ma: int = None,
+                    ma_type: str = "SMA",
                     rsi_enabled: bool = False,
-                    rsi_timeframe: str = "1h",
-                    rsi_length: int = 14,
-                    rsi_oversold_level: float = 30,
-                    rsi_overbought_level: float = 70,
+                    rsi_timeframe: str = None,
+                    rsi_length: int = None,
+                    rsi_oversold_level: int = None,
+                    rsi_overbought_level: int = None,
                     ):
         if order_override is None:
             order_override = {}
@@ -156,6 +157,15 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._ma_cross_enabled = ma_cross_enabled
         self._fast_ma = fast_ma
         self._slow_ma = slow_ma
+        self._ma_type = ma_type
+
+        if self._ma_type == "SMA":
+            self._ma_indicator = MovingAverageIndicator(self._fast_ma, self._slow_ma, MovingAverage.SMA)
+        elif self._ma_type == "EMA":
+            self._ma_indicator = MovingAverageIndicator(self._fast_ma, self._slow_ma, MovingAverage.EMA)
+        elif self._ma_type == "WMA":
+            self._ma_indicator = MovingAverageIndicator(self._fast_ma, self._slow_ma, MovingAverage.WMA)
+
         self._rsi_enabled = rsi_enabled
         self._rsi_timeframe = rsi_timeframe
         self._rsi_length = rsi_length
@@ -165,15 +175,19 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     @property
     def ma_cross_enabled(self) -> bool:
-        return self.ma_cross_enabled
+        return self._ma_cross_enabled
 
     @property
     def fast_ma(self) -> int:
-        return self.fast_ma
+        return self._fast_ma
 
     @property
     def slow_ma(self) -> int:
-        return self.slow_ma
+        return self._slow_ma
+
+    @property
+    def ma_type(self) -> str:
+        return self._ma_type
 
     @property
     def rsi_enabled(self) -> bool:
@@ -188,11 +202,11 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         return self.rsi_length
 
     @property
-    def rsi_oversold_level(self) -> float:
+    def rsi_oversold_level(self) -> int:
         return self.rsi_oversold_level
 
     @property
-    def rsi_overbought_level(self) -> float:
+    def rsi_overbought_level(self) -> int:
         return self.rsi_overbought_level
 
     @property
@@ -921,15 +935,37 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                 [f"  Ping-pong removed {self._filled_sells_balance} sell orders."]
             )
     
-    cdef c_apply_ma_cross(self, proposal):
-        fast_ma = self._fast_ma.compute()
-        slow_ma = self._slow_ma.compute()
+    def c_apply_ma_cross(self, proposal):
+        if self._ma_indicator is None:
+            return
+
+        fast_ma = self._ma_indicator.fast_ma.compute()
+        slow_ma = self._ma_indicator.slow_ma.compute()
 
         if fast_ma > slow_ma:
             proposal.sells = []
         elif slow_ma > fast_ma:
             proposal.buys = []
 
+    def c_apply_ma(self, proposal):
+        if self._ma_indicator is None:
+            return
+
+        price = self.get_price()
+        self._ma_indicator.add_sample(price)
+
+    def calculate_ma(self, proposal):
+        price = self.get_price()
+        self._ma_indicator.add_sample(price)
+        fast_ma = self._ma_indicator.get_fast_ma()
+        slow_ma = self._ma_indicator.get_slow_ma()
+        crossover = get_crossover(fast_ma, slow_ma, price)
+        balance_level = get_balance_level(self._wallet.get_balance(), price, fast_ma, slow_ma)
+        if crossover[0]:
+            proposal.buys.append(MACross(balance_level, TradeType.BUY))
+        elif crossover[1]:
+            proposal.sells.append(MACross(balance_level, TradeType.SELL))
+            
     cdef c_apply_fast_ma(self, proposal):
         price = self.get_price()
         self._fast_ma.add_sample(price)

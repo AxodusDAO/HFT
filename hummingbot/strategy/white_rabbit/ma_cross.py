@@ -1,41 +1,33 @@
-from typing import Tuple
-from decimal import Decimal
+from typing import Tuple 
+from decimal import Decimal 
+from dataclasses import dataclass 
+from hummingbot.core.event.events import TradeType
 
+@dataclass 
+class MACross: 
+    balance_level: int
+    trade_type: TradeType
 
-class MACross:
-    def __init__(
-        self,
-        market_info: Tuple[str, str],
-        max_order_age: float,
-        minimum_spread: Decimal,
-        ping_pong_enabled: bool,
-        fast_ma: int,
-        slow_ma: int,
-    ):
-        self.market_info = market_info
-        self.max_order_age = max_order_age
-        self.minimum_spread = minimum_spread
-        self.ping_pong_enabled = ping_pong_enabled
-        self.fast_ma = fast_ma
-        self.slow_ma = slow_ma
-
-    def ma_cross(self, fast_ma: Decimal, slow_ma: Decimal) -> int:
-        """
-        Determines whether to enter a long position, short position or do nothing.
-
-        :param fast_ma: value of the fast moving average
-        :param slow_ma: value of the slow moving average
-        :return: -1 for short, 0 for nothing, 1 for long
-        """
-        if fast_ma > slow_ma:
-            pingpong = 1
-        elif fast_ma < slow_ma:
-            pingpong = -1
-        else:
-            pingpong = 0
-
-        # Ping pong enabled and cross detected
-        if self.ping_pong_enabled and pingpong != 0:
-            return pingpong
-        else:
+    def get_balance_level(balance: Decimal, price: Decimal, fast_ma: Decimal, slow_ma: Decimal) -> int:
+        if balance <= 0:
+            return -1
+        elif fast_ma > slow_ma and price < fast_ma:
             return 0
+        elif slow_ma > fast_ma and price > fast_ma:
+            return 0
+        else:
+            return 1
+
+    def get_crossover(fast_ma: Decimal, slow_ma: Decimal, price: Decimal) -> Tuple[bool, bool]:
+        golden_cross = False
+        death_cross = False
+        if fast_ma > slow_ma:
+            golden_cross = True
+        elif slow_ma > fast_ma:
+            death_cross = True
+        if golden_cross and price < fast_ma:
+            return (True, False)
+        elif death_cross and price > fast_ma:
+            return (False, True)
+        else:
+            return (False, False)
