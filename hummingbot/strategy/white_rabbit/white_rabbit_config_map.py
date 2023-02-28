@@ -112,14 +112,35 @@ def ma_cross_enabled_prompt() -> str:
 def validate_ma_cross_enabled(value: str) -> Optional[str]:
     if value.lower() not in {"yes", "no"}:
         return "Invalid input. Please enter 'yes' or 'no'"
+
+def ma_type_prompt() -> str:
+    return "Select Moving Average type (SMA/EMA/WMA) >>> "
+
+def validate_ma_type(value: str) -> Optional[str]:
+    if value.upper() not in {"SMA", "EMA", "WMA"}:
+        return "Invalid input. Please enter 'SMA', 'EMA', or 'WMA'"
         
 def on_validated_ma_cross_enabled(value: str):
     if value.lower() == "yes":
-        white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST MA time period >>> "
-        white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW MA time period >>> "
+        if white_rabbit_config_map["ma_type"].value.upper() == "SMA":
+            white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST SMA time period >>> "
+            white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW SMA time period >>> "
+        elif white_rabbit_config_map["ma_type"].value.upper() == "EMA":
+            white_rabbit_config_map["fast_ema"].prompt = "Enter the FAST EMA time period >>> "
+            white_rabbit_config_map["slow_ema"].prompt = "Enter the SLOW EMA time period >>> "
+        elif white_rabbit_config_map["ma_type"].value.upper() == "WMA":
+            white_rabbit_config_map["fast_wma"].prompt = "Enter the FAST WMA time period >>> "
+            white_rabbit_config_map["slow_wma"].prompt = "Enter the SLOW WMA time period >>> "
     else:
-        white_rabbit_config_map["fast_ma"].value = None
-        white_rabbit_config_map["slow_ma"].value = None
+        if white_rabbit_config_map["ma_type"].value.upper() == "SMA":
+            white_rabbit_config_map["fast_ma"].value = None
+            white_rabbit_config_map["slow_ma"].value = None
+        elif white_rabbit_config_map["ma_type"].value.upper() == "EMA":
+            white_rabbit_config_map["fast_ema"].value = None
+            white_rabbit_config_map["slow_ema"].value = None
+        elif white_rabbit_config_map["ma_type"].value.upper() == "WMA":
+            white_rabbit_config_map["fast_wma"].value = None
+            white_rabbit_config_map["slow_wma"].value = None
 
 def validate_rsi_config(value):
     if not value.get("rsi_enabled"):
@@ -255,24 +276,50 @@ white_rabbit_config_map = {
                   type_str="decimal",
                   default=Decimal("-1"),
                   validator=validate_price_floor_ceiling),
+# Golden / Death Cross strategy
     "ma_cross_enabled":
         ConfigVar(key="ma_cross_enabled",
                   prompt=ma_cross_enabled_prompt,
                   validator=validate_ma_cross_enabled,
                   on_validated=on_validated_ma_cross_enabled,
                   default=False),
-
+# SMA
     "fast_ma":
         ConfigVar(key="fast_ma",
-                  prompt="Enter the fast MA time period >>> ",
-                  validator=lambda v: validate_int(v, min_value=1),
-                  default=None),
+                  prompt="Enter the FAST SMA time period >>> ",
+                  validator=validate_int,
+                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "SMA"),
 
     "slow_ma":
         ConfigVar(key="slow_ma",
-                  prompt="Enter the slow MA time period >>> ",
-                  validator=lambda v: validate_int(v, min_value=1),
-                  default=None), 
+                  prompt="Enter the SLOW SMA time period >>> ",
+                  validator=validate_int,
+                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "SMA"),
+# EMA    
+    "fast_ma":
+        ConfigVar(key="fast_ema",
+                  prompt="Enter the FAST EMA time period >>> ",
+                  validator=validate_int,
+                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "EMA"),
+
+    "slow_ma":
+        ConfigVar(key="slow_ema",
+                  prompt="Enter the SLOW EMA time period >>> ",
+                  validator=validate_int,
+                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "EMA"),
+# EMA    
+    "fast_ma":
+        ConfigVar(key="fast_wma",
+                  prompt="Enter the FAST WMA time period >>> ",
+                  validator=validate_int,
+                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "WMA"),
+
+    "slow_ma":
+        ConfigVar(key="slow_ema",
+                  prompt="Enter the SLOW WMA time period >>> ",
+                  validator=validate_int,
+                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "WMA"),
+#RSI strategy                  
     "rsi_enabled": 
         ConfigVar( key="rsi_enabled",
                    prompt=rsi_enabled_prompt,
