@@ -247,34 +247,39 @@ white_rabbit_config_map = {
                   prompt="Enter the slow MA time period >>> ",
                   validator=lambda v: validate_int(v, min_value=1),
                   default=None), 
-    "rsi_enabled_config_var": 
+    "rsi_enabled": 
         ConfigVar( key="rsi_enabled",
                    prompt=rsi_enabled_prompt,
                   validator=validate_rsi_enabled,
                   on_validated=on_validated_rsi_enabled,
                   default=False),
-    "rsi_timeframe_config_var": 
+    "rsi_timeframe": 
         ConfigVar(key="rsi_timeframe",
                   prompt="Enter the RSI timeframe (e.g. 15m, 1h, 1d) >>> ",
+                  validate=validate_rsi_enabled,
                   type_str="str",
                   default="1h"),
-    "rsi_length_config_var":
+    "rsi_length":
         ConfigVar(key="rsi_length",
                   prompt="Enter the RSI time period >>> ",
+                  validate=validate_rsi_enabled,
                   type_str="int",
                   default=14),
 
-    "rsi_oversold_level_config_var":
+    "rsi_oversold_level":
         ConfigVar(key="rsi_oversold_level",
                   prompt="Enter the RSI oversold level >>> ",
+                  validate=validate_rsi_enabled,
                   type_str="decimal",
                   default=20),
 
-    "rsi_overbought_level_config_var": 
+    "rsi_overbought_level": 
         ConfigVar(key="rsi_overbought_level",
                   prompt="Enter the RSI overbought level >>> ",
+                  validate=validate_rsi_enabled,
                   type_str="decimal",
                   default=80),   
+
     "moving_price_band_enabled":
         ConfigVar(key="moving_price_band_enabled",
                   prompt="Would you like to enable moving price floor and ceiling? (Yes/No) >>> ",
