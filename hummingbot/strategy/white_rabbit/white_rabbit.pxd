@@ -58,10 +58,11 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         bint _should_wait_order_cancel_confirmation
 
         object _moving_price_band
-        object _ma_cross_enabled
+        bint _ma_cross_enabled
+        object _ma_type
         object _fast_ma
         object _slow_ma
-        object _rsi_enabled
+        bint _rsi_enabled
         object _rsi_timeframe
         object _rsi_length
         object _rsi_overbought_level
@@ -89,9 +90,9 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     cdef c_execute_orders_proposal(self, object proposal)
     cdef set_timers(self)
     cdef c_apply_moving_price_band(self, object proposal)
-    cdef c_apply_ma_cross(self, proposal)
-    cdef c_apply_fast_ma(self, proposal)
-    cdef c_apply_slow_ma(self, proposal)
+    cdef c_apply_ma_type(self, object proposal)
+    cdef c_apply_fast_ma(self, object proposal)
+    cdef c_apply_slow_ma(self, object proposal)
     cdef c_apply_rsi_enabled(self, proposal)
     cdef c_apply_rsi_timeframe(self, proposal)
     cdef c_apply_rsi_length(self, proposal)
