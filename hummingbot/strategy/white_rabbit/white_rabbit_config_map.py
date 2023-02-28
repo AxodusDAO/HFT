@@ -249,8 +249,9 @@ white_rabbit_config_map = {
                   default=None), 
     "rsi_enabled_config_var": 
         ConfigVar( key="rsi_enabled",
-                  prompt="Enable Relative Strength Index (RSI) indicator? (y/n) >>> ",
-                  type_str="bool",
+                   prompt=rsi_enabled_prompt,
+                  validator=validate_rsi_enabled,
+                  on_validated=on_validated_rsi_enabled,
                   default=False),
     "rsi_timeframe_config_var": 
         ConfigVar(key="rsi_timeframe",
