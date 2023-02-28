@@ -935,7 +935,30 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             self._ping_pong_warning_lines.extend(
                 [f"  Ping-pong removed {self._filled_sells_balance} sell orders."]
             )
-    
+    cdef c_apply_ma_type(self, proposal):
+        if self._ma_type == "SMA":
+            self._sma.add_sample(self.get_price())
+        elif self._ma_type == "EMA":
+            self._ema.add_sample(self.get_price())
+        elif self._ma_type == "WMA":
+            self._wma.add_sample(self.get_price())
+        else:
+            raise ValueError(f"Invalid Moving Average type: {self._ma_type}")
+
+        fast_ma = self._fast_ma.compute()
+        slow_ma = self._slow_ma.compute()
+
+        self.logger().info(f"MA levels: {self._ma_type}({self._fast_ma.period}), {self._ma_type}({self._slow_ma.period}): {fast_ma:.8f}, {slow_ma:.8f}")
+
+        if self._ma_cross_enabled:
+            self.c_apply_ma_cross(proposal)
+
+        if self._fast_ma_enabled:
+            self.c_apply_fast_ma(proposal)
+
+        if self._slow_ma_enabled:
+            self.c_apply_slow_ma(proposal)
+
     def c_apply_ma_cross(self, proposal):
         if self._ma_indicator is None:
             return
