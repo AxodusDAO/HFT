@@ -90,7 +90,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     cdef c_execute_orders_proposal(self, object proposal)
     cdef set_timers(self)
     cdef c_apply_moving_price_band(self, object proposal)
-    cdef c_apply_ma_type(self)
+    cdef c_apply_ma_type(self, proposal, ma_type: str)
     cdef c_apply_fast_ma(self, object proposal)
     cdef c_apply_slow_ma(self, object proposal)
     cdef c_apply_rsi_enabled(self, proposal)
