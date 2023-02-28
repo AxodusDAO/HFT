@@ -281,7 +281,7 @@ white_rabbit_config_map = {
                   default=False),
     "rsi_timeframe": 
         ConfigVar(key="rsi_timeframe",
-                  prompt=white_rabbit_config_map["rsi_timeframe"].prompt,
+                  prompt="Enter the timeframe (e.g 1m, 15m, 1h, 1d) >>> ",
                   validator=validate_rsi_config,
                   type_str="str",
                   default="1h"),
