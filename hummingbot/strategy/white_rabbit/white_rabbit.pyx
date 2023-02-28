@@ -166,35 +166,35 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     @property
     def ma_cross_enabled(self) -> bool:
-        return self.config_map.get(MA_CROSS_ENABLED, False)
+        return self.ma_cross_enabled
 
     @property
     def fast_ma(self) -> int:
-        return self.config_map.get(FAST_MA, 50)
+        return self.fast_ma
 
     @property
     def slow_ma(self) -> int:
-        return self.config_map.get(SLOW_MA, 200)
+        return self.slow_ma
 
     @property
     def rsi_enabled(self) -> bool:
-        return self.config_map.get(RSI_ENABLED, False)
+        return self.rsi_enabled
 
     @property
     def rsi_timeframe(self) -> str:
-        return self.config_map.get(RSI_TIMEFRAME, "1h")
+        return self.rsi_timeframe
 
     @property
     def rsi_length(self) -> int:
-        return self.config_map.get(RSI_LENGTH, 14)
+        return self.rsi_length
 
     @property
     def rsi_oversold_level(self) -> float:
-        return self.config_map.get(RSI_OVERSOLD_LEVEL, 30)
+        return self.rsi_oversold_level
 
     @property
     def rsi_overbought_level(self) -> float:
-        return self.config_map.get(RSI_OVERBOUGHT_LEVEL, 70)
+        return self.rsi_overbought_level
 
     @property
     def market_info(self) -> MarketTradingPairTuple:
