@@ -21,7 +21,6 @@ from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 from hummingbot.strategy.order_book_asset_price_delegate cimport OrderBookAssetPriceDelegate
 from hummingbot.strategy.strategy_base import StrategyBase
 from hummingbot.strategy.utils import order_age
-from hummingbot.core.data_type.order_spec import OrderSpec
 from .data_types import PriceSize, Proposal
 from .inventory_cost_price_delegate import InventoryCostPriceDelegate
 from .inventory_skew_calculator cimport c_calculate_bid_ask_ratios_from_base_asset_ratio
