@@ -978,17 +978,20 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         price = self.get_price()
         self._ma_indicator.add_sample(price)
 
-    def calculate_ma(self, proposal):
+   def calculate_ma(self, proposal):
         price = self.get_price()
         self._ma_indicator.add_sample(price)
-        fast_ma = self._ma_indicator.get_fast_ma()
-        slow_ma = self._ma_indicator.get_slow_ma()
-        crossover = get_crossover(fast_ma, slow_ma, price)
-        balance_level = get_balance_level(self._wallet.get_balance(), price, fast_ma, slow_ma)
-        if crossover[0]:
-            proposal.buys.append(MACross(balance_level, TradeType.BUY))
-        elif crossover[1]:
-            proposal.sells.append(MACross(balance_level, TradeType.SELL))
+# Check if we have enough samples to calculate the crossover
+        if self._ma_indicator.has_enough_samples():
+            fast_ma = self._ma_indicator.get_fast_ma()
+            slow_ma = self._ma_indicator.get_slow_ma()
+            crossover = get_crossover(fast_ma, slow_ma, price)
+            balance_level = get_balance_level(self._wallet.get_balance(), price, fast_ma, slow_ma)
+
+            if crossover[0]:
+                proposal.buys.append(MACross(balance_level, TradeType.BUY))
+            elif crossover[1]:
+                proposal.sells.append(MACross(balance_level, TradeType.SELL))
 
     cdef c_apply_fast_ma(self, proposal):
         price = self.get_price()
