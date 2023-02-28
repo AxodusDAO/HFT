@@ -978,13 +978,13 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         price = self.get_price()
         self._ma_indicator.add_sample(price)
 
-   def calculate_ma(self, proposal):
+    def calculate_ma(self, proposal):
         price = self.get_price()
         self._ma_indicator.add_sample(price)
-# Check if we have enough samples to calculate the crossover
+
+        # Check if we have enough samples to calculate the crossover
         if self._ma_indicator.has_enough_samples():
-            fast_ma = self._ma_indicator.get_fast_ma()
-            slow_ma = self._ma_indicator.get_slow_ma()
+            fast_ma, slow_ma = self._ma_indicator.get_fast_slow_ma()
             crossover = get_crossover(fast_ma, slow_ma, price)
             balance_level = get_balance_level(self._wallet.get_balance(), price, fast_ma, slow_ma)
 
