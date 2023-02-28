@@ -27,6 +27,7 @@ from .inventory_skew_calculator cimport c_calculate_bid_ask_ratios_from_base_ass
 from .inventory_skew_calculator import calculate_total_order_size
 from .white_rabbit_order_tracker import WhiteRabbitOrderTracker
 from .moving_price_band import MovingPriceBand
+from .ma_cross import MACross
 from hummingbot.indicators.moving_average import MovingAverageIndicator
 from hummingbot.indicators.rsi import RSIIndicator
 
@@ -87,7 +88,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     moving_price_band: Optional[MovingPriceBand] = None,
-                    mma_cross_enabled: bool = False,
+                    ma_cross_enabled: bool = False,
                     fast_ma: int = None,
                     slow_ma: int = None,
                     ma_type: str = "SMA",
