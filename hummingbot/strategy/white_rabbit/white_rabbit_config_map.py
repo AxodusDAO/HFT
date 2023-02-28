@@ -121,6 +121,32 @@ def on_validated_ma_cross_enabled(value: str):
         white_rabbit_config_map["fast_ma"].value = None
         white_rabbit_config_map["slow_ma"].value = None
 
+def validate_rsi_config(value):
+    if not value.get("rsi_enabled"):
+        return True
+    timeframe = value.get("rsi_timeframe")
+    length = value.get("rsi_length")
+    oversold_level = value.get("rsi_oversold_level")
+    overbought_level = value.get("rsi_overbought_level")
+
+    if not validate_timeframe(timeframe):
+        raise ValidationError(f"Invalid timeframe: {timeframe}")
+
+    if not isinstance(length, int) or length < 1:
+        raise ValidationError("RSI length must be a positive integer")
+
+    if not (0 <= oversold_level <= 100):
+        raise ValidationError("RSI oversold level must be between 0 and 100")
+
+    if not (0 <= overbought_level <= 100):
+        raise ValidationError("RSI overbought level must be between 0 and 100")
+
+    if oversold_level >= overbought_level:
+        raise ValidationError("RSI oversold level must be lower than RSI overbought level")
+
+    return True
+
+        
 def rsi_enabled_prompt() -> str:
     return "Relative Strengh Index - RSI (enable/disable) >>> "
 
@@ -255,29 +281,29 @@ white_rabbit_config_map = {
                   default=False),
     "rsi_timeframe": 
         ConfigVar(key="rsi_timeframe",
-                  prompt="Enter the RSI timeframe (e.g. 15m, 1h, 1d) >>> ",
-                  validator=validate_rsi_enabled,
+                  prompt=white_rabbit_config_map["rsi_timeframe"].prompt,
+                  validator=validate_rsi_config,
                   type_str="str",
                   default="1h"),
     "rsi_length":
         ConfigVar(key="rsi_length",
                   prompt="Enter the RSI time period >>> ",
-                  validator=validate_rsi_enabled,
+                  validator=validate_rsi_config,
                   type_str="int",
                   default=14),
 
     "rsi_oversold_level":
         ConfigVar(key="rsi_oversold_level",
                   prompt="Enter the RSI oversold level >>> ",
-                  validator=validate_rsi_enabled,
-                  type_str="decimal",
+                  validator=validate_rsi_config,
+                  type_str="int",
                   default=20),
 
     "rsi_overbought_level": 
         ConfigVar(key="rsi_overbought_level",
                   prompt="Enter the RSI overbought level >>> ",
-                  validator=validate_rsi_enabled,
-                  type_str="decimal",
+                  validator=validate_rsi_config,
+                  type_str="int",
                   default=80),   
 
     "moving_price_band_enabled":
