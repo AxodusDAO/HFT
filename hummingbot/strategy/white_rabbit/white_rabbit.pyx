@@ -28,6 +28,8 @@ from .inventory_skew_calculator cimport c_calculate_bid_ask_ratios_from_base_ass
 from .inventory_skew_calculator import calculate_total_order_size
 from .white_rabbit_order_tracker import WhiteRabbitOrderTracker
 from .moving_price_band import MovingPriceBand
+from .ma_cross import MACross
+from hummingbot.indicators.rsi import RSIIndicator
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
@@ -162,73 +164,37 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._rsi_overbought_level = rsi_overbought_level
         self.c_add_markets([market_info.market])
 
-    def ma_cross(data, fast_ma, slow_ma):
-        signals = pd.Series(index=data.index, dtype=int)
-        positions = 0
-
-        # Calculate fast and slow moving averages
-        fast_ma_series = data.rolling(window=fast_ma).mean()
-        slow_ma_series = data.rolling(window=slow_ma).mean()
-
-        # Determine signal and position at each timestamp
-        for i in range(1, len(data)):
-            if fast_ma_series.iloc[i] > slow_ma_series.iloc[i] and fast_ma_series.iloc[i-1] <= slow_ma_series.iloc[i-1]:
-                signals.iloc[i] = 1
-                positions += 1
-            elif fast_ma_series.iloc[i] < slow_ma_series.iloc[i] and fast_ma_series.iloc[i-1] >= slow_ma_series.iloc[i-1]:
-                signals.iloc[i] = -1
-                positions -= 1
-            else:
-                signals.iloc[i] = 0
-
-        # Adjust signals based on position at last timestamp
-        if positions == 0:
-            return signals
-        elif positions > 0:
-            return signals.append(pd.Series([-1]*positions, index=signals.index[-positions:]))
-        else:
-            return signals.append(pd.Series([1]*abs(positions), index=signals.index[-abs(positions):]))
+    @property
+    def ma_cross_enabled(self) -> bool:
+        return self.config_map.get(MA_CROSS_ENABLED, False)
 
     @property
-    def fast_ma(self):
-        return self._fast_ma
-
-    @fast_ma.setter
-    def fast_ma(self, value):
-        self._fast_ma = value
+    def fast_ma(self) -> int:
+        return self.config_map.get(FAST_MA, 50)
 
     @property
-    def slow_ma(self):
-        return self._slow_ma
-
-    @slow_ma.setter
-    def slow_ma(self, value):
-        self._slow_ma = value
+    def slow_ma(self) -> int:
+        return self.config_map.get(SLOW_MA, 200)
 
     @property
-    def ma_cross(self, data):
-        signals = []
-        positions = 0
-        fast_ma = self._fast_ma
-        slow_ma = self._slow_ma
-        for i in range(len(data)):
-            if i == 0:
-                continue
-            elif data[fast_ma][i] > data[slow_ma][i] and data[fast_ma][i-1] <= data[slow_ma][i-1]:
-                signals.append(1)
-                positions += 1
-            elif data[fast_ma][i] < data[slow_ma][i] and data[fast_ma][i-1] >= data[slow_ma][i-1]:
-                signals.append(-1)
-                positions -= 1
-            else:
-                signals.append(0)
+    def rsi_enabled(self) -> bool:
+        return self.config_map.get(RSI_ENABLED, False)
 
-        if positions == 0:
-            return signals
-        elif positions > 0:
-            return signals + [-1] * positions
-        else:
-            return signals + [1] * abs(positions)
+    @property
+    def rsi_timeframe(self) -> str:
+        return self.config_map.get(RSI_TIMEFRAME, "1h")
+
+    @property
+    def rsi_length(self) -> int:
+        return self.config_map.get(RSI_LENGTH, 14)
+
+    @property
+    def rsi_oversold_level(self) -> float:
+        return self.config_map.get(RSI_OVERSOLD_LEVEL, 30)
+
+    @property
+    def rsi_overbought_level(self) -> float:
+        return self.config_map.get(RSI_OVERBOUGHT_LEVEL, 70)
 
     @property
     def market_info(self) -> MarketTradingPairTuple:
