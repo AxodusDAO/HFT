@@ -161,11 +161,11 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._ma_type = ma_type
 
         if self._ma_type == "SMA":
-            self._ma_indicator = MovingAverageIndicator(self._fast_ma, self._slow_ma, MovingAverage.SMA)
+            self._ma_indicator = MovingAverageIndicator(self._fast_ma, self._slow_ma, MovingAverageType.SMA)
         elif self._ma_type == "EMA":
-            self._ma_indicator = MovingAverageIndicator(self._fast_ma, self._slow_ma, MovingAverage.EMA)
+            self._ma_indicator = MovingAverageIndicator(self._fast_ma, self._slow_ma, MovingAverageType.EMA)
         elif self._ma_type == "WMA":
-            self._ma_indicator = MovingAverageIndicator(self._fast_ma, self._slow_ma, MovingAverage.WMA)
+            self._ma_indicator = MovingAverageIndicator(self._fast_ma, self._slow_ma, MovingAverageType.WMA)
 
         self._rsi_enabled = rsi_enabled
         self._rsi_timeframe = rsi_timeframe
