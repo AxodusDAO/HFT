@@ -57,5 +57,3 @@ class MovingAverageIndicator:
         
         if ma_level is not None:
             print(f"{self.ma_type.value} MA level: {ma_level}") 
-
-
