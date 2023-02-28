@@ -107,19 +107,38 @@ def exchange_on_validated(value: str):
     required_exchanges.add(value)
 
 def ma_cross_enabled_prompt() -> str:
-    return "Enable Moving Average Crossover? (y/n) >>> "
+    return "Enable Moving Average Crossover? (yes/no) >>> "
 
 def validate_ma_cross_enabled(value: str) -> Optional[str]:
-    if value.lower() not in {"y", "n"}:
-        return "Invalid input. Please enter 'y' or 'n'"
+    if value.lower() not in {"yes", "no"}:
+        return "Invalid input. Please enter 'yes' or 'no'"
         
 def on_validated_ma_cross_enabled(value: str):
-    if value.lower() == "y":
-        white_rabbit_config_map["fast_ma"].prompt = "Enter the fast MA time period >>> "
-        white_rabbit_config_map["slow_ma"].prompt = "Enter the slow MA time period >>> "
+    if value.lower() == "yes":
+        white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST MA time period >>> "
+        white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW MA time period >>> "
     else:
         white_rabbit_config_map["fast_ma"].value = None
         white_rabbit_config_map["slow_ma"].value = None
+
+def rsi_enabled_prompt() -> str:
+    return "Relative Strengh Index - RSI (enable/disable) >>> "
+
+def validate_rsi_enabled(value: str) -> Optional[str]:
+    if value.lower() not in {"enable", "disable"}:
+        return "Invalid input. Please enter 'enable' or 'disable'"
+        
+def on_validated_rsi_enabled(value: str):
+    if value.lower() == "enable":
+        white_rabbit_config_map["rsi_timeframe"].prompt = "Enter the timeframe (e.g 1m, 15m, 1h, 1d) >>> "
+        white_rabbit_config_map["rsi_length"].prompt = "Length period (default = 14) >>> "
+        white_rabbit_config_map["rsi_oversold_level"].prompt = "Enter the oversold level (default = 20) >>> "
+        white_rabbit_config_map["rsi_overbought_level"].prompt = "Enter the overbought level (default = 80) >>> "
+    else:
+        white_rabbit_config_map["rsi_timeframe"].value = None
+        white_rabbit_config_map["rsi_length"].value = None
+        white_rabbit_config_map["rsi_oversold_level"].value = None
+        white_rabbit_config_map["rsi_overbought_level"].value = None
 
 def validate_decimal_list(value: str) -> Optional[str]:
     decimal_list = list(value.split(","))
@@ -248,13 +267,13 @@ white_rabbit_config_map = {
         ConfigVar(key="rsi_oversold_level",
                   prompt="Enter the RSI oversold level >>> ",
                   type_str="decimal",
-                  default=30),
+                  default=20),
 
     "rsi_overbought_level_config_var": 
         ConfigVar(key="rsi_overbought_level",
                   prompt="Enter the RSI overbought level >>> ",
                   type_str="decimal",
-                  default=70),   
+                  default=80),   
     "moving_price_band_enabled":
         ConfigVar(key="moving_price_band_enabled",
                   prompt="Would you like to enable moving price floor and ceiling? (Yes/No) >>> ",
