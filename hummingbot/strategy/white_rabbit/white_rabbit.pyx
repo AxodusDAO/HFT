@@ -152,8 +152,8 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self.c_add_markets([market_info.market])
 
     @property
-    def ma_cross_enable(self) -> bool:
-        return self._ma_cross_enable
+    def ma_cross(self) -> bool:
+        return self._ma_cross
 
     @property
     def ma_type(self) -> MovingAverageType:
@@ -878,7 +878,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         if self._moving_price_band.check_price_floor_exceeded(price):
             proposal.sells = []
 
-    cdef bool c_apply_ma_cross(self, float price):
+    cdef c_apply_ma_cross(self, float price):
         self.slow_ma.update(price)
         self.slow_ma.update(price)
 
@@ -904,18 +904,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             self._ping_pong_warning_lines.extend(
                 [f"  Ping-pong removed {self._filled_sells_balance} sell orders."]
             )
-    
-    def ma_cross(self, proposal):
-        if self._ma_cross is None:
-            return
-
-        fast_ma = self._ma_cross.fast_ma.compute()
-        slow_ma = self._ma_cross.slow_ma.compute()
-
-        if fast_ma > slow_ma:
-            proposal.sells = []
-        elif slow_ma > fast_ma:
-            proposal.buys = []
     
 
     cdef c_apply_order_price_modifiers(self, object proposal):
