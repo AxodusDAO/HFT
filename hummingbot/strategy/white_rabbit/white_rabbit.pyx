@@ -922,24 +922,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                 [f"  Ping-pong removed {self._filled_sells_balance} sell orders."]
             )
     
-    cdef c_apply_ma_type(self, proposal):
-        if self._ma_type == "SMA":
-            self._sma.add_sample(self.get_price())
-        elif self._ma_type == "EMA":
-            self._ema.add_sample(self.get_price())
-        elif self._ma_type == "WMA":
-            self._wma.add_sample(self.get_price())
-        else:
-            raise ValueError(f"Invalid Moving Average type: {self._ma_type}")
-
-        fast_ma = self._fast_ma.compute()
-        slow_ma = self._slow_ma.compute()
-
-        self.logger().info(f"MA levels: {self._ma_type}({self._fast_ma.period}), {self._ma_type}({self._slow_ma.period}): {fast_ma:.8f}, {slow_ma:.8f}")
-
-        if self._ma_cross_enabled:
-            self.c_apply_ma_cross(proposal)
-
     def ma_cross(self, proposal):
         if self._ma_cross is None:
             return
@@ -952,21 +934,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         elif slow_ma > fast_ma:
             proposal.buys = []
     
-    cdef c_apply_fast_ma(self, proposal):
-        price = self.get_price()
-        self._fast_ma.add_sample(price)
-
-    cdef c_apply_slow_ma(self, proposal):
-        price = self.get_price()
-        self._slow_ma.add_sample(price)
-
-    cdef c_apply_rsi_enabled(self, proposal):
-        if self._rsi_enabled:
-            if self._rsi_value > self._rsi_overbought_level:
-                proposal.buys = []
-            elif self._rsi_value < self._rsi_oversold_level:
-                proposal.sells = []
-
     cdef c_apply_rsi_timeframe(self, proposal):
         if self._rsi_enabled:
             self._rsi_timeframe = self._rsi_timeframe.lower()
