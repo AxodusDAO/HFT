@@ -3,9 +3,9 @@ from enum import Enum
 from decimal import Decimal
 
 class MovingAverageType(Enum):
-SMA = "SMA"
-EMA = "EMA"
-WMA = "WMA"
+sma = "SMA"
+ema = "EMA"
+wma = "WMA"
 
 class MovingAverageCalculator:
     def init(self, prices: List[Decimal], period: int, ma_type: MovingAverageType):
@@ -33,11 +33,11 @@ class MovingAverageCalculator:
         return sum(weighted_prices) / Decimal(sum(weights))
 
     def calculate(self) -> Decimal:
-        if self.ma_type == MovingAverageType.SMA:
+        if self.ma_type == MovingAverageType.sma:
             return self.get_sma()
-        elif self.ma_type == MovingAverageType.EMA:
+        elif self.ma_type == MovingAverageType.ema:
             return self.get_ema()
-        elif self.ma_type == MovingAverageType.WMA:
+        elif self.ma_type == MovingAverageType.wma:
             return self.get_wma()
         else:
             raise ValueError(f"Invalid MovingAverageType: {self.ma_type}")
