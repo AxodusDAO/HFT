@@ -3,7 +3,6 @@ from decimal import Decimal
 from hummingbot.core.event.events import TradeType
 from hummingbot.indicators.moving_average import MovingAverageCalculator, MovingAverageType
 
-
 class MACross:
     def __init__(self, period: int, ma_type: MovingAverageType, fast_ma: int, slow_ma: int):
         self._ma_calculator = MovingAverageCalculator(period, ma_type)
