@@ -60,18 +60,16 @@ def start(self):
             enable=c_map.get("ma_cross_enabled").value,
             ma_type=c_map.get("ma_type").value,
             fast_ma=c_map.get("fast_ma").value,
-            slow_ma=c_map.get("slow_ma").value)
-        rsi_enabled = c_map.get("rsi_enabled").value
-        rsi_timeframe = c_map.get("rsi_timeframe").value
-        rsi_length = c_map.get("rsi_length").value
-        rsi_oversold_level = c_map.get("rsi_oversold_level").value
-        rsi_overbought_level = c_map.get("rsi_overbought_level").value
+            slow_ma=c_map.get("slow_ma").value
+        )
+                
         moving_price_band = MovingPriceBand(
             enabled=c_map.get("moving_price_band_enabled").value,
             price_floor_pct=c_map.get("price_floor_pct").value,
             price_ceiling_pct=c_map.get("price_ceiling_pct").value,
             price_band_refresh_time=c_map.get("price_band_refresh_time").value
         )
+
         bid_order_level_spreads = convert_decimal_string_to_list(
             c_map.get("bid_order_level_spreads").value)
         ask_order_level_spreads = convert_decimal_string_to_list(
@@ -87,6 +85,7 @@ def start(self):
             order_override = {
                 f'split_level_{i}': order for i, order in enumerate(both_list)
             }
+
         trading_pair: str = raw_trading_pair
         maker_assets: Tuple[str, str] = self._initialize_market_assets(exchange, [trading_pair])[0]
         market_names: List[Tuple[str, List[str]]] = [(exchange, [trading_pair])]
@@ -147,11 +146,6 @@ def start(self):
             order_override={} if order_override is None else order_override,
             split_order_levels_enabled=split_order_levels_enabled,
             ma_cross=ma_cross,
-            rsi_enabled=rsi_enabled,
-            rsi_timeframe=rsi_timeframe,
-            rsi_length=rsi_length,
-            rsi_oversold_level=rsi_oversold_level,
-            rsi_overbought_level=rsi_overbought_level,
             bid_order_level_spreads=bid_order_level_spreads,
             ask_order_level_spreads=ask_order_level_spreads,
             should_wait_order_cancel_confirmation=should_wait_order_cancel_confirmation,

@@ -88,13 +88,8 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     moving_price_band: Optional[MovingPriceBand] = None,
-                    ma_cross: Optional[MACross] = None,            
-                    rsi_enabled: bool = False,
-                    rsi_timeframe: str = None,
-                    rsi_length: int = None,
-                    rsi_oversold_level: int = None,
-                    rsi_overbought_level: int = None,
-                    ):
+                    ma_cross: Optional[MACross] = None           
+                ):
         if order_override is None:
             order_override = {}
         if moving_price_band is None:
@@ -153,11 +148,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         self._moving_price_band = moving_price_band
         self._ma_cross = ma_cross
-        self._rsi_enabled = rsi_enabled
-        self._rsi_timeframe = rsi_timeframe
-        self._rsi_length = rsi_length
-        self._rsi_oversold_level = rsi_oversold_level
-        self._rsi_overbought_level = rsi_overbought_level
+        
         self.c_add_markets([market_info.market])
 
     @property
@@ -175,26 +166,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     @property
     def slow_ma(self) -> int:
         return self._slow_ma
-
-    @property
-    def rsi_enabled(self) -> bool:
-        return self.rsi_enabled
-
-    @property
-    def rsi_timeframe(self) -> str:
-        return self.rsi_timeframe
-
-    @property
-    def rsi_length(self) -> int:
-        return self.rsi_length
-
-    @property
-    def rsi_oversold_level(self) -> int:
-        return self.rsi_oversold_level
-
-    @property
-    def rsi_overbought_level(self) -> int:
-        return self.rsi_overbought_level
 
     @property
     def market_info(self) -> MarketTradingPairTuple:
@@ -934,36 +905,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         elif slow_ma > fast_ma:
             proposal.buys = []
     
-    cdef c_apply_rsi_timeframe(self, proposal):
-        if self._rsi_enabled:
-            self._rsi_timeframe = self._rsi_timeframe.lower()
-            if self._rsi_timeframe not in ["1m", "5m", "15m", "1h", "6h", "1d"]:
-                raise ValueError(f"Invalid RSI timeframe: {self._rsi_timeframe}")
-            timeframe_seconds = {
-                "1m": 60,
-                "5m": 300,
-                "15m": 900,
-                "1h": 3600,
-                "6h": 21600,
-                "1d": 86400
-            }
-            self._rsi_length = min(self._rsi_length, self.get_max_window_size(timeframe_seconds[self._rsi_timeframe]))
-            self._rsi_timeframe_secs = timeframe_seconds[self._rsi_timeframe]
-
-    cdef c_apply_rsi_length(self, proposal):
-        if self._rsi_enabled:
-            self._rsi_length = min(self._rsi_length, self.get_max_window_size(self._rsi_timeframe_secs))
-
-    cdef c_apply_rsi_oversold_level(self, proposal):
-        if self._rsi_enabled:
-            self._rsi_oversold_level = max(0, min(100, self._rsi_oversold_level))
-            self._rsi_overbought_level = max(self._rsi_oversold_level + 1, min(100, self._rsi_overbought_level))
-
-    cdef c_apply_rsi_overbought_level(self, proposal):
-        if self._rsi_enabled:
-            self._rsi_overbought_level = max(self._rsi_oversold_level + 1, min(100, self._rsi_overbought_level))
-            self._rsi_oversold_level = max(0, min(self._rsi_overbought_level - 1, self._rsi_oversold_level))
-
 
     cdef c_apply_order_price_modifiers(self, object proposal):
         if self._order_optimization_enabled:

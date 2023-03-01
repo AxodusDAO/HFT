@@ -59,11 +59,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
         object _moving_price_band
         object _ma_cross
-        bint _rsi_enabled
-        object _rsi_timeframe
-        object _rsi_length
-        object _rsi_overbought_level
-        object _rsi_oversold_level
+        
 
     cdef object c_get_mid_price(self)
     cdef object c_create_base_proposal(self)
@@ -88,10 +84,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     cdef set_timers(self)
     cdef c_apply_moving_price_band(self, object proposal)
     cdef c_apply_ma_cross(self, object proposal)
-    cdef c_apply_rsi_enabled(self, proposal)
-    cdef c_apply_rsi_timeframe(self, proposal)
-    cdef c_apply_rsi_length(self, proposal)
-    cdef c_apply_rsi_oversold_level(self, proposal)
-    cdef c_apply_rsi_overbought_level(self, proposal)
+    
 
     
