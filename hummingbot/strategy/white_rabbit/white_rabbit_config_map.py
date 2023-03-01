@@ -113,7 +113,7 @@ def validate_ma_cross_enabled(value: str) -> Optional[str]:
     if value.lower() not in {"yes", "no"}:
         return "Invalid input. Please enter 'yes' or 'no'"
 
-def ma_type_prompt() -> str:
+def ma_type() -> str:
     return "Select Moving Average type (SMA/EMA/WMA) >>> "
 
 def validate_ma_type(value: str) -> Optional[str]:
@@ -283,6 +283,12 @@ white_rabbit_config_map = {
                   validator=validate_ma_cross_enabled,
                   on_validated=on_validated_ma_cross_enabled,
                   default=False),
+    "ma_type":
+        ConfigVar(key="ma_type",
+                  prompt="Which type of moving average do you want to use (SMA/EMA/WMA)?",
+                  validator=lambda s: s.lower() in {"sma", "ema", "wma"},
+                  default="SMA"
+                  ),
 # SMA
     "fast_ma":
         ConfigVar(key="fast_ma",

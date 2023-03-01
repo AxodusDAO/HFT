@@ -9,6 +9,7 @@ from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 from hummingbot.strategy.order_book_asset_price_delegate import OrderBookAssetPriceDelegate
 from hummingbot.strategy.white_rabbit import InventoryCostPriceDelegate, WhiteRabbitStrategy
 from hummingbot.strategy.white_rabbit.moving_price_band import MovingPriceBand
+from hummingbot.strategy.white_rabbit.ma_cross import MACross
 from hummingbot.strategy.white_rabbit.white_rabbit_config_map import white_rabbit_config_map as c_map
 
 
@@ -55,9 +56,11 @@ def start(self):
         order_refresh_tolerance_pct = c_map.get("order_refresh_tolerance_pct").value / Decimal('100')
         order_override = c_map.get("order_override").value
         split_order_levels_enabled = c_map.get("split_order_levels_enabled").value
-        ma_cross_enabled = c_map.get("ma_cross_enabled").value
-        fast_ma = c_map.get("fast_ma").value
-        slow_ma = c_map.get("slow_ma").value
+        ma_cross = MACross(
+            enable=c_map.get("ma_cross_enabled").value,
+            ma_type=c_map.get("ma_type").value,
+            fast_ma=c_map.get("fast_ma").value,
+            slow_ma=c_map.get("slow_ma").value)
         rsi_enabled = c_map.get("rsi_enabled").value
         rsi_timeframe = c_map.get("rsi_timeframe").value
         rsi_length = c_map.get("rsi_length").value
@@ -143,9 +146,7 @@ def start(self):
             hb_app_notification=True,
             order_override={} if order_override is None else order_override,
             split_order_levels_enabled=split_order_levels_enabled,
-            ma_cross_enabled=ma_cross_enabled,
-            fast_ma=fast_ma,
-            slow_ma=slow_ma,
+            ma_cross=ma_cross,
             rsi_enabled=rsi_enabled,
             rsi_timeframe=rsi_timeframe,
             rsi_length=rsi_length,
