@@ -152,10 +152,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         self._moving_price_band = moving_price_band
-        self.ma_cross_enable = ma_cross_enable
-        self.ma_type = ma_type
-        self.fast_ma = fast_ma
-        self.slow_ma = slow_ma
+        self._ma_cross = ma_cross
         self._rsi_enabled = rsi_enabled
         self._rsi_timeframe = rsi_timeframe
         self._rsi_length = rsi_length
