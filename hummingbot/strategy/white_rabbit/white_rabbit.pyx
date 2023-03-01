@@ -878,6 +878,18 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         if self._moving_price_band.check_price_floor_exceeded(price):
             proposal.sells = []
 
+     cdef bool c_apply_ma_cross(self, float price) nogil:
+        self.slow_ma.update(price)
+        self.slow_ma.update(price)
+
+        if self.slow_ma.is_ready and self.slow_ma.is_ready:
+            if self.slow_ma.moving_average > self.slow_ma.moving_average:
+                return True  # Buy signal
+            elif self.slow_ma.moving_average < self.slow_ma.moving_average:
+                return False  # Sell signal
+
+        return None
+
     cdef c_apply_ping_pong(self, object proposal):
         self._ping_pong_warning_lines = []
         if self._filled_buys_balance == self._filled_sells_balance:
