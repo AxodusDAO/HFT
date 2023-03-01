@@ -142,51 +142,6 @@ def on_validated_ma_cross_enabled(value: str):
             white_rabbit_config_map["fast_wma"].value = None
             white_rabbit_config_map["slow_wma"].value = None
 
-def validate_rsi_config(value):
-    if not value.get("rsi_enabled"):
-        return True
-    timeframe = value.get("rsi_timeframe")
-    length = value.get("rsi_length")
-    oversold_level = value.get("rsi_oversold_level")
-    overbought_level = value.get("rsi_overbought_level")
-
-    if not validate_timeframe(timeframe):
-        raise ValidationError(f"Invalid timeframe: {timeframe}")
-
-    if not isinstance(length, int) or length < 1:
-        raise ValidationError("RSI length must be a positive integer")
-
-    if not (0 <= oversold_level <= 100):
-        raise ValidationError("RSI oversold level must be between 0 and 100")
-
-    if not (0 <= overbought_level <= 100):
-        raise ValidationError("RSI overbought level must be between 0 and 100")
-
-    if oversold_level >= overbought_level:
-        raise ValidationError("RSI oversold level must be lower than RSI overbought level")
-
-    return True
-
-        
-def rsi_enabled_prompt() -> str:
-    return "Relative Strengh Index - RSI (enable/disable) >>> "
-
-def validate_rsi_enabled(value: str) -> Optional[str]:
-    if value.lower() not in {"enable", "disable"}:
-        return "Invalid input. Please enter 'enable' or 'disable'"
-        
-def on_validated_rsi_enabled(value: str):
-    if value.lower() == "enable":
-        white_rabbit_config_map["rsi_timeframe"].prompt = "Enter the timeframe (e.g 1m, 15m, 1h, 1d) >>> "
-        white_rabbit_config_map["rsi_length"].prompt = "Length period (default = 14) >>> "
-        white_rabbit_config_map["rsi_oversold_level"].prompt = "Enter the oversold level (default = 20) >>> "
-        white_rabbit_config_map["rsi_overbought_level"].prompt = "Enter the overbought level (default = 80) >>> "
-    else:
-        white_rabbit_config_map["rsi_timeframe"].value = None
-        white_rabbit_config_map["rsi_length"].value = None
-        white_rabbit_config_map["rsi_oversold_level"].value = None
-        white_rabbit_config_map["rsi_overbought_level"].value = None
-
 def validate_decimal_list(value: str) -> Optional[str]:
     decimal_list = list(value.split(","))
     for number in decimal_list:
@@ -277,8 +232,8 @@ white_rabbit_config_map = {
                   default=Decimal("-1"),
                   validator=validate_price_floor_ceiling),
 # Golden / Death Cross strategy
-    "ma_cross_enabled":
-        ConfigVar(key="ma_cross_enabled",
+    "ma_cross":
+        ConfigVar(key="ma_cross",
                   prompt=ma_cross_enabled_prompt,
                   validator=validate_ma_cross_enabled,
                   on_validated=on_validated_ma_cross_enabled,
@@ -290,74 +245,41 @@ white_rabbit_config_map = {
                   default="SMA"
                   ),
 # SMA
-    "fast_ma":
-        ConfigVar(key="fast_ma",
+    "fast_sma":
+        ConfigVar(key="fast_sma",
                   prompt="Enter the FAST SMA time period >>> ",
                   validator=validate_int,
                   required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "SMA"),
 
-    "slow_ma":
-        ConfigVar(key="slow_ma",
+    "slow_sma":
+        ConfigVar(key="slow_sma",
                   prompt="Enter the SLOW SMA time period >>> ",
                   validator=validate_int,
                   required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "SMA"),
 # EMA    
-    "fast_ma":
+    "fast_ema":
         ConfigVar(key="fast_ema",
                   prompt="Enter the FAST EMA time period >>> ",
                   validator=validate_int,
                   required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "EMA"),
 
-    "slow_ma":
+    "slow_ema":
         ConfigVar(key="slow_ema",
                   prompt="Enter the SLOW EMA time period >>> ",
                   validator=validate_int,
                   required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "EMA"),
-# EMA    
-    "fast_ma":
+# WMA    
+    "fast_wma":
         ConfigVar(key="fast_wma",
                   prompt="Enter the FAST WMA time period >>> ",
                   validator=validate_int,
                   required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "WMA"),
 
-    "slow_ma":
-        ConfigVar(key="slow_ema",
+    "slow_wma":
+        ConfigVar(key="slow_wma",
                   prompt="Enter the SLOW WMA time period >>> ",
                   validator=validate_int,
                   required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() == "WMA"),
-#RSI strategy                  
-    "rsi_enabled": 
-        ConfigVar( key="rsi_enabled",
-                   prompt=rsi_enabled_prompt,
-                  validator=validate_rsi_enabled,
-                  on_validated=on_validated_rsi_enabled,
-                  default=False),
-    "rsi_timeframe": 
-        ConfigVar(key="rsi_timeframe",
-                  prompt="Enter the timeframe (e.g 1m, 15m, 1h, 1d) >>> ",
-                  validator=validate_rsi_config,
-                  type_str="str",
-                  default=None),
-    "rsi_length":
-        ConfigVar(key="rsi_length",
-                  prompt="Enter the RSI time period >>> ",
-                  validator=validate_rsi_config,
-                  type_str="int",
-                  default=None),
-
-    "rsi_oversold_level":
-        ConfigVar(key="rsi_oversold_level",
-                  prompt="Enter the RSI oversold level >>> ",
-                  validator=validate_rsi_config,
-                  type_str="int",
-                  default=None),
-
-    "rsi_overbought_level": 
-        ConfigVar(key="rsi_overbought_level",
-                  prompt="Enter the RSI overbought level >>> ",
-                  validator=validate_rsi_config,
-                  type_str="int",
-                  default=None),   
 
     "moving_price_band_enabled":
         ConfigVar(key="moving_price_band_enabled",
