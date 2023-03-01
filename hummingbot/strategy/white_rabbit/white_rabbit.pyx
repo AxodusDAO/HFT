@@ -878,14 +878,14 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         if self._moving_price_band.check_price_floor_exceeded(price):
             proposal.sells = []
 
-    cdef c_apply_ma_cross(self, float price):
+    cdef c_apply_ma_cross(self, price: float) -> Optional[bool]:
         self.slow_ma.update(price)
-        self.slow_ma.update(price)
+        self.fast_ma.update(price)
 
-        if self.slow_ma.is_ready and self.slow_ma.is_ready:
-            if self.slow_ma.moving_average > self.slow_ma.moving_average:
+        if self.slow_ma.is_ready and self.fast_ma.is_ready:
+            if self.fast_ma.moving_average > self.slow_ma.moving_average:
                 return True  # Buy signal
-            elif self.slow_ma.moving_average < self.slow_ma.moving_average:
+            elif self.fast_ma.moving_average < self.slow_ma.moving_average:
                 return False  # Sell signal
 
         return None
