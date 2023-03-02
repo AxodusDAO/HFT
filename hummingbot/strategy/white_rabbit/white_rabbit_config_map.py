@@ -232,7 +232,7 @@ white_rabbit_config_map = {
                   type_str="bool",
                   validator=validate_bool,
                   on_validated=on_validated_ma_cross_enabled,
-                  default=False),
+                  default="Disable"),
     "ma_type":
         ConfigVar(key="ma_type",
                   prompt=ma_type_prompt,
