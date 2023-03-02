@@ -107,13 +107,13 @@ def exchange_on_validated(value: str):
     required_exchanges.add(value)
 
 def ma_cross_enabled_prompt() -> str:
-    return "Enable Moving Average Crossover strategy? (yes/no) >>> "
+    return "Enable Moving Average Crossover strategy? (enable/disable) >>> "
 
 def validate_ma_cross_enabled(value: str) -> Optional[str]:
     if value.lower() not in {"enable", "disable"}:
         return "Invalid input. Please enter 'enable' or 'disable'"
 
-def ma_type() -> str:
+def ma_type_prompt() -> str:
     return "Select Moving Average type (SMA/EMA/WMA) >>> "
 
 def validate_ma_type(value: str) -> Optional[str]:
@@ -226,18 +226,19 @@ white_rabbit_config_map = {
                   default=Decimal("-1"),
                   validator=validate_price_floor_ceiling),
 # Golden / Death Cross strategy
-    "ma_cross":
-        ConfigVar(key="ma_cross",
+    "ma_cross_mode":
+        ConfigVar(key="ma_cross_mode",
                   prompt=ma_cross_enabled_prompt,
-                  validator=validate_ma_cross_enabled,
+                  type_str="bool",
+                  validator=validate_bool,
                   on_validated=on_validated_ma_cross_enabled,
                   default=False),
     "ma_type":
         ConfigVar(key="ma_type",
-                  prompt=ma_type,
+                  prompt=ma_type_prompt,
                   validator=validate_ma_type,
                   on_validated=on_validated_ma_cross_enabled,
-                  default="Null"),
+                  default="SMA"),
     "fast_ma":
         ConfigVar(key="fast_ma",
                   prompt="Enter the FAST MA time period >>> ",

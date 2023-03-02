@@ -879,16 +879,17 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             proposal.sells = []
 
     cdef c_apply_ma_cross(self, float price):
-        self.slow_ma.update(price)
+        self.fast_ma.update(price)
         self.slow_ma.update(price)
 
-        if self.slow_ma.is_ready and self.slow_ma.is_ready:
-            if self.slow_ma.moving_average > self.slow_ma.moving_average:
+        if self.slow_ma.is_ready and self.fast_ma.is_ready:
+            if self.slow_ma.moving_average > self.fast_ma.moving_average:
                 return True  # Buy signal
-            elif self.slow_ma.moving_average < self.slow_ma.moving_average:
+            elif self.slow_ma.moving_average < self.fast_ma.moving_average:
                 return False  # Sell signal
 
         return None
+
 
 
     cdef c_apply_ping_pong(self, object proposal):
