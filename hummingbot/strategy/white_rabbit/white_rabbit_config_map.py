@@ -151,7 +151,7 @@ white_rabbit_config_map = {
     "strategy":
         ConfigVar(key="strategy",
                   prompt=None,
-                  default="pure_market_making"),
+                  default="white_rabbit"),
     "exchange":
         ConfigVar(key="exchange",
                   prompt="Enter your maker spot connector >>> ",
@@ -177,6 +177,30 @@ white_rabbit_config_map = {
                   type_str="decimal",
                   validator=lambda v: validate_decimal(v, 0, 100, inclusive=False),
                   prompt_on_new=True),
+# Golden / Death Cross strategy
+    "ma_cross_mode":
+        ConfigVar(key="ma_cross_mode",
+                  prompt=ma_cross_enabled_prompt,
+                  type_str="bool",
+                  validator=validate_bool,
+                  on_validated=on_validated_ma_cross_enabled,
+                  prompt_on_new=True),
+    "ma_type":
+        ConfigVar(key="ma_type",
+                  prompt=ma_type_prompt,
+                  validator=validate_ma_type,
+                  on_validated=on_validated_ma_cross_enabled,
+                  default="SMA"),
+    "fast_ma":
+        ConfigVar(key="fast_ma",
+                  prompt="Enter the FAST MA time period >>> ",
+                  validator=validate_int,
+                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper()),
+    "slow_ma":
+        ConfigVar(key="slow_ma",
+                  prompt="Enter the SLOW MA time period >>> ",
+                  validator=validate_int,
+                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper()),
     "minimum_spread":
         ConfigVar(key="minimum_spread",
                   prompt="At what minimum spread should the bot automatically cancel orders? (Enter 1 for 1%) >>> ",
@@ -225,31 +249,6 @@ white_rabbit_config_map = {
                   type_str="decimal",
                   default=Decimal("-1"),
                   validator=validate_price_floor_ceiling),
-# Golden / Death Cross strategy
-    "ma_cross_mode":
-        ConfigVar(key="ma_cross_mode",
-                  prompt=ma_cross_enabled_prompt,
-                  type_str="bool",
-                  validator=validate_bool,
-                  on_validated=on_validated_ma_cross_enabled,
-                  default="Disable"),
-    "ma_type":
-        ConfigVar(key="ma_type",
-                  prompt=ma_type_prompt,
-                  validator=validate_ma_type,
-                  on_validated=on_validated_ma_cross_enabled,
-                  default="SMA"),
-    "fast_ma":
-        ConfigVar(key="fast_ma",
-                  prompt="Enter the FAST MA time period >>> ",
-                  validator=validate_int,
-                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() != "NONE"),
-    "slow_ma":
-        ConfigVar(key="slow_ma",
-                  prompt="Enter the SLOW MA time period >>> ",
-                  validator=validate_int,
-                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper() != "NONE"),
-
     "moving_price_band_enabled":
         ConfigVar(key="moving_price_band_enabled",
                   prompt="Would you like to enable moving price floor and ceiling? (Yes/No) >>> ",
