@@ -33,7 +33,6 @@ class MACross:
     def switch(self, value: bool) -> None:
         '''
         switch between enabled and disabled state
-
         :param value: set whether to enable or disable MACross
         '''
         self.enable = value
