@@ -29,7 +29,6 @@ from .white_rabbit_order_tracker import WhiteRabbitOrderTracker
 from .moving_price_band import MovingPriceBand
 from .ma_cross import MACross
 from hummingbot.indicators.moving_average import MovingAverageType, MovingAverageCalculator
-from hummingbot.indicators.rsi import RSIIndicator
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
@@ -88,7 +87,10 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     moving_price_band: Optional[MovingPriceBand] = None,
-                    ma_cross: Optional[MACross] = None           
+                    ma_period: int,
+                    ma_type: MovingAverageType,
+                    fast_ma: int,
+                    slow_ma: int           
                 ):
         if order_override is None:
             order_override = {}
@@ -147,25 +149,25 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         self._moving_price_band = moving_price_band
-        self._ma_cross = ma_cross
+        self._ma_cross = MACross(ma_period, ma_type, fast_ma, slow_ma)
         
         self.c_add_markets([market_info.market])
 
     @property
-    def ma_cross(self) -> bool:
+    def ma_cross(self) -> MACross:
         return self._ma_cross
 
     @property
     def ma_type(self) -> MovingAverageType:
-        return self._ma_type
+        return MovingAverageType(self._config_map.get("ma_type").value)
 
     @property
     def fast_ma(self) -> int:
-        return self._fast_ma
+        return self._config_map.get("fast_ma").value
 
     @property
     def slow_ma(self) -> int:
-        return self._slow_ma
+        return self._config_map.get("slow_ma").value
 
     @property
     def market_info(self) -> MarketTradingPairTuple:
@@ -878,19 +880,44 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         if self._moving_price_band.check_price_floor_exceeded(price):
             proposal.sells = []
 
-    cdef c_apply_ma_cross(self, float price):
-        self.fast_ma.update(price)
-        self.slow_ma.update(price)
+    cdef c_apply_ma_cross(self, current_bid_price: Decimal, current_ask_price: Decimal) -> None:
+        if not self._ma_cross.enable:
+            return
 
-        if self.slow_ma.is_ready and self.fast_ma.is_ready:
-            if self.slow_ma.moving_average > self.fast_ma.moving_average:
-                return True  # Buy signal
-            elif self.slow_ma.moving_average < self.fast_ma.moving_average:
-                return False  # Sell signal
+        if self._ma_cross.buys:
+            self.stop_loss_price = s_decimal_zero
 
-        return None
+            if self.inventory.is_zero() and self._ma_cross.buys[-1] != TradeType.BUY:
+                self.place_market_buy_order(self.trade_fill_tracker,
+                                            self._trading_pair,
+                                            self._quantity_step,
+                                            self._base_asset_step,
+                                            current_ask_price)
+                return
 
+            if not self.inventory.is_zero():
+                if current_ask_price > self._ma_cross.slow_ma:
+                    self.place_market_buy_order(self.trade_fill_tracker,
+                                                self._trading_pair,
+                                                self._quantity_step,
+                                                self._base_asset_step,
+                                                current_ask_price)
+        elif self._ma_cross.sells:
+            self.stop_loss_price = s_decimal_neg_one
 
+            if self.inventory.is_zero() and self._ma_cross.sells[-1] != TradeType.SELL:
+                self.place_market_sell_order(self.trade_fill_tracker,
+                                             self._trading_pair,
+                                             self._quantity_step,
+                                             current_bid_price)
+                return
+
+            if not self.inventory.is_zero():
+                if current_bid_price < self._ma_cross.slow_ma:
+                    self.place_market_sell_order(self.trade_fill_tracker,
+                                                  self._trading_pair,
+                                                  self._quantity_step,
+                                                  current_bid_price)
 
     cdef c_apply_ping_pong(self, object proposal):
         self._ping_pong_warning_lines = []

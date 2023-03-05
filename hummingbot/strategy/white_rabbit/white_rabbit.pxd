@@ -71,6 +71,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     cdef c_apply_order_size_modifiers(self, object proposal)
     cdef c_apply_inventory_skew(self, object proposal)
     cdef c_apply_budget_constraint(self, object proposal)
+    cdef c_apply_ma_cross(self, object proposal)
 
     cdef c_filter_out_takers(self, object proposal)
     cdef c_apply_order_optimization(self, object proposal)
@@ -83,7 +84,3 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     cdef c_execute_orders_proposal(self, object proposal)
     cdef set_timers(self)
     cdef c_apply_moving_price_band(self, object proposal)
-    cdef c_apply_ma_cross(self, float price)
-    
-
-    
