@@ -86,6 +86,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     bid_order_level_spreads: List[Decimal] = None,
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
+                    ma_cross: bool = False,
                     ma_period: int,
                     ma_type: str = "SMA",
                     fast_ma: int,
