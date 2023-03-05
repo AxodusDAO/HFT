@@ -88,7 +88,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     should_wait_order_cancel_confirmation: bool = True,
                     moving_price_band: Optional[MovingPriceBand] = None,
                     ma_period: int,
-                    ma_type: MovingAverageType,
+                    ma_type:  = "SMA",
                     fast_ma: int,
                     slow_ma: int           
                 ):
