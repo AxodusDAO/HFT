@@ -149,8 +149,9 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._status_report_interval = status_report_interval
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
-        self._moving_price_band = moving_price_band
+        
         self._ma_cross = MACross(ma_period, ma_type, fast_ma, slow_ma)
+        self._moving_price_band = moving_price_band
         
         self.c_add_markets([market_info.market])
 
