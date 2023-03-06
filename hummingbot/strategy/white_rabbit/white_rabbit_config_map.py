@@ -178,8 +178,8 @@ white_rabbit_config_map = {
                   validator=lambda v: validate_decimal(v, 0, 100, inclusive=False),
                   prompt_on_new=True),
 # Golden / Death Cross strategy
-    "ma_cross_mode":
-        ConfigVar(key="ma_cross_mode",
+    "ma_cross":
+        ConfigVar(key="ma_cross",
                   prompt=ma_cross_enabled_prompt,
                   type_str="bool",
                   validator=validate_bool,
