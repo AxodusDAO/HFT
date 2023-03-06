@@ -57,7 +57,7 @@ def start(self):
         order_override = c_map.get("order_override").value
         split_order_levels_enabled = c_map.get("split_order_levels_enabled").value
         ma_cross = MACross(
-            enable=c_map.get("ma_cross_mode").value,
+            ma_cross_mode=c_map.get("ma_cross_mode").value,
             ma_type=c_map.get("ma_type").value,
             fast_ma=c_map.get("fast_ma").value,
             slow_ma=c_map.get("slow_ma").value
