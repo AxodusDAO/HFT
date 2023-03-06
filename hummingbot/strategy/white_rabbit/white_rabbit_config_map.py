@@ -107,11 +107,11 @@ def exchange_on_validated(value: str):
     required_exchanges.add(value)
 
 def ma_cross_enabled_prompt() -> str:
-    return "Enable Moving Average Crossover strategy? (enable/disable) >>> "
+    return "Enable Moving Average Crossover strategy? (Yes/No) >>> "
 
 def validate_ma_cross_enabled(value: str) -> Optional[str]:
-    if value.lower() not in {"enable", "disable"}:
-        return "Invalid input. Please enter 'enable' or 'disable'"
+    if value.lower() not in {"yes", "no"}:
+        return "Invalid input. Please enter 'Yes' or 'No'"
 
 def ma_type_prompt() -> str:
     return "Select Moving Average type (SMA/EMA/WMA) >>> "
@@ -121,7 +121,7 @@ def validate_ma_type(value: str) -> Optional[str]:
         return "Invalid input. Please enter 'SMA', 'EMA', or 'WMA'"
         
 def on_validated_ma_cross_enabled(value: str):
-    if value.lower() == "enable":
+    if value.lower() == "yes":
         white_rabbit_config_map["fast_ma"].value = None
         white_rabbit_config_map["slow_ma"].value = None
     else:
