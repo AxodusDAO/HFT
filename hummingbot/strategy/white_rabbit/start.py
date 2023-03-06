@@ -56,10 +56,10 @@ def start(self):
         order_refresh_tolerance_pct = c_map.get("order_refresh_tolerance_pct").value / Decimal('100')
         order_override = c_map.get("order_override").value
         split_order_levels_enabled = c_map.get("split_order_levels_enabled").value
-        ma_cross = c_map.get("ma_cross").value,
+        ma_cross = MACross(
         ma_type=c_map.get("ma_type").value,
         fast_ma=c_map.get("fast_ma").value,
-        slow_ma=c_map.get("slow_ma").value
+        slow_ma=c_map.get("slow_ma").value)
         
                 
         moving_price_band = MovingPriceBand(
