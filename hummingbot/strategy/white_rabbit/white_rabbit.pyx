@@ -151,6 +151,9 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         
         self._ma_cross = MACross()
+        self._ma_type = ma_type
+        self._fast_ma = fast_ma
+        self._slow_ma = slow_ma
         self._moving_price_band = moving_price_band
         
         self.c_add_markets([market_info.market])

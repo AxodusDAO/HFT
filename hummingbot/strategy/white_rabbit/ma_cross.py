@@ -5,7 +5,7 @@ from hummingbot.indicators.moving_average import MovingAverageCalculator, Moving
 
 
 class MACross:
-    def __init__(self, period: int, ma_type: MovingAverageType, fast_ma: int, slow_ma: int):
+    def __init__(self,  ma_type: MovingAverageType, period: int, fast_ma: int, slow_ma: int):
         self._ma_calculator = MovingAverageCalculator(period, ma_type)
         self._fast_ma = fast_ma
         self._slow_ma = slow_ma
