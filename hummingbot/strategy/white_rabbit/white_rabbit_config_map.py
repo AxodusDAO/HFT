@@ -195,12 +195,14 @@ white_rabbit_config_map = {
         ConfigVar(key="fast_ma",
                   prompt="Enter the FAST MA time period >>> ",
                   validator=validate_int,
-                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper()),
+                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper(),
+                  prompt_on_new=True),
     "slow_ma":
         ConfigVar(key="slow_ma",
                   prompt="Enter the SLOW MA time period >>> ",
                   validator=validate_int,
-                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper()),
+                  required_if=lambda: white_rabbit_config_map.get("ma_type").value.upper(),
+                  prompt_on_new=True),
     "minimum_spread":
         ConfigVar(key="minimum_spread",
                   prompt="At what minimum spread should the bot automatically cancel orders? (Enter 1 for 1%) >>> ",
