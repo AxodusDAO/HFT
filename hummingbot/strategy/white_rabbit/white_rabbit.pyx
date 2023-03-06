@@ -885,7 +885,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         if self._moving_price_band.check_price_floor_exceeded(price):
             proposal.sells = []
 
-    cdef c_apply_ma_cross(self, object proposal):
+    cdef c_apply_ma_cross(self, current_bid_price: Decimal, current_ask_price: Decimal):
         if not self._ma_cross.enable:
             return
 
@@ -923,6 +923,9 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                                                   self._trading_pair,
                                                   self._quantity_step,
                                                   current_bid_price)
+                                                  
+                                                  
+                                                  
 
     cdef c_apply_ping_pong(self, object proposal):
         self._ping_pong_warning_lines = []
