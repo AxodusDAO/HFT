@@ -87,9 +87,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     ma_cross: Optional[MACross] = None,
-                    fast_ma: int = 50,
-                    slow_ma: int = 200,
-                    ma_type: Optional[MovingAverageType] = None,
+                    
                     moving_price_band: Optional[MovingPriceBand] = None,
                                
                 ):
@@ -150,10 +148,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         
-        self._ma_cross = MACross()
-        self._ma_type = ma_type
-        self._fast_ma = fast_ma
-        self._slow_ma = slow_ma
+        self._ma_cross = ma_cross
         self._moving_price_band = moving_price_band
         
         self.c_add_markets([market_info.market])
