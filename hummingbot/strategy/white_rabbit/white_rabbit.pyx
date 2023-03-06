@@ -86,7 +86,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     bid_order_level_spreads: List[Decimal] = None,
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
-                    ma_cross: bool = False,
+                    ma_cross: bool = None,
                     ma_type: str = "SMA",
                     fast_ma: int = 50,
                     slow_ma: int = 200,
@@ -885,7 +885,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         if self._moving_price_band.check_price_floor_exceeded(price):
             proposal.sells = []
 
-    cdef c_apply_ma_cross(self, current_bid_price: Decimal, current_ask_price: Decimal):
+    cdef c_apply_ma_cross(self, object proposal):
         if not self._ma_cross.enable:
             return
 
