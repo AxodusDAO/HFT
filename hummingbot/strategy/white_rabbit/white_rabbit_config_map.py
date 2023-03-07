@@ -110,8 +110,8 @@ def ma_cross_enabled_prompt() -> str:
     return "Enable Moving Average Crossover strategy? (Yes/No) >>> "
 
 def validate_ma_cross_enabled(value: str) -> Optional[str]:
-    if value.lower() not in {"yes", "no"}:
-        return "Invalid input. Please enter 'Yes' or 'No'"
+    if value.lower() not in {"enabled", "disabled"}:
+        return "Invalid input. Please enter 'enabled' or 'disabled'"
 
 def ma_type_prompt() -> str:
     return "Select Moving Average type (SMA/EMA/WMA) >>> "
@@ -121,7 +121,7 @@ def validate_ma_type(value: str) -> Optional[str]:
         return "Invalid input. Please enter 'SMA', 'EMA', or 'WMA'"
         
 def on_validated_ma_cross_enabled(value: str):
-    if value.lower() == "yes":
+    if value.lower() == "enabled":
         white_rabbit_config_map["fast_ma"].value = None
         white_rabbit_config_map["slow_ma"].value = None
     else:
@@ -177,12 +177,32 @@ white_rabbit_config_map = {
                   type_str="decimal",
                   validator=lambda v: validate_decimal(v, 0, 100, inclusive=False),
                   prompt_on_new=True),
+    "order_refresh_time":
+        ConfigVar(key="order_refresh_time",
+                  prompt="How often do you want to cancel and replace bids and asks "
+                         "(in seconds)? >>> ",
+                  type_str="float",
+                  validator=lambda v: validate_decimal(v, 0, inclusive=False),
+                  prompt_on_new=True),
+    "order_amount":
+        ConfigVar(key="order_amount",
+                  prompt=order_amount_prompt,
+                  type_str="decimal",
+                  validator=lambda v: validate_decimal(v, min_value=Decimal("0"), inclusive=False),
+                  prompt_on_new=True),
+     "ping_pong_enabled":
+        ConfigVar(key="ping_pong_enabled",
+                  prompt="Would you like to use the ping pong feature and alternate between buy and sell orders after fills? (Yes/No) >>> ",
+                  type_str="bool",
+                  default=False,
+                  prompt_on_new=True,
+                  validator=validate_bool),             
 # Golden / Death Cross strategy
     "ma_cross":
         ConfigVar(key="ma_cross",
                   prompt=ma_cross_enabled_prompt,
                   type_str="bool",
-                  validator=validate_bool,
+                  validator=validate_ma_cross_enabled,
                   on_validated=on_validated_ma_cross_enabled,
                   prompt_on_new=True),
     "ma_type":
@@ -210,13 +230,7 @@ white_rabbit_config_map = {
                   type_str="decimal",
                   default=Decimal(-100),
                   validator=lambda v: validate_decimal(v, -100, 100, True)),
-    "order_refresh_time":
-        ConfigVar(key="order_refresh_time",
-                  prompt="How often do you want to cancel and replace bids and asks "
-                         "(in seconds)? >>> ",
-                  type_str="float",
-                  validator=lambda v: validate_decimal(v, 0, inclusive=False),
-                  prompt_on_new=True),
+    
     "max_order_age":
         ConfigVar(key="max_order_age",
                   prompt="How long do you want to cancel and replace bids and asks "
@@ -231,12 +245,7 @@ white_rabbit_config_map = {
                   type_str="decimal",
                   default=Decimal("0"),
                   validator=lambda v: validate_decimal(v, -10, 10, inclusive=True)),
-    "order_amount":
-        ConfigVar(key="order_amount",
-                  prompt=order_amount_prompt,
-                  type_str="decimal",
-                  validator=lambda v: validate_decimal(v, min_value=Decimal("0"), inclusive=False),
-                  prompt_on_new=True),
+    
     "price_ceiling":
         ConfigVar(key="price_ceiling",
                   prompt="Enter the price point above which only sell orders will be placed "
@@ -278,13 +287,7 @@ white_rabbit_config_map = {
                   default=86400,
                   required_if=lambda: white_rabbit_config_map.get("moving_price_band_enabled").value,
                   validator=validate_decimal),
-    "ping_pong_enabled":
-        ConfigVar(key="ping_pong_enabled",
-                  prompt="Would you like to use the ping pong feature and alternate between buy and sell orders after fills? (Yes/No) >>> ",
-                  type_str="bool",
-                  default=False,
-                  prompt_on_new=True,
-                  validator=validate_bool),
+    
     "order_levels":
         ConfigVar(key="order_levels",
                   prompt="How many orders do you want to place on both sides? >>> ",
