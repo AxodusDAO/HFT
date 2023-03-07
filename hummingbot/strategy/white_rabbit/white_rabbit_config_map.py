@@ -107,7 +107,7 @@ def exchange_on_validated(value: str):
     required_exchanges.add(value)
 
 def ma_cross_enabled_prompt() -> str:
-    return "Enable Moving Average Crossover strategy? (Yes/No) >>> "
+    return "Enable Moving Average Crossover strategy? (Enabled/Disabled) >>> "
 
 def validate_ma_cross_enabled(value: str) -> Optional[str]:
     if value.lower() not in {"enabled", "disabled"}:
