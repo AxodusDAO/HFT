@@ -10,8 +10,8 @@ mac_logger = None
 @dataclass
 class MACross:
     enabled: bool = False
-    ma_type: MovingAverageType
-    _period: int
+    ma_type: MovingAverageType = MovingAverageType()
+    period: int
     _ma_calculator: MovingAverageCalculator = MovingAverageCalculator()
     _fast_ma: int = 0
     _slow_ma: int = 0
@@ -24,7 +24,7 @@ class MACross:
 
     @property
     def period(self) -> int:
-        return self._period
+        return self._
     
     @property
     def buys(self) -> List[TradeType]:

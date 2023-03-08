@@ -17,18 +17,18 @@ class MovingAverageCalculator:
         self.ma_type = ma_type
 
     def get_sma(self):
-        return sum(self.prices[-self.period.total_seconds():]) / self.period.total_seconds()
+        return sum(self.prices[-self.period.seconds():]) / self.period.seconds()
 
     def get_ema(self):
-        alpha = 2 / (self.period.total_seconds() + 1)
+        alpha = 2 / (self.period.seconds() + 1)
         ema = self.prices[-1]
-        for price in reversed(self.prices[-self.period.total_seconds() + 1:]):
+        for price in reversed(self.prices[-self.period.seconds() + 1:]):
             ema = (price - ema) * alpha + ema
         return ema
 
     def get_wma(self):
-        weights = list(range(1, self.period.total_seconds() + 1))
-        weighted_prices = [w * p for w, p in zip(weights, self.prices[-self.period.total_seconds():])]
+        weights = list(range(1, self.period.seconds() + 1))
+        weighted_prices = [w * p for w, p in zip(weights, self.prices[-self.period.seconds():])]
         return sum(weighted_prices) / sum(weights) if sum(weights) != 0 else 0
 
     def calculate(self):
