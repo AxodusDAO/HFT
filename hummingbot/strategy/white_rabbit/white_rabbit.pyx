@@ -148,7 +148,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         
-        self._ma_cross = ma_cross or MACross(ma_type=ma_type)
+        self._ma_cross = ma_cross
         self._moving_price_band = moving_price_band
         
         self.c_add_markets([market_info.market])
@@ -916,39 +916,35 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             self.stop_loss_price = s_decimal_zero
 
             if self.inventory.is_zero() and self._ma_cross.buys[-1] != TradeType.BUY:
-                self.place_market_buy_order(self.trade_fill_tracker,
-                                            self._trading_pair,
-                                            self._quantity_step,
-                                            self._base_asset_step,
-                                            current_ask_price)
+                self.place_market_order(TradeType.BUY, current_ask_price)
                 return
 
-            if not self.inventory.is_zero():
-                if current_ask_price > self._ma_cross.slow_ma:
-                    self.place_market_buy_order(self.trade_fill_tracker,
-                                                self._trading_pair,
-                                                self._quantity_step,
-                                                self._base_asset_step,
-                                                current_ask_price)
+            if current_ask_price > self._ma_cross.slow_ma and not self.inventory.is_zero():
+                self.place_market_order(TradeType.BUY, current_ask_price)
+
         elif self._ma_cross.sells:
             self.stop_loss_price = s_decimal_neg_one
 
             if self.inventory.is_zero() and self._ma_cross.sells[-1] != TradeType.SELL:
-                self.place_market_sell_order(self.trade_fill_tracker,
-                                             self._trading_pair,
-                                             self._quantity_step,
-                                             current_bid_price)
+                self.place_market_order(TradeType.SELL, current_bid_price)
                 return
 
-            if not self.inventory.is_zero():
-                if current_bid_price < self._ma_cross.slow_ma:
-                    self.place_market_sell_order(self.trade_fill_tracker,
-                                                  self._trading_pair,
-                                                  self._quantity_step,
-                                                  current_bid_price)
-                                                  
-                                                  
-                                                  
+            if current_bid_price < self._ma_cross.slow_ma and not self.inventory.is_zero():
+                self.place_market_order(TradeType.SELL, current_bid_price)
+
+    def place_market_order(self, trade_type: TradeType, price: Decimal):
+        if trade_type == TradeType.BUY:
+            self.place_market_buy_order(self.trade_fill_tracker,
+                                        self._trading_pair,
+                                        self._quantity_step,
+                                        self._base_asset_step,
+                                        price)
+        elif trade_type == TradeType.SELL:
+            self.place_market_sell_order(self.trade_fill_tracker,
+                                        self._trading_pair,
+                                        self._quantity_step,
+                                        price)
+
 
     cdef c_apply_ping_pong(self, object proposal):
         self._ping_pong_warning_lines = []

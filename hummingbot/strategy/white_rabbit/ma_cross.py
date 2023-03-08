@@ -5,19 +5,14 @@ from decimal import Decimal
 from hummingbot.core.event.events import TradeType
 from hummingbot.indicators.moving_average import MovingAverageCalculator, MovingAverageType
 
-@classmethod
-    def logger(cls):
-        global mac_logger
-        if mac_logger is None:
-            mac_logger = logging.getLogger(__name__)
-        return mac_logger
+mac_logger = None
 
 @dataclass
 class MACross:
     enabled: bool = False
     ma_type: MovingAverageType
-    period: MovingAverageCalculator
-    _ma_calculator: MovingAverageCalculator = None
+    _period: int
+    _ma_calculator: MovingAverageCalculator = MovingAverageCalculator()
     _fast_ma: int = 0
     _slow_ma: int = 0
     _buys: List[TradeType] = []
@@ -27,9 +22,9 @@ class MACross:
     def __post_init__(self):
         self._ma_calculator = MovingAverageCalculator(self.period.interval, self.ma_type)
 
-      @property
+    @property
     def period(self) -> int:
-        return self.period
+        return self._period
     
     @property
     def buys(self) -> List[TradeType]:
@@ -70,3 +65,10 @@ class MACross:
         '''
         self.enabled = value
 
+    @classmethod
+    def logger(cls):
+        global mac_logger
+        if mac_logger is None:
+            mac_logger = logging.getLogger(__name__)
+        return mac_logger
+    
