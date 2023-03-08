@@ -1,17 +1,25 @@
+import logging
+from dataclasses import dataclass
 from typing import List
 from decimal import Decimal
 from hummingbot.core.event.events import TradeType
 from hummingbot.indicators.moving_average import MovingAverageCalculator, MovingAverageType
+import pandas as pd
 
-
+@dataclass
 class MACross:
-    def __init__(self,  ma_type: MovingAverageType, period: int, fast_ma: int, slow_ma: int):
-        self._ma_calculator = MovingAverageCalculator(period, ma_type)
-        self._fast_ma = fast_ma
-        self._slow_ma = slow_ma
-        self._buys = []
-        self._sells = []
-        self._last_action = None
+    enabled: bool = False
+    ma_type: MovingAverageType = MovingAverageType.SMA
+    period: MovingAverageCalculator = period
+    _ma_calculator: MovingAverageCalculator = None
+    _fast_ma: int = 0
+    _slow_ma: int = 0
+    _buys: List[TradeType] = []
+    _sells: List[TradeType] = []
+    _last_action: TradeType = None
+
+    def __post_init__(self):
+        self._ma_calculator = MovingAverageCalculator(self.period, self.ma_type)
 
     @property
     def buys(self) -> List[TradeType]:
@@ -50,5 +58,4 @@ class MACross:
         switch between enabled and disabled state
         :param value: set whether to enable or disable MACross
         '''
-        self.enable = value
-
+        self.enabled = value
