@@ -15,8 +15,8 @@ class MACross:
     _ma_calculator = MovingAverageCalculator
     _fast_ma: int = 0
     _slow_ma: int = 0
-    _buys: List[TradeType] = []
-    _sells: List[TradeType] = []
+    _buys: List[TradeType] = field(default_factory=list)
+    _sells: List[TradeType] = field(default_factory=list)
     _last_action: TradeType = None
 
     def __post_init__(self):
