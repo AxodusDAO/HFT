@@ -389,7 +389,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         return self._ma_cross.ma_type
     
     @ma_type.setter
-    def ma_cross(self, value: str):
+    def ma_type(self, value: str):
         self._ma_cross.ma_type = value
 
     @property
