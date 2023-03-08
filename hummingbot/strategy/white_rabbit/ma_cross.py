@@ -10,9 +10,9 @@ mac_logger = None
 @dataclass
 class MACross:
     enabled: bool = False
-    ma_type: MovingAverageType = MovingAverageType()
-    period: int
-    _ma_calculator: MovingAverageCalculator = MovingAverageCalculator()
+    ma_type = MovingAverageType
+    period: int = None
+    _ma_calculator = MovingAverageCalculator
     _fast_ma: int = 0
     _slow_ma: int = 0
     _buys: List[TradeType] = []
