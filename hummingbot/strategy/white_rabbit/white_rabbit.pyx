@@ -148,27 +148,12 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         
-        self._ma_cross = ma_cross
+        self._ma_cross = ma_cross or MACross(ma_type=ma_type)
         self._moving_price_band = moving_price_band
         
         self.c_add_markets([market_info.market])
 
-    @property
-    def ma_cross(self) -> MACross:
-        return self._ma_cross
-
-    @property
-    def ma_type(self) -> MovingAverageType:
-        return MovingAverageType(self._config_map.get("ma_type").value)
-
-    @property
-    def fast_ma(self) -> int:
-        return self._config_map.get("fast_ma").value
-
-    @property
-    def slow_ma(self) -> int:
-        return self._config_map.get("slow_ma").value
-
+    
     @property
     def market_info(self) -> MarketTradingPairTuple:
         return self._market_info
@@ -391,6 +376,49 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     def order_override(self, value: Dict[str, List[str]]):
         self._order_override = value
 
+    @property
+    def ma_cross_enabled(self) -> bool:
+       return self._ma_cross.enabled
+
+    @ma_cross_enabled.setter
+    def ma_cross_enabled(self, value: bool):
+        self._ma_cross.switch(value)
+
+    @property
+    def ma_type(self) -> str:
+        return self._ma_cross.ma_type
+    
+    @ma_type.setter
+    def ma_cross(self, value: str):
+        self._ma_cross.ma_type = value
+
+    @property
+    def ma_type(self) -> str:
+        return self._ma_cross.ma_type
+ 
+    @property
+    def fast_ma(self) -> int:
+        return self._ma_cross._fast_ma
+
+    @fast_ma.setter
+    def fast_ma(self, value: int):
+        self._ma_cross.fast_ma = value
+        self._ma_cross.update(self._current_timestamp, self.get_price())
+   
+    @property
+    def slow_ma(self) -> int:
+        return self._ma_cross._slow_ma
+    
+    @slow_ma.setter
+    def slow_ma(self, value: int):
+        self._ma_cross.slow_ma = value
+        self._ma_cross.update(self._current_timestamp, self.get_price())
+    
+    @property
+    def ma_cross(self) -> MACross:
+        return self._ma_cross  
+    
+    
     @property
     def moving_price_band_enabled(self) -> bool:
         return self._moving_price_band.enabled
