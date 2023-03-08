@@ -1,4 +1,3 @@
-from typing import List
 from enum import Enum
 from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 import pandas as pd

@@ -27,7 +27,6 @@ from .inventory_skew_calculator cimport c_calculate_bid_ask_ratios_from_base_ass
 from .inventory_skew_calculator import calculate_total_order_size
 from .white_rabbit_order_tracker import WhiteRabbitOrderTracker
 from .moving_price_band import MovingPriceBand
-from .ma_cross import MACross
 from hummingbot.indicators.moving_average import MovingAverageType, MovingAverageCalculator
 
 NaN = float("nan")
@@ -86,8 +85,9 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     bid_order_level_spreads: List[Decimal] = None,
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
-                    ma_cross: Optional[MACross] = None,
-                    ma_type: str = "SMA",
+                    slow_ma: int,
+                    fast_ma: int,
+                    ma_type: MovingAverageType,
                     moving_price_band: Optional[MovingPriceBand] = None,
                                
                 ):
@@ -148,7 +148,9 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         
-        self._ma_cross = ma_cross
+        self._ma_calculator = MovingAverageCalculator(fast_ma, slow_ma, ma_type)
+        self._last_action = None
+        self.enabled = False
         self._moving_price_band = moving_price_band
         
         self.c_add_markets([market_info.market])
@@ -378,45 +380,69 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     @property
     def ma_cross_enabled(self) -> bool:
-       return self._ma_cross.enabled
+       return self.enabled
 
     @ma_cross_enabled.setter
     def ma_cross_enabled(self, value: bool):
-        self._ma_cross.switch(value)
+        self.enabled = value
 
     @property
-    def ma_type(self) -> str:
-        return self._ma_cross.ma_type
+    def ma_type(self) -> MovingAverageType:
+        return self._ma_calculator.ma_type
     
     @ma_type.setter
-    def ma_type(self, value: str):
-        self._ma_cross.ma_type = value
+    def ma_type(self, value: MovingAverageType):
+        self._ma_calculator.ma_type = value
 
-    @property
-    def ma_type(self) -> str:
-        return self._ma_cross.ma_type
- 
-    @property
-    def fast_ma(self) -> int:
-        return self._ma_cross._fast_ma
-
-    @fast_ma.setter
-    def fast_ma(self, value: int):
-        self._ma_cross.fast_ma = value
-        self._ma_cross.update(self._current_timestamp, self.get_price())
-   
     @property
     def slow_ma(self) -> int:
-        return self._ma_cross._slow_ma
+        return self._ma_calculator.slow_ma
     
     @slow_ma.setter
     def slow_ma(self, value: int):
-        self._ma_cross.slow_ma = value
-        self._ma_cross.update(self._current_timestamp, self.get_price())
-    
+        self._ma_calculator.slow_ma = value
+
     @property
-    def ma_cross(self) -> MACross:
-        return self._ma_cross  
+    def fast_ma(self) -> int:
+        return self._ma_calculator.fast_ma
+    
+    @fast_ma.setter
+    def fast_ma(self, value: int):
+        self._ma_calculator.fast_ma = value
+    
+    def update(self, data):
+        if not self.enabled:
+            return
+
+        current_bid_price: Decimal = data.get("bid_price")
+        current_ask_price: Decimal = data.get("ask_price")
+        mid_price: Decimal = (current_bid_price + current_ask_price) / 2
+
+        if self.fast_ma > self.slow_ma and self._last_action != TradeType.BUY:
+            if self.should_buy(mid_price):
+                self.place_market_order(TradeType.BUY, current_ask_price)
+                self._last_action = TradeType.BUY
+
+        elif self.slow_ma > self.fast_ma and self._last_action != TradeType.SELL:
+            if self.should_sell(mid_price):
+                self.place_market_order(TradeType.SELL, current_bid_price)
+                self._last_action = TradeType.SELL
+
+    def is_above_slow_ma(self, price: Decimal) -> bool:
+        return price > self._ma_calculator.get_moving_average(self.slow_ma)
+
+    def is_below_slow_ma(self, price: Decimal) -> bool:
+        return price < self._ma_calculator.get_moving_average(self.slow_ma)
+
+    def should_buy(self, price: Decimal) -> bool:
+        return self.is_above_slow_ma(price) and self._last_action != TradeType.BUY
+
+    def should_sell(self, price: Decimal) -> bool:
+        return self.is_below_slow_ma(price) and self._last_action != TradeType.SELL
+
+    def place_market_order(self, trade_type: TradeType, price: Decimal):
+        if trade_type == TradeType.BUY:
+            self.place_market_buy 
     
     
     @property
