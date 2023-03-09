@@ -198,8 +198,8 @@ white_rabbit_config_map = {
                   prompt_on_new=True,
                   validator=validate_bool),             
 # Golden / Death Cross strategy
-    "ma_cross":
-        ConfigVar(key="ma_cross",
+    "ma_cross_enabled":
+        ConfigVar(key="ma_cross_enabled",
                   prompt=ma_cross_enabled_prompt,
                   type_str="bool",
                   validator=validate_ma_cross_enabled,

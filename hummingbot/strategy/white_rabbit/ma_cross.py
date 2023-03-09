@@ -5,58 +5,47 @@ from decimal import Decimal
 from hummingbot.core.event.events import TradeType
 from hummingbot.indicators.moving_average import MovingAverageCalculator, MovingAverageType
 
-mac_logger = None
 
-@dataclass
 class MACross:
-    enabled: bool = False
-    ma_type = MovingAverageType
-    period: int = None
-    _ma_calculator = MovingAverageCalculator
-    _fast_ma: int = 0
-    _slow_ma: int = 0
-    _buys: TradeType = BUY
-    _sells: TradeType = SELL
-    _last_action: TradeType = None
+    def __init__(self, period: int, fast_ma: int, slow_ma: int, ma_type: MovingAverageType = MovingAverageType.SMA):
+        self.enabled = False
+        self.ma_type = ma_type
+        self.period = period
+        self.ma_calculator = MovingAverageCalculator(self._ma_type, self._period)
+        self.fast_ma = fast_ma
+        self.slow_ma = slow_ma
+        self.buys = []
+        self.sells = []
+        self.last_action = None
 
-    def __post_init__(self):
-        self._ma_calculator = MovingAverageCalculator(self.period.interval, self.ma_type)
+    def update(self, price: Decimal) -> bool:
+        self.ma_calculator.add_new_sample(price)
+        self.fast_ma = self.ma_calculator.get_moving_average(self.fast_ma)
+        self.slow_ma = self.ma_calculator.get_moving_average(self.slow_ma)
 
-    @property
-    def period(self) -> int:
-        return self._
-    
-    @property
-    def buys(self) -> List[TradeType]:
-        return self._buys
+        if self.fast_ma > self.slow_ma and self.last_action != TradeType.BUY:
+            self.buys.append(TradeType.BUY)
+            self.last_action = TradeType.BUY
+            return True
 
-    @property
-    def sells(self) -> List[TradeType]:
-        return self._sells
+        elif self.slow_ma > self.fast_ma and self.last_action != TradeType.SELL:
+            self.sells.append(TradeType.SELL)
+            self.last_action = TradeType.SELL
+            return True
 
-    def update(self, price: Decimal):
-        self._ma_calculator.add_new_price(price)
-        fast_ma = self._ma_calculator.get_moving_average(self._fast_ma)
-        slow_ma = self._ma_calculator.get_moving_average(self._slow_ma)
-
-        if fast_ma > slow_ma and self._last_action != TradeType.BUY:
-            self._buys.append(TradeType.BUY)
-            self._last_action = TradeType.BUY
-        elif slow_ma > fast_ma and self._last_action != TradeType.SELL:
-            self._sells.append(TradeType.SELL)
-            self._last_action = TradeType.SELL
+        return False
 
     def is_above_slow_ma(self, price: Decimal) -> bool:
-        return price > self._ma_calculator.get_moving_average(self._slow_ma)
+        return price > self.ma_calculator.get_moving_average(self.slow_ma)
 
     def is_below_slow_ma(self, price: Decimal) -> bool:
-        return price < self._ma_calculator.get_moving_average(self._slow_ma)
+        return price < self.ma_calculator.get_moving_average(self.slow_ma)
 
     def should_buy(self, price: Decimal) -> bool:
-        return self.is_above_slow_ma(price) and self._last_action != TradeType.BUY
+        return self.is_above_slow_ma(price) and self.last_action != TradeType.BUY
 
     def should_sell(self, price: Decimal) -> bool:
-        return self.is_below_slow_ma(price) and self._last_action != TradeType.SELL
+        return self.is_below_slow_ma(price) and self.last_action != TradeType.SELL
 
     def switch(self, value: bool) -> None:
         '''
@@ -64,11 +53,3 @@ class MACross:
         :param value: set whether to enable or disable MACross
         '''
         self.enabled = value
-
-    @classmethod
-    def logger(cls):
-        global mac_logger
-        if mac_logger is None:
-            mac_logger = logging.getLogger(__name__)
-        return mac_logger
-    
