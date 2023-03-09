@@ -205,6 +205,7 @@ white_rabbit_config_map = {
                   validator=validate_ma_cross_enabled,
                   on_validated=on_validated_ma_cross_enabled,
                   prompt_on_new=True),
+    
     "ma_type":
         ConfigVar(key="ma_type",
                   prompt=ma_type_prompt,

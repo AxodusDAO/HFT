@@ -1,41 +1,37 @@
-from enum import Enum
-from typing import List
-from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
+import numpy as np
 
-class MovingAverageType(Enum):
-    SMA = "SMA"
-    EMA = "EMA"
-    WMA = "WMA"
+def get_sma(prices, n):
+    """
+    Calculate Simple Moving Average (SMA) of a given set of prices over n periods.
+    
+    Args:
+        prices (list): List of closing prices.
+        n (int): Number of periods for which to calculate the SMA.
+    
+    Returns:
+        sma (list): List of SMA values for each period.
+    """
+    sma = []
+    for i in range(n-1, len(prices)):
+        sma.append(np.mean(prices[i-n+1:i+1]))
+    return sma
 
-
-class MovingAverageCalculator:
-    def __init__(self, prices: MarketTradingPairTuple, period: int, ma_type: MovingAverageType):
-        self._prices = prices
-        self._period = period
-        self._ma_type = ma_type
-
-    def get_sma(self) -> float:
-        return sum(self._prices[-self._period:]) / self._period
-
-    def get_ema(self) -> float:
-        alpha = 2 / (self._period + 1)
-        ema = self._prices[-1]
-        for price in reversed(self._prices[-self._period + 1:]):
-            ema = (price - ema) * alpha + ema
-        return ema
-
-    def get_wma(self) -> float:
-        weights = list(range(1, self._period + 1))
-        weighted_prices = [w * p for w, p in zip(weights, self._prices[-self._period:])]
-        return sum(weighted_prices) / sum(weights) if sum(weights) != 0 else 0
-
-    def calculate(self) -> float:
-        if self._ma_type == MovingAverageType.SMA:
-            return self.get_sma()
-        elif self._ma_type == MovingAverageType.EMA:
-            return self.get_ema()
-        elif self._ma_type == MovingAverageType.WMA:
-            return self.get_wma()
+def get_ema(prices, n):
+    """
+    Calculate Exponential Moving Average (EMA) of a given set of prices over n periods.
+    
+    Args:
+        prices (list): List of closing prices.
+        n (int): Number of periods for which to calculate the EMA.
+    
+    Returns:
+        ema (list): List of EMA values for each period.
+    """
+    ema = []
+    multiplier = 2 / (n + 1)
+    for i in range(len(prices)):
+        if i == 0:
+            ema.append(prices[0])
         else:
-            raise ValueError(f"Invalid MovingAverageType: {self._ma_type}")
-
+            ema.append((prices[i] - ema[i-1]) * multiplier + ema[i-1])
+    return ema
