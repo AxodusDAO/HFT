@@ -60,7 +60,7 @@ def start(self):
             enabled=c_map.get("ma_cross_enabled").value,
             ma_type=c_map.get("ma_type").value,
             fast_ma=c_map.get("fast_ma").value,
-            slow_ma=c_map.get("slow_type").value,
+            slow_ma=c_map.get("slow_ma").value,
         )
 
         moving_price_band = MovingPriceBand(
