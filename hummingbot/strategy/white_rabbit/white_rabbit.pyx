@@ -85,14 +85,15 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     bid_order_level_spreads: List[Decimal] = None,
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
-                    slow_ma: int,
-                    fast_ma: int,
-                    ma_type: MovingAverageType,
+                    
+                    ma_cross: Optional[MACross] = None,
                     moving_price_band: Optional[MovingPriceBand] = None,
                                
                 ):
         if order_override is None:
             order_override = {}
+        if ma_cross is None:
+            ma_cross = MACross()
         if moving_price_band is None:
             moving_price_band = MovingPriceBand()
         if price_ceiling != s_decimal_neg_one and price_ceiling < price_floor:
@@ -148,9 +149,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
         
-        self._ma_calculator = MovingAverageCalculator(fast_ma, slow_ma, ma_type)
-        self._last_action = None
-        self.enabled = False
+        self._ma_cross = ma_cross
         self._moving_price_band = moving_price_band
         
         self.c_add_markets([market_info.market])
