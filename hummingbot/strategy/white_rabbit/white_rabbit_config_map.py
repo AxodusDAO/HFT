@@ -212,8 +212,8 @@ white_rabbit_config_map = {
                   validator=validate_ma_type,
                   on_validated=on_validated_ma_cross_enabled,
                   default="SMA"),
-    "ma_cross_period":
-        ConfigVar(key="ma_cross_period",
+    "period":
+        ConfigVar(key="period",
                   prompt="How many candles count to calcule MA (default = 3200)",
                   validator=validate_int,
                   default=3200,

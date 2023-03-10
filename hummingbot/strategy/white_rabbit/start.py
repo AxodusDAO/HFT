@@ -59,7 +59,7 @@ def start(self):
         ma_cross = MACross(
             enabled=c_map.get("ma_cross_enabled").value,
             ma_type=c_map.get("ma_type").value,
-            period=c_map.get("ma_cross_period").value,
+            period=c_map.get("period").value,
             fast_ma=c_map.get("fast_ma").value,
             slow_ma=c_map.get("slow_ma").value
         )
