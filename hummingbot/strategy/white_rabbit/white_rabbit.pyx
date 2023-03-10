@@ -28,7 +28,7 @@ from .inventory_skew_calculator import calculate_total_order_size
 from .white_rabbit_order_tracker import WhiteRabbitOrderTracker
 from .moving_price_band import MovingPriceBand
 from .ma_cross import MACross
-from hummingbot.indicators.moving_average import MovingAverageType, MovingAverageCalculator
+from hummingbot.indicators.moving_average import MACalc
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
