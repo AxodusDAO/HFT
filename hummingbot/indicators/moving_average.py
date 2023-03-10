@@ -2,8 +2,7 @@ import numpy as np
 from typing import List
 
 class MACalc:
-    sma = get_sma()
-    ema = get_ema()
+
     """
     A class for calculating moving averages.
     """
