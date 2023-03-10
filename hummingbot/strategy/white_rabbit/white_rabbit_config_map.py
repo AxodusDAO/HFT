@@ -212,6 +212,12 @@ white_rabbit_config_map = {
                   validator=validate_ma_type,
                   on_validated=on_validated_ma_cross_enabled,
                   default="SMA"),
+    "ma_cross_period":
+        ConfigVar(key="period",
+                  prompt="How many candles count to calcule MA (default = 3200)",
+                  validator=validate_int,
+                  default=3200,
+                  prompt_on_new=True),
     "fast_ma":
         ConfigVar(key="fast_ma",
                   prompt="Enter the FAST MA time period >>> ",
