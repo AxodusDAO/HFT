@@ -936,7 +936,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         if self._moving_price_band.check_price_floor_exceeded(price):
             proposal.sells = []
 
-    def apply_ma_cross(self, current_bid_price: Decimal, current_ask_price: Decimal):
+    cdef c_apply_ma_cross(self, current_bid_price: Decimal, current_ask_price: Decimal):
         if not self._ma_cross.enabled:
             return
 
