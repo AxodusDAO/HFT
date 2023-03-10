@@ -152,9 +152,9 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         
         self._ma_cross = MACross()
         self._ma_cross.enabled = True
-        self._ma_cross.fast_ma = config.get("fast_ma", 9)
-        self._ma_cross.slow_ma = config.get("slow_ma", 50)
-        self._ma_cross.ma_type = config.get("ma_type", "sma")
+        self._ma_cross.fast_ma = MACross.get("fast_ma", 9)
+        self._ma_cross.slow_ma = MACross.get("slow_ma", 50)
+        self._ma_cross.ma_type = MACross.get("ma_type", "sma")
 
         self._moving_price_band = moving_price_band
         

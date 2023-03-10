@@ -8,10 +8,10 @@ from hummingbot.indicators.moving_average import MACalc
 
 class MACross:
     enabled: bool = False 
-    ma_type: str = "ema"
+    ma_type: str = "sma"
     period: int = 3200
-    fast_ma: int = 50
-    slow_ma: int = 200
+    fast_ma: int = 9
+    slow_ma: int = 50
     
     def __post_init__(self):
         self.ma_calculator = MACalc(self.ma_type, self.period)
