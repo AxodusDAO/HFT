@@ -33,8 +33,14 @@ class MACross:
 
     def update(self, price: Decimal):
         self.ma_calculator.add_new_sample(price)
-        self.fast_ma = self.ma_calculator.get_moving_average(self.ma_type.fast_ema if self.ma_type.ma_type == "ema" else self.ma_type.fast_sma)
-        self.slow_ma = self.ma_calculator.get_moving_average(self.ma_type.slow_ema if self.ma_type.ma_type == "ema" else self.ma_type.slow_sma)
+        self.fast_ma = self.ma_calculator.get_moving_average(
+            self.ma_type.fast_ema if self.ma_type.ma_type == "ema" 
+            else self.ma_type.fast_sma
+            )
+        self.slow_ma = self.ma_calculator.get_moving_average(
+            self.ma_type.slow_ema if self.ma_type.ma_type == "ema" 
+            else self.ma_type.slow_sma
+            )
 
         if self.fast_ma > self.slow_ma and self.should_buy():
             self.buys.append(TradeType.BUY)
