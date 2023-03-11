@@ -21,12 +21,12 @@ class MAType(MACalc):
 
 class MACross:
     def __init__(self, prices: List[Decimal], n: int):
-        self.ma_type = MAType(prices, n)
+    enabled = False
+    ma_type = MAType(prices, n)
+    period = 3200
+    fast_ma = 9
+    slow_ma = 50
         self.ma_calculator = MACalc()
-        self.enabled = False
-        self.period = 3200
-        self.fast_ma = 9
-        self.slow_ma = 50
         self.buys = []
         self.sells = []
         self.last_action = None
