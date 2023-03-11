@@ -214,12 +214,14 @@ white_rabbit_config_map = {
         ConfigVar(key="ma_period",
                   prompt=ma_period_prompt,
                   validator=validate_decimal,
+                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value,
                   default=3200),
     "ma_type":
         ConfigVar(key="ma_type",
                   prompt=ma_type_prompt,
                   validator=validate_ma_type,
                   on_validated=on_validated_ma_cross_enabled,
+                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value,
                   default="SMA"),
     "fast_ma":
         ConfigVar(key="fast_ma",
