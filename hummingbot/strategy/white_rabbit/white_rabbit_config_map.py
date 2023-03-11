@@ -120,6 +120,10 @@ def validate_ma_type(value: str) -> Optional[str]:
     if value.upper() not in {"SMA", "EMA"}:
         return "Invalid input. Please enter 'SMA' or 'EMA'"
         
+def ma_period_prompt() -> str:
+    return "Candlestick count to calculate MA (default: 3200)"
+
+
 def on_validated_ma_cross_enabled(value: str):
     if value.lower() == "enabled":
         white_rabbit_config_map["fast_ma"].value = None
@@ -206,7 +210,11 @@ white_rabbit_config_map = {
                   validator=validate_ma_cross_enabled,
                   on_validated=on_validated_ma_cross_enabled,
                   prompt_on_new=True),
-    
+    "ma_period":
+        ConfigVar(key="ma_period",
+                  prompt=ma_period_prompt,
+                  validator=validate_decimal,
+                  default=3200),
     "ma_type":
         ConfigVar(key="ma_type",
                   prompt=ma_type_prompt,
