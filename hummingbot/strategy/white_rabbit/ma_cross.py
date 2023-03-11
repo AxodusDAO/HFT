@@ -4,43 +4,39 @@ from decimal import Decimal
 from hummingbot.core.event.events import TradeType
 from hummingbot.indicators.moving_average import MACalc
 
+
 @dataclass
 class MAType(MACalc):
     prices: List[Decimal]
     n: int
-    fast_sma: Decimal = None
-    fast_ema: Decimal = None
-    slow_sma: Decimal = None
-    slow_ema: Decimal = None
+    ma_type: str = "sma"
 
     def __post_init__(self):
-        self.fast_sma = self.get_sma(self.prices, self.fast_ma)
-        self.fast_ema = self.get_ema(self.prices, self.fast_ma)
-        self.slow_sma = self.get_sma(self.prices, self.slow_ma)
-        self.slow_ema = self.get_ema(self.prices, self.slow_ma)
+        if self.ma_type == "sma":
+            self.fast_ma = self.get_sma(self.prices, self.n)
+            self.slow_ma = self.get_sma(self.prices, self.n * 2)
+        elif self.ma_type == "ema":
+            self.fast_ma = self.get_ema(self.prices, self.n)
+            self.slow_ma = self.get_ema(self.prices, self.n * 2)
+
 
 class MACross:
     def __init__(self, prices: List[Decimal], n: int):
-    enabled = False
-    ma_type = MAType(prices, n)
-    period = 3200
-    fast_ma = 9
-    slow_ma = 50
-        self.ma_calculator = MACalc()
+        self.ma_type = MAType(prices, n)
+        self.enabled = False
+        self.period = 3200
+        self.fast_ma = self.ma_type.fast_ma
+        self.slow_ma = self.ma_type.slow_ma
         self.buys = []
         self.sells = []
         self.last_action = None
 
     def update(self, price: Decimal):
-        self.ma_calculator.add_new_sample(price)
-        self.fast_ma = self.ma_calculator.get_moving_average(
-            self.ma_type.fast_ema if self.ma_type.ma_type == "ema" 
-            else self.ma_type.fast_sma
-            )
-        self.slow_ma = self.ma_calculator.get_moving_average(
-            self.ma_type.slow_ema if self.ma_type.ma_type == "ema" 
-            else self.ma_type.slow_sma
-            )
+        self.ma_type.prices.append(price)
+        self.ma_type.fast_ma = self.ma_type.get_moving_average(self.ma_type.fast_ma, price)
+        self.ma_type.slow_ma = self.ma_type.get_moving_average(self.ma_type.slow_ma, price)
+        self.fast_ma = self.ma_type.fast_ma
+        self.slow_ma = self.ma_type.slow_ma
 
         if self.fast_ma > self.slow_ma and self.should_buy():
             self.buys.append(TradeType.BUY)

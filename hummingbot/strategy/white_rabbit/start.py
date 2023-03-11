@@ -58,12 +58,14 @@ def start(self):
         split_order_levels_enabled = c_map.get("split_order_levels_enabled").value
         
         ma_cross = MACross(
-            enabled=c_map.get("ma_cross_enabled").value,
-            ma_type=c_map.get("ma_type").value,
-            period=c_map.get("ma_period").value,
-            fast_ma=c_map.get("fast_ma").value,
-            slow_ma=c_map.get("slow_ma").value
-        )
+                prices=[],
+                n=c_map.get("ma_period").value,
+            )
+        ma_cross.ma_type.ma_type = c_map.get("ma_type").value
+        ma_cross.enabled = c_map.get("ma_cross_enabled").value
+        ma_cross.fast_ma = c_map.get("fast_ma").value
+        ma_cross.slow_ma = c_map.get("slow_ma").value
+        ma_cross.period = c_map.get("ma_period").value
 
         moving_price_band = MovingPriceBand(
             enabled=c_map.get("moving_price_band_enabled").value,
