@@ -114,11 +114,11 @@ def validate_ma_cross_enabled(value: str) -> Optional[str]:
         return "Invalid input. Please enter 'enabled' or 'disabled'"
 
 def ma_type_prompt() -> str:
-    return "Select Moving Average type (SMA/EMA/WMA) >>> "
+    return "Select Moving Average type (SMA/EMA) >>> "
 
 def validate_ma_type(value: str) -> Optional[str]:
-    if value.upper() not in {"SMA", "EMA", "WMA"}:
-        return "Invalid input. Please enter 'SMA', 'EMA', or 'WMA'"
+    if value.upper() not in {"SMA", "EMA"}:
+        return "Invalid input. Please enter 'SMA' or 'EMA'"
         
 def on_validated_ma_cross_enabled(value: str):
     if value.lower() == "enabled":
@@ -131,10 +131,11 @@ def on_validated_ma_cross_enabled(value: str):
         elif value.upper() == "EMA":
             white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST EMA time period >>> "
             white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW EMA time period >>> "
-        elif value.upper() == "WMA":
-            white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST WMA time period >>> "
-            white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW WMA time period >>> "
-
+ #           '''
+ #       elif value.upper() == "WMA":
+ #           white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST WMA time period >>> "
+ #           white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW WMA time period >>> "
+ #           '''
 
 def validate_decimal_list(value: str) -> Optional[str]:
     decimal_list = list(value.split(","))
