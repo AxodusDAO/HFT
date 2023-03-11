@@ -58,11 +58,11 @@ def start(self):
         split_order_levels_enabled = c_map.get("split_order_levels_enabled").value
         
         ma_cross = MACross(
-            enabled=c_map.get("ma_cross_enabled").value,
-            ma_type=c_map.get("ma_type").value,
-            period=c_map.get("ma_period").value,
-            fast_ma=c_map.get("fast_ma").value,
-            slow_ma=c_map.get("slow_ma").value
+            self.enabled=c_map.get("ma_cross_enabled").value,
+            self.ma_type=c_map.get("ma_type").value,
+            self.period=c_map.get("ma_period").value,
+            self.fast_ma=c_map.get("fast_ma").value,
+            self.slow_ma=c_map.get("slow_ma").value
         )
 
         moving_price_band = MovingPriceBand(
@@ -153,7 +153,7 @@ def start(self):
             should_wait_order_cancel_confirmation=should_wait_order_cancel_confirmation,
 
             ma_cross=ma_cross,
-            ma_type=ma_type,
+            
             moving_price_band=moving_price_band
         )
     except Exception as e:
