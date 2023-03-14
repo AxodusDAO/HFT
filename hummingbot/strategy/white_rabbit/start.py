@@ -58,8 +58,7 @@ def start(self):
         split_order_levels_enabled = c_map.get("split_order_levels_enabled").value
         
         ma_cross = MACross(
-                prices=[],
-                n=c_map.get("ma_period").value,
+                timstamp=c_map.get("ma_period").value,
             )
         ma_cross.ma_type.ma_type = c_map.get("ma_type").value
         ma_cross.enabled = c_map.get("ma_cross_enabled").value

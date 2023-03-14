@@ -10,14 +10,12 @@ class MAType:
         self.ma_type = ma_type
         self.prices = prices
         self.timestamp = timestamp
-        self.fast_ma = self.get_ma(prices, timestamp)
-        self.slow_ma = self.get_ma(prices, timestamp * 2)
-
-    def get_ma(self, prices, timestamp):
+        
+    def get_ma(self):
         if self.ma_type == "sma":
-            return MACalc.get_sma(prices, timestamp)
+            return MACalc.get_sma(self.prices, self.timestamp)
         elif self.ma_type == "ema":
-            return MACalc.get_ema(prices, timestamp)
+            return MACalc.get_ema(self.prices, self.timestamp)
 
 
 @dataclass
@@ -26,14 +24,16 @@ class MACross:
     prices: list = []
     timestamp: float = 3200
     ma_type: MAType = None
+    fast_ma: float = None
+    slow_ma: float = None
     buys: list = []
     sells: list = []
     last_action: TradeType = None
 
     def __post_init__(self):
         self.ma_type = MAType(self.ma_type.ma_type, self.prices, self.timestamp)
-        self.fast_ma = self.ma_type.fast_ma
-        self.slow_ma = self.ma_type.slow_ma
+        self.fast_ma = self.ma_type.get_ma()
+        self.slow_ma = self.ma_type.get_ma() * 2
 
     @classmethod
     def logger(cls):
@@ -41,8 +41,8 @@ class MACross:
 
     def update(self, timestamp: float, price: Decimal) -> bool:
         self.prices.append(price)
-        self.fast_ma = self.ma_type.get_ma(self.prices, self.timestamp)
-        self.slow_ma = self.ma_type.get_ma(self.prices, self.timestamp * 2)
+        self.fast_ma = self.ma_type.get_ma()
+        self.slow_ma = self.ma_type.get_ma() * 2
         return self.golden_cross() or self.death_cross()
 
     def golden_cross(self) -> bool:
@@ -71,4 +71,4 @@ class MACross:
 
         :param value: set whether to enable or disable MovingPriceBand
         '''
-        self.enabled = value if value else False
+        self.enabled = value
