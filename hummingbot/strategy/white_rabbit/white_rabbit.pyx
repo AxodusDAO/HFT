@@ -887,7 +887,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             proposal.sells = []
 
     cdef c_apply_ma_cross(self, proposal):
-   price = self.get_price()
+        price = self.get_price()
         self._ma_cross.check_and_update_price(
             self.current_timestamp, price)
         if self._ma_cross.check_price_golden_cross(price):
