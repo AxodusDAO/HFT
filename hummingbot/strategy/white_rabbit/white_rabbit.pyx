@@ -374,6 +374,30 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._order_override = value
 
     @property
+    def ma_cross_enabled(self) -> bool:
+        return self._ma_cross.enabled
+    
+    @ma_cross_enabled.setter
+    def ma_cross_enabled(self, value: bool):
+        self._ma_cross.switc(value)
+
+    @property
+    def ma_type(self) -> str:
+        return self._ma_type.ma_type
+    
+    @ma_type.setter
+    def ma_type(self, value: str):
+        self._ma_type.ma_type(value)
+
+    @property
+    def ma_type(self) -> MAType:
+        return self._ma_type
+        
+    @property
+    def ma_cross(self) -> MACross:
+        return self._ma_cross
+        
+    @property
     def moving_price_band_enabled(self) -> bool:
         return self._moving_price_band.enabled
 
@@ -853,6 +877,15 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         if self._price_floor > 0 and self.get_price() <= self._price_floor:
             proposal.sells = []
 
+    cdef c_apply_ma_cross(self, proposal):
+   price = self.get_price()
+        self._ma_cross.check_and_update_price(
+            self.current_timestamp, price)
+        if self._ma_cross.check_price_golden_cross(price):
+            proposal.buys = []
+        if self._ma_cross.check_price_death_cross(price):
+            proposal.sells = []
+    
     cdef c_apply_moving_price_band(self, proposal):
         price = self.get_price()
         self._moving_price_band.check_and_update_price_band(

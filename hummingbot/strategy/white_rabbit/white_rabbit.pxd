@@ -82,5 +82,5 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     cdef bint c_to_create_orders(self, object proposal)
     cdef c_execute_orders_proposal(self, object proposal)
     cdef set_timers(self)
-    cdef c_apply_ma_cross(self, current_bid_price: Decimal, current_ask_price: Decimal)
+    cdef c_apply_ma_cross(self, proposal)
     cdef c_apply_moving_price_band(self, object proposal)
