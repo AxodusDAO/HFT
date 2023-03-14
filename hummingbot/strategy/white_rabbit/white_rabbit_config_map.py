@@ -135,12 +135,13 @@ def on_validated_ma_cross_enabled(value: str):
         elif value.upper() == "EMA":
             white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST EMA time period >>> "
             white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW EMA time period >>> "
+ ##################################################################################################
  #           '''
  #       elif value.upper() == "WMA":
  #           white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST WMA time period >>> "
  #           white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW WMA time period >>> "
  #           '''
-
+####################################################################################################
 def validate_decimal_list(value: str) -> Optional[str]:
     decimal_list = list(value.split(","))
     for number in decimal_list:
