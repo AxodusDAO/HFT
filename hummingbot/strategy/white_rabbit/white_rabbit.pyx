@@ -27,6 +27,7 @@ from .inventory_skew_calculator cimport c_calculate_bid_ask_ratios_from_base_ass
 from .inventory_skew_calculator import calculate_total_order_size
 from .white_rabbit_order_tracker import WhiteRabbitOrderTracker
 from .moving_price_band import MovingPriceBand
+from .ma_cross import MACross, MAType
 
 
 NaN = float("nan")
@@ -85,6 +86,8 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     bid_order_level_spreads: List[Decimal] = None,
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
+                    ma_cross: Optional[MACross] = None,
+                    ma_type: Optional[MAType] = None,
 
                     moving_price_band: Optional[MovingPriceBand] = None
                     ):
@@ -94,6 +97,10 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             moving_price_band = MovingPriceBand()
         if price_ceiling != s_decimal_neg_one and price_ceiling < price_floor:
             raise ValueError("Parameter price_ceiling cannot be lower than price_floor.")
+        if ma_cross is None:
+            ma_cross = MACross()
+        if ma_type is None: 
+            ma_type = MAType()
         self._sb_order_tracker = WhiteRabbitOrderTracker()
         self._market_info = market_info
         self._bid_spread = bid_spread
@@ -144,6 +151,8 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._status_report_interval = status_report_interval
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
+        self._ma_cross = ma_cross
+        self._ma_type = ma_type
 
         self._moving_price_band = moving_price_band
         self.c_add_markets([market_info.market])
@@ -392,7 +401,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     @property
     def ma_type(self) -> MAType:
         return self._ma_type
-        
+
     @property
     def ma_cross(self) -> MACross:
         return self._ma_cross
