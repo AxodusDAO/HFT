@@ -27,8 +27,7 @@ from .inventory_skew_calculator cimport c_calculate_bid_ask_ratios_from_base_ass
 from .inventory_skew_calculator import calculate_total_order_size
 from .white_rabbit_order_tracker import WhiteRabbitOrderTracker
 from .moving_price_band import MovingPriceBand
-from .ma_cross import MACross
-from hummingbot.indicators.moving_average import MACalc
+
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
@@ -86,15 +85,11 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     bid_order_level_spreads: List[Decimal] = None,
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
-                    
-                    ma_cross: Optional[MACross] = None,
-                    moving_price_band: Optional[MovingPriceBand] = None,
-                               
-                ):
+
+                    moving_price_band: Optional[MovingPriceBand] = None
+                    ):
         if order_override is None:
             order_override = {}
-        if ma_cross is None:
-            ma_cross = MACross()
         if moving_price_band is None:
             moving_price_band = MovingPriceBand()
         if price_ceiling != s_decimal_neg_one and price_ceiling < price_floor:
@@ -149,18 +144,13 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._status_report_interval = status_report_interval
         self._last_own_trade_price = Decimal('nan')
         self._should_wait_order_cancel_confirmation = should_wait_order_cancel_confirmation
-        
-        self._ma_cross = MACross()
-        self._ma_cross.enabled = True
-        self._ma_cross.fast_ma = MACross.get("fast_ma", 9)
-        self._ma_cross.slow_ma = MACross.get("slow_ma", 50)
-        self._ma_cross.ma_type = MACross.get("ma_type", "sma")
 
         self._moving_price_band = moving_price_band
-        
         self.c_add_markets([market_info.market])
 
-    
+    def all_markets_ready(self):
+        return all([market.ready for market in self._sb_markets])
+
     @property
     def market_info(self) -> MarketTradingPairTuple:
         return self._market_info
@@ -176,7 +166,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     @property
     def ping_pong_enabled(self) -> bool:
         return self._ping_pong_enabled
-    
+
     @property
     def ask_order_optimization_depth(self) -> Decimal:
         return self._ask_order_optimization_depth
@@ -383,70 +373,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     def order_override(self, value: Dict[str, List[str]]):
         self._order_override = value
 
-# MA Cross starts 
-    
-    @property
-    def ma_cross_enabled(self) -> bool:
-        return self._ma_cross.enabled
-
-    @ma_cross_enabled.setter
-    def ma_cross_enabled(self, value: bool):
-        self._ma_cross.enabled = value
-
-    @property
-    def ma_type(self) -> str:
-        return self._ma_cross.ma_type
-
-    @ma_type.setter
-    def ma_type(self, value: str):
-        self._ma_cross.ma_type = value
-
-    @property
-    def slow_ma(self) -> int:
-        return self._ma_cross.slow_ma
-
-    @slow_ma.setter
-    def slow_ma(self, value: int):
-        self._ma_cross.slow_ma = value
-
-    @property
-    def fast_ma(self) -> int:
-        return self._ma_cross.fast_ma
-
-    @fast_ma.setter
-    def fast_ma(self, value: int):
-        self._ma_cross.fast_ma = value
-
-    def update(self, data: Dict):
-        super().update(data)
-        self._ma_cross.update(data)
-        current_bid_price: Decimal = data.get("bid_price")
-        current_ask_price: Decimal = data.get("ask_price")
-        mid_price: Decimal = (current_bid_price + current_ask_price) / 2
-
-        if self._ma_cross.fast_ma > self._ma_cross.slow_ma and self.last_action != TradeType.BUY:
-            if self.should_buy(mid_price):
-                self.place_market_order(TradeType.BUY, current_ask_price)
-                self.last_action = TradeType.BUY
-
-        elif self._ma_cross.slow_ma > self._ma_cross.fast_ma and self.last_action != TradeType.SELL:
-            if self.should_sell(mid_price):
-                self.place_market_order(TradeType.SELL, current_bid_price)
-                self.last_action = TradeType.SELL
-
-    def is_above_slow_ma(self, price: Decimal) -> bool:
-        return price > self._ma_cross.get_moving_average(self.slow_ma)
-
-    def is_below_slow_ma(self, price: Decimal) -> bool:
-        return price < self._ma_cross.get_moving_average(self.slow_ma)
-
-    def should_buy(self, price: Decimal) -> bool:
-        return self.is_above_slow_ma(price) and self.last_action != TradeType.BUY
-
-    def should_sell(self, price: Decimal) -> bool:
-        return self.is_below_slow_ma(price) and self.last_action != TradeType.SELL
-    
-    
     @property
     def moving_price_band_enabled(self) -> bool:
         return self._moving_price_band.enabled
@@ -936,49 +862,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         if self._moving_price_band.check_price_floor_exceeded(price):
             proposal.sells = []
 
-    cdef c_apply_ma_cross(self, current_bid_price: Decimal, current_ask_price: Decimal):
-        if not self._ma_cross.enabled:
-            return
-
-        last_trade = self.inventory.last_trade_type()
-        is_buy_signal = self._ma_cross.should_buy(current_ask_price) and last_trade != TradeType.BUY
-        is_sell_signal = self._ma_cross.should_sell(current_bid_price) and last_trade != TradeType.SELL
-
-        if is_buy_signal or is_sell_signal:
-            trade_type = TradeType.BUY if is_buy_signal else TradeType.SELL
-            price = current_ask_price if is_buy_signal else current_bid_price
-            self.place_market_order(trade_type, price)
-
-    def place_market_order(self, trade_type: TradeType, price: Decimal):
-        if self.inventory.is_zero():
-            if trade_type == TradeType.BUY and not self._ma_cross.buys:
-                self._ma_cross.add_trade_type(trade_type)
-            elif trade_type == TradeType.SELL and not self._ma_cross.sells:
-                self._ma_cross.add_trade_type(trade_type)
-            else:
-                return
-
-        if trade_type == TradeType.BUY:
-            if price > self._ma_cross.slow_ma:
-                self._ma_cross.add_trade_type(trade_type)
-        elif trade_type == TradeType.SELL:
-            if price < self._ma_cross.slow_ma:
-                self._ma_cross.add_trade_type(trade_type)
-
-        if self._ma_cross.buys and self._ma_cross.sells:
-            if self._ma_cross.buys[-1] > self._ma_cross.sells[-1]:
-                self.stop_loss_price = s_decimal_zero
-            else:
-                self.stop_loss_price = s_decimal_neg_one
-
-            self._ma_cross.clear_trade_types()
-
-            self.place_market_order(TradeType.BUY, price) if self.stop_loss_price == s_decimal_zero else self.place_market_order(TradeType.SELL, price)
-
-            return
-
-
-
     cdef c_apply_ping_pong(self, object proposal):
         self._ping_pong_warning_lines = []
         if self._filled_buys_balance == self._filled_sells_balance:
@@ -993,7 +876,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
             self._ping_pong_warning_lines.extend(
                 [f"  Ping-pong removed {self._filled_sells_balance} sell orders."]
             )
-    
 
     cdef c_apply_order_price_modifiers(self, object proposal):
         if self._order_optimization_enabled:
