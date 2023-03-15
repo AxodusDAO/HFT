@@ -23,7 +23,6 @@ class MACross:
     enabled: bool = False
     prices: list = []
     timestamp: float = 3200
-    ma_type: MAType = None
     fast_ma: float = None
     slow_ma: float = None
     buys: list = []
@@ -44,6 +43,23 @@ class MACross:
         self.fast_ma = self.ma_type.get_ma()
         self.slow_ma = self.ma_type.get_ma() * 2
         return self.golden_cross() or self.death_cross()
+    
+    def _set_resample_rule(self, timeframe):
+        """
+        Convert timeframe to pandas resample rule value.
+        https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html
+        """
+        timeframe_to_rule = {
+            "1s": "1S",
+            "1m": "1T",
+            "5m": "5T",
+            "15m": "15T",
+            "1h": "60T"
+        }
+        if timeframe not in timeframe_to_rule.keys():
+            self.logger().error(f"{timeframe} timeframe is not mapped to resample rule.")
+            HummingbotApplication.main_application().stop()
+        self._resample_rule = timeframe_to_rule[timeframe]
 
     def golden_cross(self) -> bool:
         if self.fast_ma > self.slow_ma and self.should_buy():

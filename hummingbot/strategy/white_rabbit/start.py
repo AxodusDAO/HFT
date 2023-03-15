@@ -9,7 +9,7 @@ from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 from hummingbot.strategy.order_book_asset_price_delegate import OrderBookAssetPriceDelegate
 from hummingbot.strategy.white_rabbit import InventoryCostPriceDelegate, WhiteRabbitStrategy
 from hummingbot.strategy.white_rabbit.moving_price_band import MovingPriceBand
-from hummingbot.strategy.white_rabbit.ma_cross import MACross
+from hummingbot.strategy.white_rabbit.ma_cross import MACross, MAType
 from hummingbot.strategy.white_rabbit.white_rabbit_config_map import white_rabbit_config_map as c_map
 
 
@@ -57,15 +57,15 @@ def start(self):
         order_override = c_map.get("order_override").value
         split_order_levels_enabled = c_map.get("split_order_levels_enabled").value
         
-        ma_cross = MACross(
-                timstamp=c_map.get("ma_period").value,
+        ma_type = MAType(
+                self.timstamp=c_map.get("ma_period").value,
+                self.ma_type=c_map.get("ma_type").value
             )
-        ma_cross.ma_type.ma_type = c_map.get("ma_type").value
-        ma_cross.enabled = c_map.get("ma_cross_enabled").value
-        ma_cross.fast_ma = c_map.get("fast_ma").value
-        ma_cross.slow_ma = c_map.get("slow_ma").value
-        ma_cross.period = c_map.get("ma_period").value
-
+        ma_cross = MACross(
+            enabled = c_map.get("ma_cross_enabled").value,
+            ma_cross.fast_ma = c_map.get("fast_ma").value,
+            ma_cross.slow_ma = c_map.get("slow_ma").value
+)
         moving_price_band = MovingPriceBand(
             enabled=c_map.get("moving_price_band_enabled").value,
             price_floor_pct=c_map.get("price_floor_pct").value,
@@ -154,6 +154,7 @@ def start(self):
             should_wait_order_cancel_confirmation=should_wait_order_cancel_confirmation,
 
             ma_cross=ma_cross,
+            ma_type=ma_type,
             
             moving_price_band=moving_price_band
         )
