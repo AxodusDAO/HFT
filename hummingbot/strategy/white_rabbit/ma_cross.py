@@ -21,8 +21,9 @@ class MAType:
 @dataclass
 class MACross:
     enabled: bool = False
+    ma_type = MAType()
     prices: list = []
-    timestamp: float = 3200
+    timestamp: float = None
     fast_ma: float = None
     slow_ma: float = None
     buys: list = []
