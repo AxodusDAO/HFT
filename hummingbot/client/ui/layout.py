@@ -24,49 +24,53 @@ from hummingbot.client.tab.data_types import CommandTab
 from hummingbot.client.ui.custom_widgets import CustomTextArea as TextArea, FormattedTextLexer
 
 HEADER = """
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@@Y.   .5@@@@@@@@@@@@@@@@@@@@@@@@B~  .Y@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@&?       ?&@&@@@@@@@@@@@@@@@@@@@P:     7&@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#!         !#@@&@@@@@@@@@@@@&@@@Y.       ~#@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@@G^           ^B@@@@@@@@@@@@@@@@&?         ~#@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@@@@@@5.             :P@@@@@@@@@@@@@@#~         7&@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&J                .Y@@@@@@@@@@@@G:        .Y@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#!         :         7&@@@@@@@@@5.        :P@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@B^         ?#?         ~B@@@@@@&?         ^B@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@P:        .5@@@Y.        :G@@&@#!         !#@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&@@Y.        ^G@@@@@P:        .Y@@B^         J&@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&7         ~#@@@@@@@B~         ?5:        .5@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@B~         7&@@@@@@@@@#7                  ^G@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@G:        .Y@@&@@@@@@@@@&J                !#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@5.        :P@@@@@@@@@@@@@@@5:             ?&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@&?         ~B@@@@@@@@@@@@@@@@@B^          .5@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@#!         7#@@@@@@@@@@@@@@@@@@@7          ^&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@G^         J&@@@@@@@@@@@@@@@@@@&?            ~B@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@5:        .5@@@@@@@@@@@@@@@@@@@#!              :P@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@&J.        ^G@@@@@@@@@@@@@@@@@@@G^                .Y@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@#7         !#@@@@@@@@@@@@@@@@@@@5.        :^         ?&@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@B~         ?&@@@@@@@@@@@@@@@@@@&J         ^G&7         ~#@&@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@P:        .Y@@@@@@@@@@@@@@@@@@@#!         !#@@@Y.        ^G@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@Y.        ^G@@@@@@@@@@@@@@@@&@@B^         ?&@@@@@P:        .5@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@&@@&?          !JJ??JJJJ???J??B@&@@P:        .5@@@@@@@@B^         ?&@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@#~                         Y&@@@Y.        :G@@&@@@@@@@#7         !#@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@G^                        :P@@@&?         ~B@@@@@@@@@@@@&J         ^B@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@&5.                        ~B@@@B~         7&@@@@&@@@@@@@@@@5:        .5@@&@@@@@@@@@@@@@@@@@
+                                                                                                  
+                                           ..                                                       
+                                          :K0;                            .l:                       
+                                         cXMMK:                          'kWXc.                     
+                                       .oNMMMMXl.                       ,0WMMNo.                    
+                                      .dNMMMMMMNd.                     :KMMMMMNx.                   
+                                     .kWMMMMMMMMWx;.                  cXMMMMMMMWo                   
+                                    ,OWMMMMMMMMMMWNk'               .oNMMMMMMMWk'                   
+                                   ;0MMMMMMMMMMMMMMW0,             .xNMMMMMMMWx.                    
+                                  :KMMMMMMMMMMMMMMMMMK;           .kWMMMMMMMNo.                     
+                                .lXMMMMMMMWKKWMMMMMMMMXc         ,OWMMMMMMMXl.                      
+                               .oNMMMMMMMWk''OWMMMMMMMMNo.      ;KMMMMMMMMK:                        
+                              .xWMMMMMMMNx.  .xWMMMMMMMMNd.    cXMMMMMMMW0;                         
+                             'kWMMMMMMMNo.    .dNMMMMMMMMWk. .lXMMMMMMMWO'                          
+                            ,0WMMMMMMMXl.      .lXMMMMMMMMWO:dNMMMMMMMWk.                           
+                           :KMMMMMMMMK:          cOXMMMMMMMWWWMMMMMMMNd.                            
+                          cXMMMMMMMM0,            .;KMMMMMMMMMMMMMMMNl.                             
+                        .oNMMMMMMMWO'               ,OWMMMMMMMMMMMMXc                               
+                       .dNMMMMMMMWx.                 .kWMMMMMMMMMMK;                                
+                      .kWMMMMMMMNd.                   ,KMMMMMMMMMNc                                 
+                     ,OWMMMMMMMXl.                   .oNMMMMMMMMMWk.                                
+                    ;0WMMMMMMMXc                    .dNMMMMMMMMMMMWO,                               
+                   :KMMMMMMMM0;                    .kWMMMMMMMMMMMMMMK;                              
+                 .lXMMMMMMMWO,                   ,oOWMMMMMMMMMMMMMMMMXc                             
+                .oNMMMMMMMWk.                   ;KWMMMMMMMMKdOWMMMMMMMNo.                           
+               .xNMMMMMMMNx.                   cXMWMMMMMMMK; .xWMMMMMMMNd.                          
+              'kWMMMMMMMNo.                  .lXMMMMMMMMWO'   .dNMMMMMMMWk.                         
+             ,0WMMMMMMMXl.                  .dNMMMMMMMMWk.     .lXMMMMMMMWO,                        
+            :KMMMMMMMMMXxddddddddddddd;    .xWMMMMMMMMNd.        cXMMMMMMMMK;                       
+           cXMMMMMMMMMMMMMMMMMMMMMMMWx.   'OWMMMMMMMMNo.          ;0WMMMMMMMK:                      
+         .oNMMMMMMMMMMMMMMMMMMMMMMMNd.   ,0WMMMMMMMMXc.            'OWMMMMMMMXl.                    
+        .dNMMMMMMMMMMMMMMMMMMMMMMMXl.   :KMMMMMMMMWK:               .kWMMMMMMMNd.                   
+        .cllllllllllllllllllllllll,    .;llllllllcc'                 .:llllllllc.          
 
-░█████╗░██╗░░██╗░█████╗░██████╗░██╗░░░██╗░██████╗  ████████╗██████╗░░█████╗░██████╗░██╗███╗░░██╗░██████╗░
-██╔══██╗╚██╗██╔╝██╔══██╗██╔══██╗██║░░░██║██╔════╝  ╚══██╔══╝██╔══██╗██╔══██╗██╔══██╗██║████╗░██║██╔════╝░
-███████║░╚███╔╝░██║░░██║██║░░██║██║░░░██║╚█████╗░  ░░░██║░░░██████╔╝███████║██║░░██║██║██╔██╗██║██║░░██╗░
-██╔══██║░██╔██╗░██║░░██║██║░░██║██║░░░██║░╚═══██╗  ░░░██║░░░██╔══██╗██╔══██║██║░░██║██║██║╚████║██║░░╚██╗
-██║░░██║██╔╝╚██╗╚█████╔╝██████╔╝╚██████╔╝██████╔╝  ░░░██║░░░██║░░██║██║░░██║██████╔╝██║██║░╚███║╚██████╔╝
-╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═════╝░░╚═════╝░╚═════╝░  ░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝╚═════╝░╚═╝╚═╝░░╚══╝░╚═════╝░
+___    |___  _____________  /___  _________    ___  __/____________ ______  /__(_)_____________ _
+__  /| |_  |/_/  __ \  __  /_  / / /_  ___/    __  /  __  ___/  __ `/  __  /__  /__  __ \_  __ `/
+_  ___ |_>  < / /_/ / /_/ / / /_/ /_(__  )     _  /   _  /   / /_/ // /_/ / _  / _  / / /  /_/ / 
+/_/  |_/_/|_| \____/\__,_/  \__,_/ /____/      /_/    /_/    \__,_/ \__,_/  /_/  /_/ /_/_\__, /  
+                                                                                        /____/   
 
-=======================================================================================
-Welcome to Hummingbot, an open source software client that helps you build and run
-high-frequency trading (HFT) bots.
+===============================================================================================
+Welcome to Axodus Trading HFT, high-frequency trading (HFT) bots platform for Cryptocurency
 
 Helpful Links:
-- Get 24/7 support: https://discord.hummingbot.io
-- Learn how to use Hummingbot: https://docs.hummingbot.io
-- Earn liquidity rewards: https://miner.hummingbot.io
+- Get 24/7 support: https://t.me/AxodusFinance
+- Learn how to use HFT: https://docs.axodus.finance
+- Earn liquidity rewards: https://miner.axodus.finance
 
 Useful Commands:
 - connect     List available exchanges and add API keys to them
