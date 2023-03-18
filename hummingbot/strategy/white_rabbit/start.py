@@ -9,7 +9,7 @@ from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 from hummingbot.strategy.order_book_asset_price_delegate import OrderBookAssetPriceDelegate
 from hummingbot.strategy.white_rabbit import InventoryCostPriceDelegate, WhiteRabbitStrategy
 from hummingbot.strategy.white_rabbit.moving_price_band import MovingPriceBand
-from hummingbot.strategy.white_rabbit.ma_cross import MACross, MAType
+from hummingbot.strategy.white_rabbit.ma_cross import MACross
 from hummingbot.strategy.white_rabbit.white_rabbit_config_map import white_rabbit_config_map as c_map
 
 
