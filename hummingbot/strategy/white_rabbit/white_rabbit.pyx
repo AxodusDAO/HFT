@@ -27,7 +27,7 @@ from .inventory_skew_calculator cimport c_calculate_bid_ask_ratios_from_base_ass
 from .inventory_skew_calculator import calculate_total_order_size
 from .white_rabbit_order_tracker import WhiteRabbitOrderTracker
 from .moving_price_band import MovingPriceBand
-from .ma_cross import MACross, MAType
+from .ma_cross import MACross
 
 
 NaN = float("nan")
