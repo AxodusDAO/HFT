@@ -24,46 +24,44 @@ from hummingbot.client.tab.data_types import CommandTab
 from hummingbot.client.ui.custom_widgets import CustomTextArea as TextArea, FormattedTextLexer
 
 HEADER = """
-                                                                                                  
-                                           ..                                                       
-                                          :K0;                            .l:                       
-                                         cXMMK:                          'kWXc.                     
-                                       .oNMMMMXl.                       ,0WMMNo.                    
-                                      .dNMMMMMMNd.                     :KMMMMMNx.                   
-                                     .kWMMMMMMMMWx;.                  cXMMMMMMMWo                   
-                                    ,OWMMMMMMMMMMWNk'               .oNMMMMMMMWk'                   
-                                   ;0MMMMMMMMMMMMMMW0,             .xNMMMMMMMWx.                    
-                                  :KMMMMMMMMMMMMMMMMMK;           .kWMMMMMMMNo.                     
-                                .lXMMMMMMMWKKWMMMMMMMMXc         ,OWMMMMMMMXl.                      
-                               .oNMMMMMMMWk''OWMMMMMMMMNo.      ;KMMMMMMMMK:                        
-                              .xWMMMMMMMNx.  .xWMMMMMMMMNd.    cXMMMMMMMW0;                         
-                             'kWMMMMMMMNo.    .dNMMMMMMMMWk. .lXMMMMMMMWO'                          
-                            ,0WMMMMMMMXl.      .lXMMMMMMMMWO:dNMMMMMMMWk.                           
-                           :KMMMMMMMMK:          cOXMMMMMMMWWWMMMMMMMNd.                            
-                          cXMMMMMMMM0,            .;KMMMMMMMMMMMMMMMNl.                             
-                        .oNMMMMMMMWO'               ,OWMMMMMMMMMMMMXc                               
-                       .dNMMMMMMMWx.                 .kWMMMMMMMMMMK;                                
-                      .kWMMMMMMMNd.                   ,KMMMMMMMMMNc                                 
-                     ,OWMMMMMMMXl.                   .oNMMMMMMMMMWk.                                
-                    ;0WMMMMMMMXc                    .dNMMMMMMMMMMMWO,                               
-                   :KMMMMMMMM0;                    .kWMMMMMMMMMMMMMMK;                              
-                 .lXMMMMMMMWO,                   ,oOWMMMMMMMMMMMMMMMMXc                             
-                .oNMMMMMMMWk.                   ;KWMMMMMMMMKdOWMMMMMMMNo.                           
-               .xNMMMMMMMNx.                   cXMWMMMMMMMK; .xWMMMMMMMNd.                          
-              'kWMMMMMMMNo.                  .lXMMMMMMMMWO'   .dNMMMMMMMWk.                         
-             ,0WMMMMMMMXl.                  .dNMMMMMMMMWk.     .lXMMMMMMMWO,                        
-            :KMMMMMMMMMXxddddddddddddd;    .xWMMMMMMMMNd.        cXMMMMMMMMK;                       
-           cXMMMMMMMMMMMMMMMMMMMMMMMWx.   'OWMMMMMMMMNo.          ;0WMMMMMMMK:                      
-         .oNMMMMMMMMMMMMMMMMMMMMMMMNd.   ,0WMMMMMMMMXc.            'OWMMMMMMMXl.                    
-        .dNMMMMMMMMMMMMMMMMMMMMMMMXl.   :KMMMMMMMMWK:               .kWMMMMMMMNd.                   
-        .cllllllllllllllllllllllll,    .;llllllllcc'                 .:llllllllc.          
+'''''''''''''''''''''''''''''''''''''''''''..'''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''':K0;''''''''''''''''''''''''''''.l:'''''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''''cXMMK:'''''''''''''''''''''''''''kWXc.'''''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''''.oNMMMMXl.''''''''''''''''''''''',0WMMNo.''''''''''''''''''''
+''''''''''''''''''''''''''''''''''''''.dNMMMMMMNd.''''''''''''''''''''':KMMMMMNx.'''''''''''''''''''
+'''''''''''''''''''''''''''''''''''''.kWMMMMMMMMWx;.''''''''''''''''''cXMMMMMMMWo'''''''''''''''''''
+'''''''''''''''''''''''''''''''''''',OWMMMMMMMMMMWNk''''''''''''''''.oNMMMMMMMWk''''''''''''''''''''
+''''''''''''''''''''''''''''''''''';0MMMMMMMMMMMMMMW0,'''''''''''''.xNMMMMMMMWx.''''''''''''''''''''
+'''''''''''''''''''''''''''''''''':KMMMMMMMMMMMMMMMMMK;'''''''''''.kWMMMMMMMNo.'''''''''''''''''''''
+''''''''''''''''''''''''''''''''.lXMMMMMMMWKKWMMMMMMMMXc''''''''',OWMMMMMMMXl.''''''''''''''''''''''
+'''''''''''''''''''''''''''''''.oNMMMMMMMWk''OWMMMMMMMMNo.'''''';KMMMMMMMMK:''''''''''''''''''''''''
+''''''''''''''''''''''''''''''.xWMMMMMMMNx.''.xWMMMMMMMMNd.''''cXMMMMMMMW0;'''''''''''''''''''''''''
+''''''''''''''''''''''''''''''kWMMMMMMMNo.''''.dNMMMMMMMMWk.'.lXMMMMMMMWO'''''''''''''''''''''''''''
+'''''''''''''''''''''''''''',0WMMMMMMMXl.''''''.lXMMMMMMMMWO:dNMMMMMMMWk.'''''''''''''''''''''''''''
+''''''''''''''''''''''''''':KMMMMMMMMK:''''''''''cOXMMMMMMMWWWMMMMMMMNd.''''''''''''''''''''''''''''
+''''''''''''''''''''''''''cXMMMMMMMM0,''''''''''''.;KMMMMMMMMMMMMMMMNl.'''''''''''''''''''''''''''''
+''''''''''''''''''''''''.oNMMMMMMMWO'''''''''''''''',OWMMMMMMMMMMMMXc'''''''''''''''''''''''''''''''
+'''''''''''''''''''''''.dNMMMMMMMWx.'''''''''''''''''.kWMMMMMMMMMMK;''''''''''''''''''''''''''''''''
+''''''''''''''''''''''.kWMMMMMMMNd.''''''''''''''''''',KMMMMMMMMMNc'''''''''''''''''''''''''''''''''
+''''''''''''''''''''',OWMMMMMMMXl.'''''''''''''''''''.oNMMMMMMMMMWk.''''''''''''''''''''''''''''''''
+'''''''''''''''''''';0WMMMMMMMXc''''''''''''''''''''.dNMMMMMMMMMMMWO,'''''''''''''''''''''''''''''''
+''''''''''''''''''':KMMMMMMMM0;''''''''''''''''''''.kWMMMMMMMMMMMMMMK;''''''''''''''''''''''''''''''
+'''''''''''''''''.lXMMMMMMMWO,''''''''''''''''''',oOWMMMMMMMMMMMMMMMMXc'''''''''''''''''''''''''''''
+''''''''''''''''.oNMMMMMMMWk.''''''''''''''''''';KWMMMMMMMMKdOWMMMMMMMNo.'''''''''''''''''''''''''''
+'''''''''''''''.xNMMMMMMMNx.'''''''''''''''''''cXMWMMMMMMMK;'.xWMMMMMMMNd.''''''''''''''''''''''''''
+'''''''''''''''kWMMMMMMMNo.''''''''''''''''''.lXMMMMMMMMWO''''.dNMMMMMMMWk.'''''''''''''''''''''''''
+''''''''''''',0WMMMMMMMXl.''''''''''''''''''.dNMMMMMMMMWk.'''''.lXMMMMMMMWO,''''''''''''''''''''''''
+'''''''''''':KMMMMMMMMMXxddddddddddddd;''''.xWMMMMMMMMNd.''''''''cXMMMMMMMMK;'''''''''''''''''''''''
+'''''''''''cXMMMMMMMMMMMMMMMMMMMMMMMWx.''''OWMMMMMMMMNo.'''''''''';0WMMMMMMMK:''''''''''''''''''''''
+'''''''''.oNMMMMMMMMMMMMMMMMMMMMMMMNd.''',0WMMMMMMMMXc.'''''''''''''OWMMMMMMMXl.''''''''''''''''''''
+''''''''.dNMMMMMMMMMMMMMMMMMMMMMMMXl.''':KMMMMMMMMWK:'''''''''''''''.kWMMMMMMMNd.'''''''''''''''''''
+''''''''.cllllllllllllllllllllllll,''''.;llllllllcc''''''''''''''''''.:llllllllc.'''''''''''''''''''
 
-___    |___  _____________  /___  _________    ___  __/____________ ______  /__(_)_____________ _
-__  /| |_  |/_/  __ \  __  /_  / / /_  ___/    __  /  __  ___/  __ `/  __  /__  /__  __ \_  __ `/
-_  ___ |_>  < / /_/ / /_/ / / /_/ /_(__  )     _  /   _  /   / /_/ // /_/ / _  / _  / / /  /_/ / 
-/_/  |_/_/|_| \____/\__,_/  \__,_/ /____/      /_/    /_/    \__,_/ \__,_/  /_/  /_/ /_/_\__, /  
-                                                                                        /____/   
-
+___''''|___''_____________''/___''_________''''___''__/____________'______''/__(_)_____________'_
+__''/|'|_''|/_/''__'\''__''/_''/'/'/_''___/''''__''/''__''___/''__'`/''__''/__''/__''__'\_''__'`/
+_''___'|_>''<'/'/_/'/'/_/'/'/'/_/'/_(__'')'''''_''/'''_''/'''/'/_/'//'/_/'/'_''/'_''/'/'/''/_/'/'
+/_/''|_/_/|_|'\____/\__,_/''\__,_/'/____/''''''/_/''''/_/''''\__,_/'\__,_/''/_/''/_/'/_/_\__,'/''
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''/____/'''
 ===============================================================================================
 Welcome to Axodus Trading HFT, high-frequency trading (HFT) bots platform for Cryptocurency
 
