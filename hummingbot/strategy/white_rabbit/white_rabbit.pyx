@@ -87,7 +87,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     ma_cross: Optional[MACross] = None,
-                    ma_type: str = "SMA",
+                    ma_type: Optional[MACross] = None,
 
                     moving_price_band: Optional[MovingPriceBand] = None
                     ):
@@ -888,11 +888,11 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_apply_ma_cross(self, proposal):
         price = self.get_price()
-        self._ma_cross.check_and_update_price(
-            self.current_timestamp, price)
-        if self._ma_cross.check_price_golden_cross(price):
+        self._ma_cross.update(
+            self.price)
+        if self._ma_cross.golden_cross(price):
             proposal.buys = []
-        if self._ma_cross.check_price_death_cross(price):
+        if self._ma_cross.death_cross(price):
             proposal.sells = []
     
     cdef c_apply_moving_price_band(self, proposal):
