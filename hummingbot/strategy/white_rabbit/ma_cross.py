@@ -8,7 +8,7 @@ from hummingbot.indicators.moving_average import MACalc
 @dataclass
 class MACross:
     enabled: bool = False # Indicator for whether the moving average cross strategy is enabled or not
-    ma_type: str = "SMA" # The type of moving average to use (e.g. simple moving average)
+    _ma_type: str = "sma" # The type of moving average to use (e.g. simple moving average)
     tf: MACalc = MACalc() # Instantiate MACalc instead of using the class directly
     fast_ma: int = 9 # The period for the fast moving average
     slow_ma: int = 50 # The period for the slow moving average
@@ -16,12 +16,20 @@ class MACross:
     last_action: str = None # Add last_action attribute to track the last action taken
     buys: List[str] = dataclasses.field(default_factory=list) # Add buys attribute to store buy actions
     sells: List[str] = dataclasses.field(default_factory=list) # Add sells attribute to store sell actions
-    SMA: sma = MACalc.get_sma(prices, tf)
-    EMA: ema = MACalc.get_ema(prices, tf)
+
 
     # Method to calculate moving average based on the type and period
     def get_ma(self, tf: int) -> List[Decimal]:
         return self.tf.get_ma(self.prices, tf, self.ma_type)
+
+    @property
+    def ma_type(self) -> str:
+        if self._ma_type == "sma":
+            return "SMA"
+        elif self._ma_type == "ema":
+            return "EMA"
+        return self._ma_type
+
 
     # Method to determine if a golden cross occurred (fast_ma > slow_ma) and should buy
     def golden_cross(self) -> bool:
