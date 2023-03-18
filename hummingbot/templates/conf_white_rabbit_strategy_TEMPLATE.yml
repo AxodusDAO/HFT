@@ -83,7 +83,7 @@ inventory_price: null
 #rsi_overbought_level: null
 
 # MA Cross Config Variables - cross Moving Averange
-enabled: null
+ma_cross_enabled: null
 ma_type: null
 fast_ma: null
 slow_ma: null
