@@ -16,6 +16,8 @@ class MACross:
     last_action: str = None # Add last_action attribute to track the last action taken
     buys: List[str] = dataclasses.field(default_factory=list) # Add buys attribute to store buy actions
     sells: List[str] = dataclasses.field(default_factory=list) # Add sells attribute to store sell actions
+    SMA: sma = MACalc.get_sma(prices, tf)
+    EMA: ema = MACalc.get_ema(prices, tf)
 
     # Method to calculate moving average based on the type and period
     def get_ma(self, tf: int) -> List[Decimal]:
