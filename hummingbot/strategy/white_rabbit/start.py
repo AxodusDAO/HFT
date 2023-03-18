@@ -151,7 +151,6 @@ def start(self):
             should_wait_order_cancel_confirmation=should_wait_order_cancel_confirmation,
 
             ma_cross=ma_cross,
-            ma_type=ma_type,
             
             moving_price_band=moving_price_band
         )
