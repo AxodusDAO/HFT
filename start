@@ -3,10 +3,10 @@
 # =============================================
 # SCRIPT COMMANDS
 echo
-echo "===============  START HFT WhiteRabbit ==============="
-echo "- RSI Scalper strategy spot                           "
-echo "- Starting instance ...                               "
-echo "- Loading configuration files ...                     "
+echo "===============  START HFT Axodus Finance v0.1 ==============="
+echo "- White Rabit Scalper Strategy                                "
+echo "- Starting instance ...                                       "
+echo "- Loading configuration files ...                             "
 # =============================================
 # EXECUTE SCRIPT
 bin/hummingbot.py
