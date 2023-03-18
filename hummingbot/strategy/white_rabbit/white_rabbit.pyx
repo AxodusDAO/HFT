@@ -402,7 +402,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     
     @fast_ma.setter
     def fast_ma(self, value: int):
-        selv._ma_cross.fast_ma(value)
+        self._ma_cross.fast_ma(value)
 
     @property
     def slow_ma(self) -> int:
@@ -410,7 +410,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     
     @slow_ma.setter
     def slow_ma(self, value: int):
-        selv._ma_cross.slow_ma(value)
+        self._ma_cross.slow_ma(value)
 
     @property
     def ma_cross(self) -> MACross:
