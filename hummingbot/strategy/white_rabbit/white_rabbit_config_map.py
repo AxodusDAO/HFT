@@ -221,7 +221,7 @@ white_rabbit_config_map = {
         ConfigVar(key="ma_type",
                   prompt=ma_type_prompt,
                   validator=validate_ma_type,
-                  required_if=lambda: white_rabbit_config_map.get("ma_type").value,
+                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value,
                   prompt_on_new=True,
                   default="SMA"),
     "fast_ma":
@@ -229,7 +229,7 @@ white_rabbit_config_map = {
                   prompt="Enter the FAST MA time period >>> ",
                   validator=validate_int,
                   on_validated=on_validated_ma_cross_enabled,
-                  required_if=lambda: white_rabbit_config_map.get("ma_type").value,
+                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value,
                   prompt_on_new=True),
     "slow_ma":
         ConfigVar(key="slow_ma",
