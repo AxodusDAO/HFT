@@ -211,12 +211,6 @@ white_rabbit_config_map = {
                   validator=validate_ma_cross_enabled,
                   on_validated=on_validated_ma_cross_enabled,
                   prompt_on_new=True),
- '''   "ma_period":
-        ConfigVar(key="ma_period",
-                  prompt=ma_period_prompt,
-                  validator=validate_decimal,
-                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value,
-                  default=3200), '''
     "ma_type":
         ConfigVar(key="ma_type",
                   prompt=ma_type_prompt,
