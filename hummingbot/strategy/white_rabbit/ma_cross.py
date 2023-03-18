@@ -18,7 +18,7 @@ class MACross:
     last_action: str = None # Add last_action attribute to track the last action taken
     buys: List[str] = dataclasses.field(default_factory=list) # Add buys attribute to store buy actions
     sells: List[str] = dataclasses.field(default_factory=list) # Add sells attribute to store sell actions
-    _ma_type: str = "sma"
+
 
     # Method to calculate moving average based on the type and period
     def get_ma(self, tf: int) -> List[Decimal]:
@@ -26,15 +26,6 @@ class MACross:
             return self.tf.get_sma(self.prices, tf)
         elif self.ma_type == "ema":
             return self.tf.get_ema(self.prices, tf)
-
-    @property
-    def ma_type(self) -> str:
-        return self._ma_type
-
-    @ma_type.setter
-    def ma_type(self, value: str): 
-        self._ma_type = value
-
 
     # Method to determine if a golden cross occurred (fast_ma > slow_ma) and should buy
     def golden_cross(self, fast_ma_value: Decimal, slow_ma_value: Decimal) -> bool:
@@ -77,4 +68,4 @@ class MACross:
 
             :param value: set whether to enable or disable MA Cross:
             '''
-            self.enabled = value
+            self.ma_enabled = value
