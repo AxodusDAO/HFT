@@ -8,7 +8,7 @@ from hummingbot.indicators.moving_average import MACalc
 @dataclass
 class MACross:
     enabled: bool = False # Indicator for whether the moving average cross strategy is enabled or not
-    _ma_type: str = "sma" # The type of moving average to use (e.g. simple moving average)
+    ma_type: str = "sma" # The type of moving average to use (e.g. simple moving average)
     tf: MACalc = MACalc() # Instantiate MACalc instead of using the class directly
     fast_ma: int = 9 # The period for the fast moving average
     slow_ma: int = 50 # The period for the slow moving average
