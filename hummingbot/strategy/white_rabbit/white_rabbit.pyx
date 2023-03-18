@@ -87,7 +87,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
                     ask_order_level_spreads: List[Decimal] = None,
                     should_wait_order_cancel_confirmation: bool = True,
                     ma_cross: Optional[MACross] = None,
-                    ma_type: Optional[MAType] = None,
+                    ma_type: Optional[MACross] = None,
 
                     moving_price_band: Optional[MovingPriceBand] = None
                     ):
@@ -100,7 +100,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         if ma_cross is None:
             ma_cross = MACross()
         if ma_type is None: 
-            ma_type = MAType()
+            ma_type = MACross()
         self._sb_order_tracker = WhiteRabbitOrderTracker()
         self._market_info = market_info
         self._bid_spread = bid_spread
@@ -399,7 +399,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._ma_type.ma_type(value)
 
     @property
-    def ma_type(self) -> MAType:
+    def ma_type(self) -> MACross:
         return self._ma_type
 
     @property
