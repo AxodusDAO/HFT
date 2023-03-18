@@ -85,7 +85,6 @@ inventory_price: null
 # MA Cross Config Variables - cross Moving Averange
 enabled: null
 ma_type: null
-period: null
 fast_ma: null
 slow_ma: null
 # Number of levels of orders to place on each side of the order book.
