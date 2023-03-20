@@ -883,26 +883,24 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
         return base_balance, quote_balance
 
+    cdef c_apply_ma_cross(self, proposal):
+        if self._fast_ma > self._slow_ma:
+            proposal.buys = []
+        if self._fast_ma < self._slow_ma:
+            proposal.sells = []
+
     cdef c_apply_order_levels_modifiers(self, proposal):
         self.c_apply_price_band(proposal)
         if self.moving_price_band_enabled:
             self.c_apply_moving_price_band(proposal)
         if self._ping_pong_enabled:
             self.c_apply_ping_pong(proposal)
+        
 
     cdef c_apply_price_band(self, proposal):
         if self._price_ceiling > 0 and self.get_price() >= self._price_ceiling:
             proposal.buys = []
         if self._price_floor > 0 and self.get_price() <= self._price_floor:
-            proposal.sells = []
-
-    cdef c_apply_ma_cross(self, proposal):
-        price = self.get_price()
-        self._ma_cross.update(
-            self.price)
-        if self._ma_cross.golden_cross(price):
-            proposal.buys = []
-        if self._ma_cross.death_cross(price):
             proposal.sells = []
     
     cdef c_apply_moving_price_band(self, proposal):
