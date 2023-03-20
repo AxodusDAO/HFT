@@ -13,12 +13,13 @@ class MACross:
     ma_enabled: bool = False
     ma_type: str = "sma"
     tf: MACalc = MACalc()
-    _fast_ma: int = 9
-    _slow_ma: int = 50
+    fast_ma: int = 9
+    slow_ma: int = 50
     _last_action: str = None
     _buys: List[str] = dataclasses.field(default_factory=list)
     _sells: List[str] = dataclasses.field(default_factory=list)
     _prices: List[Decimal] = dataclasses.field(default_factory=list)
+    
 
     @classmethod
     def logger(cls):
