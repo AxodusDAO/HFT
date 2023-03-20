@@ -884,9 +884,11 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         return base_balance, quote_balance
 
     cdef c_apply_ma_cross(self, proposal):
-        if self._fast_ma > self._slow_ma:
+        price = self.get_price()
+        self._ma_cross.get_ma(self._prices, tf)
+        if self._ma_cross.golden_cross(fast_ma, slow_ma):
             proposal.buys = []
-        if self._fast_ma < self._slow_ma:
+        if self._ma_cross.death_cross(fast_ma, slow_ma):
             proposal.sells = []
 
     cdef c_apply_order_levels_modifiers(self, proposal):
