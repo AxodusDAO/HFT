@@ -1,4 +1,4 @@
-import logging
+import pandas  as pd
 import dataclasses
 
 from dataclasses import dataclass
@@ -6,75 +6,66 @@ from typing import List
 from decimal import Decimal
 from hummingbot.indicators.moving_average import MACalc
 
-mac_logger = None
-
+#Define the MACross dataclass
 @dataclass
 class MACross:
-    ma_enabled: bool = False
-    ma_type: str = "sma"
-    tf: MACalc = MACalc()
-    fast_ma: int = 9
-    slow_ma: int = 50
-    _last_action: str = None
-    _buys: List[str] = dataclasses.field(default_factory=list)
-    _sells: List[str] = dataclasses.field(default_factory=list)
-    _prices: List[Decimal] = dataclasses.field(default_factory=list)
-    
+    ma_enabled: bool = False # Indicator for whether the moving average cross strategy is enabled or not
+    ma_type: str = "sma" # The type of moving average to use (e.g. simple moving average)
+    tf: MACalc = MACalc() # Instantiate MACalc instead of using the class directly
+    fast_ma: int = 9 # The period for the fast moving average
+    slow_ma: int = 50 # The period for the slow moving average
+    prices: List[Decimal] = dataclasses.field(default_factory=list) # Use a default factory for mutable types
+    last_action: str = None # Add last_action attribute to track the last action taken
+    buys: List[str] = dataclasses.field(default_factory=list) # Add buys attribute to store buy actions
+    sells: List[str] = dataclasses.field(default_factory=list) # Add sells attribute to store sell actions
 
-    @classmethod
-    def logger(cls):
-        global mac_logger
-        if mac_logger is None:
-            mac_logger = logging.getLogger(__name__)
-        return mac_logger
 
-    @property
-    def last_action(self) -> str:
-        return self._last_action
-
-    @property
-    def fast_ma(self) -> int:
-        return self._fast_ma
-
-    @property
-    def slow_ma(self) -> int:
-        return self._slow_ma
-
+    # Method to calculate moving average based on the type and period
     def get_ma(self, tf: int) -> List[Decimal]:
         if self.ma_type == "sma":
-            return self.tf.get_sma(self._prices, tf)
+            return self.tf.get_sma(self.prices, tf)
         elif self.ma_type == "ema":
-            return self.tf.get_ema(self._prices, tf)
+            return self.tf.get_ema(self.prices, tf)
 
-    def golden_cross(self, fast_ma: Decimal, slow_ma: Decimal) -> bool:
-        if fast_ma > slow_ma and self.should_buy():
-            self._buys.append("BUY")
-            self._last_action = "BUY"
-            self.logger().info("Golden Cross: fast_ma: %s slow_ma: %s crossed up", fast_ma, slow_ma)
+    # Method to determine if a golden cross occurred (fast_ma > slow_ma) and should buy
+    def golden_cross(self, fast_ma_value: Decimal, slow_ma_value: Decimal) -> bool:
+        if fast_ma_value > slow_ma_value and self.should_buy():
+            self.buys.append("BUY")
+            self.last_action = "BUY"
             return True
         return False
 
-    def death_cross(self, fast_ma: Decimal, slow_ma: Decimal) -> bool:
-        if slow_ma > fast_ma and self.should_sell():
-            self._sells.append("SELL")
-            self._last_action = "SELL"
-            self.logger().info("Death Cross: fast_ma: %s slow_ma: %s crossed down", fast_ma, slow_ma)
+    # Method to determine if a death cross occurred (slow_ma > fast_ma) and should sell
+    def death_cross(self, fast_ma_value: Decimal, slow_ma_value: Decimal) -> bool:
+        if slow_ma_value > fast_ma_value and self.should_sell():
+            self.sells.append("SELL")
+            self.last_action = "SELL"
             return True
         return False
 
+    # Method to check if the last action was not a buy
     def should_buy(self) -> bool:
-        return self._last_action != "BUY"
+        return self.last_action != "BUY"
 
+    # Method to check if the last action was not a sell
     def should_sell(self) -> bool:
-        return self._last_action != "SELL"
+        return self.last_action != "SELL"
 
+    # Method to update the prices list and calculate moving averages when enough data is available
     def update(self, price: Decimal) -> bool:
-        self._prices.append(price)
-        if len(self._prices) >= self._slow_ma:  # Use self._prices instead of self.prices
-            fast_ma = self.get_ma(self._fast_ma)[-1]
-            slow_ma = self.get_ma(self._slow_ma)[-1]
-            return self.golden_cross(fast_ma, slow_ma) or self.death_cross(fast_ma, slow_ma)
+        self.prices.append(price)
+        if len(self.prices) >= self.slow_ma:
+            fast_ma_value = self.get_ma(self.fast_ma)[-1]
+            slow_ma_value = self.get_ma(self.slow_ma)[-1]
+            return self.golden_cross(fast_ma_value, slow_ma_value) or self.death_cross(fast_ma_value, slow_ma_value)
         return False
 
+
+    # Method to enable or disable the moving average cross strategy
     def switch(self, value: bool) -> None:
-        self.ma_enabled = value
+            '''
+            switch between enabled and disabled state
+
+            :param value: set whether to enable or disable MA Cross:
+            '''
+            self.ma_enabled = value
