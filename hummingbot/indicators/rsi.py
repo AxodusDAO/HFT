@@ -1,32 +1,23 @@
-from typing import Dict, List
+import pandas as pd
 import numpy as np
+from ta.momentum import RSIIndicator
 
+class RSICalculator:
 
-class RSIIndicator:
-    def __init__(self, config: Dict[str, any]):
-        self._period = config.get("rsi_length", 14)
-        self._prev_candles: List[float] = []
-        self._rsi_oversold_level = config.get("rsi_oversold_level", 30)
-        self._rsi_overbought_level = config.get("rsi_overbought_level", 70)
+    def __init__(self, period=14):
+        self.period = period
+        self.prices = []
 
-    def compute(self, candles: List[float]) -> float:
-        self._prev_candles += candles
+    def update_price(self, price):
+        self.prices.append(price)
+        if len(self.prices) > self.period + 1:
+            self.prices.pop(0)
 
-        while len(self._prev_candles) > self._period:
-            self._prev_candles.pop(0)
+    def calculate_rsi(self):
+        if len(self.prices) < self.period + 1:
+            return None
 
-        if len(self._prev_candles) < self._period:
-            return np.nan
-
-        np_candles = np.array(self._prev_candles)
-        diff = np_candles[1:] - np_candles[:-1]
-        gain = diff * (diff > 0)
-        loss = -diff * (diff < 0)
-        avg_gain = gain.mean()
-        avg_loss = loss.mean()
-        rs = avg_gain / avg_loss if avg_loss != 0 else np.inf
-        rsi = 100 - 100 / (1 + rs)
+        data = pd.DataFrame(self.prices, columns=['close'])
+        rsi_indicator = RSIIndicator(data['close'], window=self.period)
+        rsi = rsi_indicator.rsi().iloc[-1]
         return rsi
-
-    def reset(self):
-        self._prev_candles.clear()
