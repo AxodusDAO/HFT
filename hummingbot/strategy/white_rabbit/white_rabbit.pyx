@@ -885,10 +885,10 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_apply_ma_cross(self, proposal):
         price = self.get_price()
-        self._ma_cross.get_ma(self._prices)
-        if self._ma_cross.golden_cross():
+        self._ma_cross.get_ma(self.price)
+        if self._ma_cross.golden_cross() -> True:
             proposal.buys = []
-        if self._ma_cross.death_cross():
+        if self._ma_cross.death_cross() -> True:
             proposal.sells = []
 
     cdef c_apply_order_levels_modifiers(self, proposal):

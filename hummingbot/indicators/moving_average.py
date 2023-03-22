@@ -8,7 +8,7 @@ class MACalc:
     A class for calculating moving averages.
     """
     @staticmethod
-    def get_sma(prices: List[Decimal], tf: pd.Timedelta) -> List[Decimal]:
+    def get_sma(price: Decimal, tf: pd.Timedelta) -> List[Decimal]:
         """
         Calculate Simple Moving Average (SMA) of a given set of prices over n periods.
 
@@ -19,11 +19,11 @@ class MACalc:
         Returns:
             List[Decimal]: List of SMA values for each period.
         """
-        sma = pd.Series(prices).rolling(window=tf).mean().tolist()
+        sma = pd.Series(price).rolling(window=tf).mean().tolist()
         return sma
 
     @staticmethod
-    def get_ema(prices: List[Decimal], tf: pd.Timedelta) -> List[Decimal]:
+    def get_ema(price: Decimal, tf: pd.Timedelta) -> List[Decimal]:
         """
         Calculate Exponential Moving Average (EMA) of a given set of prices over n periods.
 
@@ -35,11 +35,11 @@ class MACalc:
             List[Decimal]: List of EMA values for each period.
         """
         seconds = int(tf.total_seconds())
-        ema = pd.Series(prices).ewm(span=seconds).mean().tolist()
+        ema = pd.Series(price).ewm(span=seconds).mean().tolist()
         return ema
 
 # to use this calculator you need call function: 
 '''
-sma = MACalc.get_sma(prices, tf)
-ema = MACalc.get_ema(prices, tf)
+sma = MACalc.get_sma(prices tf)
+ema = MACalc.get_ema(price, tf)
 '''
