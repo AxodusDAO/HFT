@@ -61,11 +61,14 @@ class MACross:
         if len(self.prices) >= self.slow_ma:
             fast_ma = self.get_ma(self.fast_ma, self.tf)
             slow_ma = self.get_ma(self.slow_ma, self.tf)
+            
             if price < slow_ma:
                 self.disable_sells(price, slow_ma)
-            else:
-                self.enable_sells()
+            elif price > slow_ma:
+                self.disable_buys(price, slow_ma)
+            
             return self.golden_cross(fast_ma, slow_ma) or self.death_cross(fast_ma, slow_ma)
+        
         return False
 
 
