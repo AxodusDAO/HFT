@@ -40,6 +40,6 @@ class MACalc:
 
 # to use this calculator you need call function: 
 '''
-sma = MACalc.get_sma(prices tf)
+sma = MACalc.get_sma(price, tf)
 ema = MACalc.get_ema(price, tf)
 '''

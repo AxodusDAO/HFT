@@ -30,6 +30,7 @@ from hummingbot.strategy.trinity.trinity_order_tracker import (
 from hummingbot.strategy.strategy_py_base import StrategyPyBase
 from hummingbot.strategy.utils import order_age
 from hummingbot.strategy.trinity.moving_price_band import MovingPriceBand
+from hummingbot.strategy.trinity.ma_cross import MACross
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
@@ -78,12 +79,17 @@ class TrinityStrategy(StrategyPyBase):
                     status_report_interval: float = 900,
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
+
+                    ma_cross: Optional[MACross] = None,
                     moving_price_band: Optional[MovingPriceBand] = None,
                     order_override: Dict[str, List[str]] = {},
                     ):
         if moving_price_band is None:
             moving_price_band = MovingPriceBand()
 
+        if ma_cross is None:
+            ma_cross = MACross()
+        
         if price_ceiling != s_decimal_neg_one and price_ceiling < price_floor:
             raise ValueError("Parameter price_ceiling cannot be lower than price_floor.")
 
@@ -231,6 +237,9 @@ class TrinityStrategy(StrategyPyBase):
     def order_refresh_time(self, value: float):
         self._order_refresh_time = value
 
+    @property
+    def ma_cross(self) -> MACross:
+        return self._ma_cross
     @property
     def moving_price_band(self) -> MovingPriceBand:
         return self._moving_price_band
