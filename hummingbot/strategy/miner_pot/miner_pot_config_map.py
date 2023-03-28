@@ -16,7 +16,7 @@ from hummingbot.client.settings import AllConnectorSettings, required_exchanges
 
 
 def maker_trading_pair_prompt():
-    exchange = white_rabbit_config_map.get("exchange").value
+    exchange = miner_pot_config_map.get("exchange").value
     example = AllConnectorSettings.get_example_pairs().get(exchange)
     return "Enter the token trading pair you would like to trade on %s%s >>> " \
            % (exchange, f" (e.g. {example})" if example else "")
@@ -24,12 +24,12 @@ def maker_trading_pair_prompt():
 
 # strategy specific validators
 def validate_exchange_trading_pair(value: str) -> Optional[str]:
-    exchange = white_rabbit_config_map.get("exchange").value
+    exchange = miner_pot_config_map.get("exchange").value
     return validate_market_trading_pair(exchange, value)
 
 
 def order_amount_prompt() -> str:
-    trading_pair = white_rabbit_config_map["market"].value
+    trading_pair = miner_pot_config_map["market"].value
     base_asset, quote_asset = trading_pair.split("-")
     return f"What is the amount of {base_asset} per order? >>> "
 
@@ -41,33 +41,33 @@ def validate_price_source(value: str) -> Optional[str]:
 
 def on_validate_price_source(value: str):
     if value != "external_market":
-        white_rabbit_config_map["price_source_exchange"].value = None
-        white_rabbit_config_map["price_source_market"].value = None
-        white_rabbit_config_map["take_if_crossed"].value = None
+        miner_pot_config_map["price_source_exchange"].value = None
+        miner_pot_config_map["price_source_market"].value = None
+        miner_pot_config_map["take_if_crossed"].value = None
     if value != "custom_api":
-        white_rabbit_config_map["price_source_custom_api"].value = None
+        miner_pot_config_map["price_source_custom_api"].value = None
     else:
-        white_rabbit_config_map["price_type"].value = "custom"
+        miner_pot_config_map["price_type"].value = "custom"
 
 
 def price_source_market_prompt() -> str:
-    external_market = white_rabbit_config_map.get("price_source_exchange").value
+    external_market = miner_pot_config_map.get("price_source_exchange").value
     return f'Enter the token trading pair on {external_market} >>> '
 
 
 def validate_price_source_exchange(value: str) -> Optional[str]:
-    if value == white_rabbit_config_map.get("exchange").value:
+    if value == miner_pot_config_map.get("exchange").value:
         return "Price source exchange cannot be the same as maker exchange."
     return validate_connector(value)
 
 
 def on_validated_price_source_exchange(value: str):
     if value is None:
-        white_rabbit_config_map["price_source_market"].value = None
+        miner_pot_config_map["price_source_market"].value = None
 
 
 def validate_price_source_market(value: str) -> Optional[str]:
-    market = white_rabbit_config_map.get("price_source_exchange").value
+    market = miner_pot_config_map.get("price_source_exchange").value
     return validate_market_trading_pair(market, value)
 
 
@@ -82,7 +82,7 @@ def validate_price_floor_ceiling(value: str) -> Optional[str]:
 
 def validate_price_type(value: str) -> Optional[str]:
     error = None
-    price_source = white_rabbit_config_map.get("price_source").value
+    price_source = miner_pot_config_map.get("price_source").value
     if price_source != "custom_api":
         valid_values = {"mid_price",
                         "last_price",
@@ -100,7 +100,7 @@ def validate_price_type(value: str) -> Optional[str]:
 
 def on_validated_price_type(value: str):
     if value == 'inventory_cost':
-        white_rabbit_config_map["inventory_price"].value = None
+        miner_pot_config_map["inventory_price"].value = None
 
 
 def exchange_on_validated(value: str):
@@ -126,20 +126,20 @@ def validate_ma_type(value: str) -> Optional[str]:
 
 def on_validated_ma_cross_enabled(value: str):
     if value.lower() == "enabled":
-        white_rabbit_config_map["fast_ma"].value = None
-        white_rabbit_config_map["slow_ma"].value = None
+        miner_pot_config_map["fast_ma"].value = None
+        miner_pot_config_map["slow_ma"].value = None
     else:
         if value.upper() == "SMA":
-            white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST SMA time period >>> "
-            white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW SMA time period >>> "
+            miner_pot_config_map["fast_ma"].prompt = "Enter the FAST SMA time period >>> "
+            miner_pot_config_map["slow_ma"].prompt = "Enter the SLOW SMA time period >>> "
         elif value.upper() == "EMA":
-            white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST EMA time period >>> "
-            white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW EMA time period >>> "
+            miner_pot_config_map["fast_ma"].prompt = "Enter the FAST EMA time period >>> "
+            miner_pot_config_map["slow_ma"].prompt = "Enter the SLOW EMA time period >>> "
  ##################################################################################################
  #           '''
  #       elif value.upper() == "WMA":
- #           white_rabbit_config_map["fast_ma"].prompt = "Enter the FAST WMA time period >>> "
- #           white_rabbit_config_map["slow_ma"].prompt = "Enter the SLOW WMA time period >>> "
+ #           miner_pot_config_map["fast_ma"].prompt = "Enter the FAST WMA time period >>> "
+ #           miner_pot_config_map["slow_ma"].prompt = "Enter the SLOW WMA time period >>> "
  #           '''
 ####################################################################################################
 def validate_decimal_list(value: str) -> Optional[str]:
@@ -153,11 +153,11 @@ def validate_decimal_list(value: str) -> Optional[str]:
             return validate_result
 
 
-white_rabbit_config_map = {
+miner_pot_config_map = {
     "strategy":
         ConfigVar(key="strategy",
                   prompt=None,
-                  default="white_rabbit"),
+                  default="miner_pot"),
     "exchange":
         ConfigVar(key="exchange",
                   prompt="Enter your maker spot connector >>> ",
@@ -215,7 +215,7 @@ white_rabbit_config_map = {
         ConfigVar(key="ma_type",
                   prompt=ma_type_prompt,
                   validator=validate_ma_type,
-                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("ma_cross_enabled").value,
                   prompt_on_new=True,
                   default="SMA"),
     "fast_ma":
@@ -223,14 +223,14 @@ white_rabbit_config_map = {
                   prompt="Enter the FAST MA time period >>> ",
                   validator=validate_int,
                   on_validated=on_validated_ma_cross_enabled,
-                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("ma_cross_enabled").value,
                   prompt_on_new=True),
     "slow_ma":
         ConfigVar(key="slow_ma",
                   prompt="Enter the SLOW MA time period >>> ",
                   validator=validate_int,
                   on_validated=on_validated_ma_cross_enabled,
-                  required_if=lambda: white_rabbit_config_map.get("ma_cross_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("ma_cross_enabled").value,
                   prompt_on_new=True),
     "minimum_spread":
         ConfigVar(key="minimum_spread",
@@ -280,21 +280,21 @@ white_rabbit_config_map = {
                   prompt="Enter a percentage to the current price that sets the price ceiling. Above this price, only sell orders will be placed >>> ",
                   type_str="decimal",
                   default=Decimal("1"),
-                  required_if=lambda: white_rabbit_config_map.get("moving_price_band_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("moving_price_band_enabled").value,
                   validator=validate_decimal),
     "price_floor_pct":
         ConfigVar(key="price_floor_pct",
                   prompt="Enter a percentage to the current price that sets the price floor. Below this price, only buy orders will be placed >>> ",
                   type_str="decimal",
                   default=Decimal("-1"),
-                  required_if=lambda: white_rabbit_config_map.get("moving_price_band_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("moving_price_band_enabled").value,
                   validator=validate_decimal),
     "price_band_refresh_time":
         ConfigVar(key="price_band_refresh_time",
                   prompt="After this amount of time (in seconds), the price bands are reset based on the current price >>> ",
                   type_str="float",
                   default=86400,
-                  required_if=lambda: white_rabbit_config_map.get("moving_price_band_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("moving_price_band_enabled").value,
                   validator=validate_decimal),
     
     "order_levels":
@@ -307,7 +307,7 @@ white_rabbit_config_map = {
         ConfigVar(key="order_level_amount",
                   prompt="How much do you want to increase or decrease the order size for each "
                          "additional order? (decrease < 0 > increase) >>> ",
-                  required_if=lambda: white_rabbit_config_map.get("order_levels").value > 1,
+                  required_if=lambda: miner_pot_config_map.get("order_levels").value > 1,
                   type_str="decimal",
                   validator=lambda v: validate_decimal(v),
                   default=0),
@@ -315,7 +315,7 @@ white_rabbit_config_map = {
         ConfigVar(key="order_level_spread",
                   prompt="Enter the price increments (as percentage) for subsequent "
                          "orders? (Enter 1 to indicate 1%) >>> ",
-                  required_if=lambda: white_rabbit_config_map.get("order_levels").value > 1,
+                  required_if=lambda: miner_pot_config_map.get("order_levels").value > 1,
                   type_str="decimal",
                   validator=lambda v: validate_decimal(v, 0, 100, inclusive=False),
                   default=Decimal("1")),
@@ -328,7 +328,7 @@ white_rabbit_config_map = {
     "inventory_target_base_pct":
         ConfigVar(key="inventory_target_base_pct",
                   prompt="What is your target base asset percentage? Enter 50 for 50% >>> ",
-                  required_if=lambda: white_rabbit_config_map.get("inventory_skew_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("inventory_skew_enabled").value,
                   type_str="decimal",
                   validator=lambda v: validate_decimal(v, 0, 100),
                   default=Decimal("50")),
@@ -336,7 +336,7 @@ white_rabbit_config_map = {
         ConfigVar(key="inventory_range_multiplier",
                   prompt="What is your tolerable range of inventory around the target, "
                          "expressed in multiples of your total order size? ",
-                  required_if=lambda: white_rabbit_config_map.get("inventory_skew_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("inventory_skew_enabled").value,
                   type_str="decimal",
                   validator=lambda v: validate_decimal(v, min_value=0, inclusive=False),
                   default=Decimal("1")),
@@ -345,7 +345,7 @@ white_rabbit_config_map = {
                   prompt="What is the price of your base asset inventory? ",
                   type_str="decimal",
                   validator=lambda v: validate_decimal(v, min_value=Decimal("0"), inclusive=True),
-                  required_if=lambda: white_rabbit_config_map.get("price_type").value == "inventory_cost",
+                  required_if=lambda: miner_pot_config_map.get("price_type").value == "inventory_cost",
                   default=Decimal("1"),
                   ),
     "filled_order_delay":
@@ -365,7 +365,7 @@ white_rabbit_config_map = {
         ConfigVar(key="hanging_orders_cancel_pct",
                   prompt="At what spread percentage (from mid price) will hanging orders be canceled? "
                          "(Enter 1 to indicate 1%) >>> ",
-                  required_if=lambda: white_rabbit_config_map.get("hanging_orders_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("hanging_orders_enabled").value,
                   type_str="decimal",
                   default=Decimal("10"),
                   validator=lambda v: validate_decimal(v, 0, 100, inclusive=False)),
@@ -380,7 +380,7 @@ white_rabbit_config_map = {
                   prompt="How deep do you want to go into the order book for calculating "
                          "the top ask, ignoring dust orders on the top "
                          "(expressed in base asset amount)? >>> ",
-                  required_if=lambda: white_rabbit_config_map.get("order_optimization_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("order_optimization_enabled").value,
                   type_str="decimal",
                   validator=lambda v: validate_decimal(v, min_value=0),
                   default=0),
@@ -389,7 +389,7 @@ white_rabbit_config_map = {
                   prompt="How deep do you want to go into the order book for calculating "
                          "the top bid, ignoring dust orders on the top "
                          "(expressed in base asset amount)? >>> ",
-                  required_if=lambda: white_rabbit_config_map.get("order_optimization_enabled").value,
+                  required_if=lambda: miner_pot_config_map.get("order_optimization_enabled").value,
                   type_str="decimal",
                   validator=lambda v: validate_decimal(v, min_value=0),
                   default=0),
@@ -411,34 +411,34 @@ white_rabbit_config_map = {
                   prompt="Which price type to use? ("
                          "mid_price/last_price/last_own_trade_price/best_bid/best_ask/inventory_cost) >>> ",
                   type_str="str",
-                  required_if=lambda: white_rabbit_config_map.get("price_source").value != "custom_api",
+                  required_if=lambda: miner_pot_config_map.get("price_source").value != "custom_api",
                   default="mid_price",
                   on_validated=on_validated_price_type,
                   validator=validate_price_type),
     "price_source_exchange":
         ConfigVar(key="price_source_exchange",
                   prompt="Enter external price source exchange name >>> ",
-                  required_if=lambda: white_rabbit_config_map.get("price_source").value == "external_market",
+                  required_if=lambda: miner_pot_config_map.get("price_source").value == "external_market",
                   type_str="str",
                   validator=validate_price_source_exchange,
                   on_validated=on_validated_price_source_exchange),
     "price_source_market":
         ConfigVar(key="price_source_market",
                   prompt=price_source_market_prompt,
-                  required_if=lambda: white_rabbit_config_map.get("price_source").value == "external_market",
+                  required_if=lambda: miner_pot_config_map.get("price_source").value == "external_market",
                   type_str="str",
                   validator=validate_price_source_market),
     "take_if_crossed":
         ConfigVar(key="take_if_crossed",
                   prompt="Do you want to take the best order if orders cross the orderbook? ((Yes/No) >>> ",
-                  required_if=lambda: white_rabbit_config_map.get(
+                  required_if=lambda: miner_pot_config_map.get(
                       "price_source").value == "external_market",
                   type_str="bool",
                   validator=validate_bool),
     "price_source_custom_api":
         ConfigVar(key="price_source_custom_api",
                   prompt="Enter pricing API URL >>> ",
-                  required_if=lambda: white_rabbit_config_map.get("price_source").value == "custom_api",
+                  required_if=lambda: miner_pot_config_map.get("price_source").value == "custom_api",
                   type_str="str"),
     "custom_api_update_interval":
         ConfigVar(key="custom_api_update_interval",
@@ -477,7 +477,7 @@ white_rabbit_config_map = {
                          "minimum length of bid_order_level_spreads and bid_order_level_amounts >>> ",
                   default=None,
                   type_str="str",
-                  required_if=lambda: white_rabbit_config_map.get(
+                  required_if=lambda: miner_pot_config_map.get(
                       "split_order_levels_enabled").value,
                   validator=validate_decimal_list),
     "ask_order_level_spreads":
@@ -488,7 +488,7 @@ white_rabbit_config_map = {
                          "minimum length of bid_order_level_spreads and bid_order_level_amounts >>> ",
                   default=None,
                   type_str="str",
-                  required_if=lambda: white_rabbit_config_map.get(
+                  required_if=lambda: miner_pot_config_map.get(
                       "split_order_levels_enabled").value,
                   validator=validate_decimal_list),
     "bid_order_level_amounts":
@@ -499,7 +499,7 @@ white_rabbit_config_map = {
                          "minimum length of bid_order_level_spreads and bid_order_level_amounts >>> ",
                   default=None,
                   type_str="str",
-                  required_if=lambda: white_rabbit_config_map.get(
+                  required_if=lambda: miner_pot_config_map.get(
                       "split_order_levels_enabled").value,
                   validator=validate_decimal_list),
     "ask_order_level_amounts":
@@ -509,7 +509,7 @@ white_rabbit_config_map = {
                          "The number of levels set will be equal to the "
                          "minimum length of bid_order_level_spreads and bid_order_level_amounts >>> ",
                   default=None,
-                  required_if=lambda: white_rabbit_config_map.get(
+                  required_if=lambda: miner_pot_config_map.get(
                       "split_order_levels_enabled").value,
                   type_str="str",
                   validator=validate_decimal_list),

@@ -7,10 +7,10 @@ from hummingbot.connector.exchange_base import ExchangeBase
 from hummingbot.strategy.api_asset_price_delegate import APIAssetPriceDelegate
 from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 from hummingbot.strategy.order_book_asset_price_delegate import OrderBookAssetPriceDelegate
-from hummingbot.strategy.white_rabbit import InventoryCostPriceDelegate, WhiteRabbitStrategy
-from hummingbot.strategy.white_rabbit.moving_price_band import MovingPriceBand
-from hummingbot.strategy.white_rabbit.ma_cross import MACross
-from hummingbot.strategy.white_rabbit.white_rabbit_config_map import white_rabbit_config_map as c_map
+from hummingbot.strategy.miner_pot import InventoryCostPriceDelegate, MinerPOTStrategy
+from hummingbot.strategy.miner_pot.moving_price_band import MovingPriceBand
+from hummingbot.strategy.miner_pot.ma_cross import MACross
+from hummingbot.strategy.miner_pot.miner_pot_config_map import miner_pot_config_map as c_map
 
 
 def start(self):
@@ -110,8 +110,8 @@ def start(self):
 
         should_wait_order_cancel_confirmation = c_map.get("should_wait_order_cancel_confirmation")
 
-        strategy_logging_options = WhiteRabbitStrategy.OPTION_LOG_ALL
-        self.strategy = WhiteRabbitStrategy()
+        strategy_logging_options = MinerPOTStrategy.OPTION_LOG_ALL
+        self.strategy = MinerPOTStrategy()
         self.strategy.init_params(
             market_info=MarketTradingPairTuple(*maker_data),
             bid_spread=bid_spread,
