@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from hummingbot.connector.derivative_base import DerivativeBase
-from hummingbot.connector.exchange_base import ExchangeBase
+from hummingbot.connector.derivative_base cimport DerivativeBase
 
 from hummingbot.core.clock cimport Clock
 
