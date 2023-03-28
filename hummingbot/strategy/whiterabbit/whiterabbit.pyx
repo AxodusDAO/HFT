@@ -685,7 +685,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef double c_get_spread(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             str trading_pair = self._market_info.trading_pair
 
         return market.c_get_price(trading_pair, True) - market.c_get_price(trading_pair, False)
