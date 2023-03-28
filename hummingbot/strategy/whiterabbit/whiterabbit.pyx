@@ -761,7 +761,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self.c_collect_market_variables(timestamp)
 
     cdef double c_get_spread(self):
-        cdef:
+        def:
             market: DerivativeBase = self._market_info.market
             str trading_pair = self._market_info.trading_pair
 
