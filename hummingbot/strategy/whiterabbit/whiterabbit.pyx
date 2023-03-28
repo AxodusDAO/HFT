@@ -10,8 +10,7 @@ import numpy as np
 import pandas as pd
 
 from hummingbot.connector.derivative_base import DerivativeBase
-from hummingbot.connector.exchange_base import ExchangeBase
-
+from hummingbot.connector.exchange_base cimport ExchangeBase
 from hummingbot.core.clock cimport Clock
 
 from hummingbot.client.config.config_helpers import ClientConfigAdapter
@@ -74,79 +73,15 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     def init_params(self,
                     config_map: Union[WhiteRabbitConfigMap, ClientConfigAdapter],
                     market_info: MarketTradingPairTuple,
-                    leverage: int,
-                    position_mode: str,
-                    bid_spread: Decimal,
-                    ask_spread: Decimal,
-                    order_amount: Decimal,
-                    long_profit_taking_spread: Decimal,
-                    short_profit_taking_spread: Decimal,
-                    stop_loss_spread: Decimal,
-                    time_between_stop_loss_orders: float,
-                    stop_loss_slippage_buffer: Decimal,
-                    order_levels: int = 1,
-                    order_level_spread: Decimal = s_decimal_zero,
-                    order_level_amount: Decimal = s_decimal_zero,
-                    order_refresh_time: float = 30.0,
-                    order_refresh_tolerance_pct: Decimal = s_decimal_neg_one,
-                    filled_order_delay: float = 60.0,
-                    order_optimization_enabled: bool = False,
-                    ask_order_optimization_depth: Decimal = s_decimal_zero,
-                    bid_order_optimization_depth: Decimal = s_decimal_zero,
-                    asset_price_delegate: AssetPriceDelegate = None,
-                    price_type: str = "mid_price",
-                    price_ceiling: Decimal = s_decimal_neg_one,
-                    price_floor: Decimal = s_decimal_neg_one,
-                    minimum_spread: Decimal = Decimal(0),
-                    ma_cross: Optional[MACross] = None,
-                    moving_price_band: Optional[MovingPriceBand] = None,
-                    order_override: Dict[str, List[str]] = {},
-                    
                     logging_options: int = OPTION_LOG_ALL,
                     status_report_interval: float = 900,
                     hb_app_notification: bool = False,
                     debug_csv_path: str = '',
                     is_debug: bool = False,
                     ):
-        if moving_price_band is None:
-            moving_price_band = MovingPriceBand()
-
-        if ma_cross is None:
-            ma_cross = MACross()
-        
-        if price_ceiling != s_decimal_neg_one and price_ceiling < price_floor:
-            raise ValueError("Parameter price_ceiling cannot be lower than price_floor.")
-        
         self._sb_order_tracker = OrderTracker()
         self._config_map = config_map
         self._market_info = market_info
-
-        self._leverage = leverage
-        self._position_mode = PositionMode.HEDGE if position_mode == "Hedge" else PositionMode.ONEWAY
-        self._bid_spread = bid_spread
-        self._ask_spread = ask_spread
-        self._minimum_spread = minimum_spread
-        self._order_amount = order_amount
-        self._long_profit_taking_spread = long_profit_taking_spread
-        self._short_profit_taking_spread = short_profit_taking_spread
-        self._stop_loss_spread = stop_loss_spread
-        self._order_levels = order_levels
-        self._buy_levels = order_levels
-        self._sell_levels = order_levels
-        self._order_level_spread = order_level_spread
-        self._order_level_amount = order_level_amount
-        self._order_refresh_time = order_refresh_time
-        self._order_refresh_tolerance_pct = order_refresh_tolerance_pct
-        self._filled_order_delay = filled_order_delay
-        self._order_optimization_enabled = order_optimization_enabled
-        self._ask_order_optimization_depth = ask_order_optimization_depth
-        self._bid_order_optimization_depth = bid_order_optimization_depth
-        self._asset_price_delegate = asset_price_delegate
-        self._price_type = self.get_price_type(price_type)
-        self._price_ceiling = price_ceiling
-        self._price_floor = price_floor
-        self._order_override = order_override
-
         self._price_delegate = OrderBookAssetPriceDelegate(market_info.market, market_info.trading_pair)
         self._hb_app_notification = hb_app_notification
         self._hanging_orders_enabled = False
@@ -164,19 +99,6 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self._last_timestamp = 0
         self._status_report_interval = status_report_interval
         self._last_own_trade_price = Decimal('nan')
-        self._ts_peak_bid_price = Decimal('0')
-        self._ts_peak_ask_price = Decimal('0')
-        self._exit_orders = dict()
-        self._next_buy_exit_order_timestamp = 0
-        self._next_sell_exit_order_timestamp = 0
-
-        self.add_markets([market_info.market])
-        self._close_order_type = OrderType.LIMIT
-        self._time_between_stop_loss_orders = time_between_stop_loss_orders
-        self._stop_loss_slippage_buffer = stop_loss_slippage_buffer
-
-        self._position_mode_ready = False
-        self._position_mode_not_ready_counter = 0
 
         self.c_add_markets([market_info.market])
         self._volatility_buffer_size = 0
@@ -761,8 +683,8 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         self.c_collect_market_variables(timestamp)
 
     cdef double c_get_spread(self):
-        def:
-            market: DerivativeBase = self._market_info.market
+        cdef:
+            DerivativeBase market = self._market_info.market
             str trading_pair = self._market_info.trading_pair
 
         return market.c_get_price(trading_pair, True) - market.c_get_price(trading_pair, False)
@@ -790,7 +712,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_calculate_reservation_price_and_optimal_spread(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
 
         # Current mid price
         price = self.get_price()
@@ -859,7 +781,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef object c_calculate_target_inventory(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
             str trading_pair = self._market_info.trading_pair
             str base_asset = self._market_info.base_asset
             str quote_asset = self._market_info.quote_asset
@@ -886,7 +808,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_calculate_inventory(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
             str base_asset = self._market_info.base_asset
             str quote_asset = self._market_info.quote_asset
             object mid_price
@@ -931,7 +853,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef _create_proposal_based_on_order_override(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
             list buys = []
             list sells = []
         reference_price = self.get_price()
@@ -955,7 +877,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef _create_proposal_based_on_order_levels(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
             list buys = []
             list sells = []
         bid_level_spreads, ask_level_spreads = self._get_level_spreads()
@@ -976,7 +898,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef _create_basic_proposal(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
             list buys = []
             list sells = []
         price = market.c_quantize_order_price(self.trading_pair, Decimal(str(self._optimal_bid)))
@@ -995,7 +917,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef object c_create_base_proposal(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
             list buys = []
             list sells = []
 
@@ -1020,7 +942,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         :return: (base amount, quote amount) in Decimal
         """
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
             object base_balance = market.c_get_available_balance(self.base_asset)
             object quote_balance = market.c_get_available_balance(self.quote_asset)
 
@@ -1060,7 +982,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_apply_budget_constraint(self, object proposal):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
             object quote_size
             object base_size
             object adjusted_amount
@@ -1106,7 +1028,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     # Compare the market price with the top bid and top ask price
     cdef c_apply_order_optimization(self, object proposal):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
             object own_buy_size = s_decimal_zero
             object own_sell_size = s_decimal_zero
             object best_order_spread
@@ -1158,7 +1080,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_apply_order_amount_eta_transformation(self, object proposal):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
             str trading_pair = self._market_info.trading_pair
 
         # Order amounts should be changed only if order_override is not active
@@ -1194,7 +1116,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_apply_add_transaction_costs(self, object proposal):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase market = self._market_info.market
         for buy in proposal.buys:
             fee = market.c_get_fee(self.base_asset, self.quote_asset,
                                    self._limit_order_type, TradeType.BUY, buy.size, buy.price)
