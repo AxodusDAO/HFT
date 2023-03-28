@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from .avellaneda_market_making import AvellanedaMarketMakingStrategy
+from .white_rabbit import WhiteRabbitStrategy
 __all__ = [
-    AvellanedaMarketMakingStrategy,
+    WhiteRabbitStrategy,
 ]

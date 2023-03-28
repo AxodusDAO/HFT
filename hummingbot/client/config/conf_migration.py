@@ -28,8 +28,8 @@ from hummingbot.client.config.config_data_types import BaseConnectorConfigMap
 from hummingbot.client.config.config_helpers import ClientConfigAdapter, save_to_yml
 from hummingbot.client.config.security import Security
 from hummingbot.client.settings import CLIENT_CONFIG_PATH, CONF_DIR_PATH, STRATEGIES_CONF_DIR_PATH
-from hummingbot.strategy.avellaneda_market_making.avellaneda_market_making_config_map_pydantic import (
-    AvellanedaMarketMakingConfigMap,
+from hummingbot.strategy.whiterabbit.white_rabbit_config_map_pydantic import (
+    WhiteRabbitConfigMap,
 )
 from hummingbot.strategy.cross_exchange_market_making.cross_exchange_market_making_config_map_pydantic import (
     CrossExchangeMarketMakingConfigMap,
