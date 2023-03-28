@@ -5,7 +5,7 @@ import pandas as pd
 
 from hummingbot import data_path
 from hummingbot.client.hummingbot_application import HummingbotApplication
-from hummingbot.strategy.white_rabbit import WhiteRabbitStrategy
+from hummingbot.strategy.whiterabbit import WhiteRabbitStrategy
 from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 
 

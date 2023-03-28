@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from .white_rabbit import WhiteRabbitStrategy
+from .whiterabbit import WhiteRabbitStrategy
 __all__ = [
     WhiteRabbitStrategy,
 ]
