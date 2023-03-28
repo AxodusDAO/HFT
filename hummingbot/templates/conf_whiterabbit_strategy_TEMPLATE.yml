@@ -1,8 +1,8 @@
 ########################################################
-###       White Rabbit Scalper strategy config       ###
+###       Pure market making strategy config         ###
 ########################################################
 
-template_version: 1
+template_version: 24
 strategy: null
 
 # Exchange and token parameters.
@@ -75,18 +75,6 @@ inventory_range_multiplier: null
 # Initial price of the base asset. Note: this setting is not affects anything, the price is kept in the database.
 inventory_price: null
 
-# RSI Config Variables
-#rsi_enabled: null
-#rsi_timeframe: null
-#rsi_length: null
-#rsi_oversold_level: null
-#rsi_overbought_level: null
-
-# MA Cross Config Variables - cross Moving Averange
-ma_cross_enabled: null
-ma_type: null
-fast_ma: null
-slow_ma: null
 # Number of levels of orders to place on each side of the order book.
 order_levels: null
 
