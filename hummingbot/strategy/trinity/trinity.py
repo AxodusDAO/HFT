@@ -148,23 +148,23 @@ class TrinityStrategy(StrategyPyBase):
         return all([market.ready for market in self.active_markets])
 
     @property
-    def order_refresh_tolerance_pct(self) -> Decimal:
+    def order_refresh_tolerance_pct(self) -> Decimal: #ok
         return self._order_refresh_tolerance_pct
 
-    @order_refresh_tolerance_pct.setter
+    @order_refresh_tolerance_pct.setter #ok
     def order_refresh_tolerance_pct(self, value: Decimal):
         self._order_refresh_tolerance_pct = value
 
     @property
-    def order_amount(self) -> Decimal:
+    def order_amount(self) -> Decimal: #ok
         return self._order_amount
 
-    @order_amount.setter
+    @order_amount.setter #ok
     def order_amount(self, value: Decimal):
         self._order_amount = value
 
     @property
-    def order_levels(self) -> int:
+    def order_levels(self) -> int: #ok
         return self._order_levels
 
     @order_levels.setter
@@ -174,7 +174,7 @@ class TrinityStrategy(StrategyPyBase):
         self._sell_levels = value
 
     @property
-    def buy_levels(self) -> int:
+    def buy_levels(self) -> int: #ok
         return self._buy_levels
 
     @buy_levels.setter
@@ -182,7 +182,7 @@ class TrinityStrategy(StrategyPyBase):
         self._buy_levels = value
 
     @property
-    def sell_levels(self) -> int:
+    def sell_levels(self) -> int: #ok
         return self._sell_levels
 
     @sell_levels.setter
@@ -222,7 +222,7 @@ class TrinityStrategy(StrategyPyBase):
         self._ask_spread = value
 
     @property
-    def order_optimization_enabled(self) -> bool:
+    def order_optimization_enabled(self) -> bool: #ok
         return self._order_optimization_enabled
 
     @order_optimization_enabled.setter
