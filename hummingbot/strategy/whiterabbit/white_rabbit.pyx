@@ -25,7 +25,7 @@ from hummingbot.core.network_iterator import NetworkStatus
 from hummingbot.core.utils import map_df_to_str
 from hummingbot.strategy.__utils__.trailing_indicators.instant_volatility import InstantVolatilityIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.trading_intensity import TradingIntensityIndicator
-from hummingbot.strategy.white_rabbit.white_rabbit_config_map_pydantic import (
+from hummingbot.strategy.whiterabbit.white_rabbit_config_map_pydantic import (
     WhiteRabbitConfigMap,
     DailyBetweenTimesModel,
     FromDateToDateModel,
