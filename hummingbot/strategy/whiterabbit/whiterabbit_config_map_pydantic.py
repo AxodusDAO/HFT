@@ -331,7 +331,7 @@ class WhiteRabbitConfigMap(BaseTradingStrategyConfigMap):
     should_wait_order_cancel_confirmation: bool = Field(
         default=True,
         description=(
-            "If activated, the strategy will await cancellation confirmation from the exchange"
+            "If activated, the strategy will await cancellation confirmation from the derivative"
             " before placing a new order."
         ),
         client_data=ClientFieldData(
@@ -469,9 +469,9 @@ class WhiteRabbitConfigMap(BaseTradingStrategyConfigMap):
 
     @root_validator(skip_on_failure=True)
     def post_validations(cls, values: Dict):
-        cls.exchange_post_validation(values)
+        cls.derivative_post_validation(values)
         return values
 
     @classmethod
-    def exchange_post_validation(cls, values: Dict):
-        required_exchanges.add(values["exchange"])
+    def derivative_post_validation(cls, values: Dict):
+        required_exchanges.add(values["derivative"])

@@ -12,14 +12,14 @@ from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 def start(self):
     try:
         c_map = self.strategy_config_map
-        exchange = c_map.exchange
+        derivative = c_map.derivative
         raw_trading_pair = c_map.market
 
         trading_pair: str = raw_trading_pair
-        maker_assets: Tuple[str, str] = self._initialize_market_assets(exchange, [trading_pair])[0]
-        market_names: List[Tuple[str, List[str]]] = [(exchange, [trading_pair])]
+        maker_assets: Tuple[str, str] = self._initialize_market_assets(derivative, [trading_pair])[0]
+        market_names: List[Tuple[str, List[str]]] = [(derivative, [trading_pair])]
         self._initialize_markets(market_names)
-        maker_data = [self.markets[exchange], trading_pair] + list(maker_assets)
+        maker_data = [self.markets[derivative], trading_pair] + list(maker_assets)
         self.market_trading_pair_tuples = [MarketTradingPairTuple(*maker_data)]
 
         strategy_logging_options = WhiteRabbitStrategy.OPTION_LOG_ALL
