@@ -713,7 +713,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_calculate_reservation_price_and_optimal_spread(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
 
         # Current mid price
         price = self.get_price()
@@ -782,7 +782,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef object c_calculate_target_inventory(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             str trading_pair = self._market_info.trading_pair
             str base_asset = self._market_info.base_asset
             str quote_asset = self._market_info.quote_asset
@@ -809,7 +809,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_calculate_inventory(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             str base_asset = self._market_info.base_asset
             str quote_asset = self._market_info.quote_asset
             object mid_price
@@ -854,7 +854,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef _create_proposal_based_on_order_override(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             list buys = []
             list sells = []
         reference_price = self.get_price()
@@ -878,7 +878,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef _create_proposal_based_on_order_levels(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             list buys = []
             list sells = []
         bid_level_spreads, ask_level_spreads = self._get_level_spreads()
@@ -899,7 +899,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef _create_basic_proposal(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             list buys = []
             list sells = []
         price = market.c_quantize_order_price(self.trading_pair, Decimal(str(self._optimal_bid)))
@@ -918,7 +918,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef object c_create_base_proposal(self):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             list buys = []
             list sells = []
 
@@ -943,7 +943,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         :return: (base amount, quote amount) in Decimal
         """
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             object base_balance = market.c_get_available_balance(self.base_asset)
             object quote_balance = market.c_get_available_balance(self.quote_asset)
 
@@ -983,7 +983,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_apply_budget_constraint(self, object proposal):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             object quote_size
             object base_size
             object adjusted_amount
@@ -1029,7 +1029,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
     # Compare the market price with the top bid and top ask price
     cdef c_apply_order_optimization(self, object proposal):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             object own_buy_size = s_decimal_zero
             object own_sell_size = s_decimal_zero
             object best_order_spread
@@ -1081,7 +1081,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_apply_order_amount_eta_transformation(self, object proposal):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
             str trading_pair = self._market_info.trading_pair
 
         # Order amounts should be changed only if order_override is not active
@@ -1117,7 +1117,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
 
     cdef c_apply_add_transaction_costs(self, object proposal):
         cdef:
-            market: DerivativeBase = self._market_info.market
+            DerivativeBase = self._market_info.market
         for buy in proposal.buys:
             fee = market.c_get_fee(self.base_asset, self.quote_asset,
                                    self._limit_order_type, TradeType.BUY, buy.size, buy.price)
