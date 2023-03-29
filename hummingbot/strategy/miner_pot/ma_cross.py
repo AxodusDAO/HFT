@@ -4,7 +4,7 @@ import dataclasses
 from dataclasses import dataclass
 from typing import List
 from decimal import Decimal
-from hummingbot.indicators.moving_average import MACalc
+from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MACalc
 
 # Define the MACross dataclass
 @dataclass

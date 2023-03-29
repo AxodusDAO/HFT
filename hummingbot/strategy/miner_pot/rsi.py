@@ -1,6 +1,6 @@
 from typing import Optional
 from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
-from hummingbot.strategy.relative_strength_index import RelativeStrengthIndex
+from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
 from hummingbot.strategy.miner_pot import MinerPOTStrategy
 from hummingbot.core.event.events import TradeType
 from hummingbot.core.utils.tracking_nonce import get_tracking_nonce
