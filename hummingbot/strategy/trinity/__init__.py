@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from .trinity import TrinityStrategy
+from .trinity import WhiteRabbitStrategy
 __all__ = [
-    TrinityStrategy,
+    WhiteRabbitStrategy,
 ]
