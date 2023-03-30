@@ -1,45 +1,17 @@
+from base_trailing_indicator import BaseTrailingIndicator
 import pandas as pd
-from decimal import Decimal
-from typing import List
 
 
-class MACalc:
-    """
-    A class for calculating moving averages.
-    """
-    @staticmethod
-    def get_sma(price: Decimal, tf: pd.Timedelta) -> List[Decimal]:
-        """
-        Calculate Simple Moving Average (SMA) of a given set of prices over n periods.
+class MovingAverageIndicator(BaseTrailingIndicator):
+    def __init__(self, sampling_length: int = 50, processing_length: int = 1):
+        if processing_length != 1:
+            raise Exception("Simple moving average processing_length should be 1")
+        super().__init__(sampling_length, processing_length)
 
-        Args:
-            prices (List[Decimal]): List of closing prices.
-            tf (pd.Timedelta): Time period for which to calculate the SMA.
+    def _indicator_calculation(self) -> float:
+        sma = pd.Series(self._sampling_buffer.get_as_numpy_array())\
+            .rolling(span=self._sampling_length, adjust=True).mean()
+        return sma[-1]
 
-        Returns:
-            List[Decimal]: List of SMA values for each period.
-        """
-        sma = pd.Series(price).rolling(window=tf).mean().tolist()
-        return sma
-
-    @staticmethod
-    def get_ema(price: Decimal, tf: pd.Timedelta) -> List[Decimal]:
-        """
-        Calculate Exponential Moving Average (EMA) of a given set of prices over n periods.
-
-        Args:
-            prices (List[Decimal]): List of closing prices.
-            tf (pd.Timedelta): Time period for which to calculate the EMA.
-
-        Returns:
-            List[Decimal]: List of EMA values for each period.
-        """
-        seconds = int(tf.total_seconds())
-        ema = pd.Series(price).ewm(span=seconds).mean().tolist()
-        return ema
-
-# to use this calculator you need call function: 
-'''
-sma = MACalc.get_sma(price, tf)
-ema = MACalc.get_ema(price, tf)
-'''
+    def _processing_calculation(self) -> float:
+        return self._processing_buffer.get_last_value()

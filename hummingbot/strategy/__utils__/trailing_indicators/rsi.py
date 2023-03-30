@@ -1,32 +1,25 @@
-# Import necessary libraries
+from base_trailing_indicator import BaseTrailingIndicator
 import pandas as pd
-import numpy as np
-from ta.momentum import RSIIndicator
 
-# Define a class for the RSI Calculator
-class RSICalculator:
-    # Constructor method with a default period of 14
-    def __init__(self, period=14):
-        self.period = period  # Set the period for RSI calculation
-        self.prices = []  # Initialize an empty list to store price data
+class RSIIndicator(BaseTrailingIndicator):
+    def __init__(self, sampling_length: int = 14, processing_length: int = 1):
+        if processing_length != 1:
+            raise Exception("Relative Strength Index processing_length should be 1")
+        super().__init__(sampling_length, processing_length)
 
-    # Method to update the price list with the latest price
-    def update_price(self, price):
-        self.prices.append(price)  # Append the new price to the list
-        # If the list of prices exceeds the period + 1, remove the oldest price
-        if len(self.prices) > self.period + 1:
-            self.prices.pop(0)
+    def _indicator_calculation(self) -> float:
+        price_data = pd.Series(self._sampling_buffer.get_as_numpy_array())
+        delta = price_data.diff().dropna()
+        gain = delta.where(delta > 0, 0)
+        loss = -delta.where(delta < 0, 0)
 
-    # Method to calculate the current RSI value
-    def calculate_rsi(self):
-        # If there are not enough prices to calculate RSI, return None
-        if len(self.prices) < self.period + 1:
-            return None
+        avg_gain = gain.rolling(window=self._sampling_length).mean()
+        avg_loss = loss.rolling(window=self._sampling_length).mean()
 
-        # Create a pandas DataFrame with the price data
-        data = pd.DataFrame(self.prices, columns=['close'])
-        # Create an RSIIndicator object using the ta library
-        rsi_indicator = RSIIndicator(data['close'], window=self.period)
-        # Calculate the RSI value using the RSIIndicator object and get the latest value
-        rsi = rsi_indicator.rsi().iloc[-1]
-        return rsi  # Return the latest RSI value
+        rs = avg_gain / avg_loss
+        rsi = 100 - (100 / (1 + rs))
+
+        return rsi.iloc[-1]
+
+    def _processing_calculation(self) -> float:
+        return self._processing_buffer.get_last_value()
