@@ -80,7 +80,7 @@ cdef class WhiteRabbitStrategy(StrategyBase):
         TradingIntensityIndicator _trading_intensity
         bint _should_wait_order_cancel_confirmation
 
-    cdef object c_get_mid_price(self)
+    #cdef object c_get_mid_price(self)
     cdef _create_proposal_based_on_order_levels(self)
     cdef _create_proposal_based_on_order_override(self)
     cdef _create_basic_proposal(self)
