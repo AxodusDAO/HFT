@@ -1,8 +1,11 @@
 import logging
+import datetime
+import os
+import time
 from decimal import Decimal
 from itertools import chain
 from math import ceil, floor
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -20,6 +23,8 @@ from hummingbot.core.event.events import (
 )
 from hummingbot.core.network_iterator import NetworkStatus
 from hummingbot.core.utils import map_df_to_str
+from hummingbot.strategy.__utils__.trailing_indicators.instant_volatility import InstantVolatilityIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.trading_intensity import TradingIntensityIndicator
 from hummingbot.strategy.asset_price_delegate import AssetPriceDelegate
 from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 from hummingbot.strategy.order_book_asset_price_delegate import OrderBookAssetPriceDelegate
@@ -337,6 +342,55 @@ class WhiteRabbitStrategy(StrategyPyBase):
     @asset_price_delegate.setter
     def asset_price_delegate(self, value):
         self._asset_price_delegate = value
+    
+    @property
+    def avg_vol(self):
+        return self._avg_vol
+
+    @avg_vol.setter
+    def avg_vol(self, indicator: InstantVolatilityIndicator):
+        self._avg_vol = indicator
+
+    @property
+    def trading_intensity(self):
+        return self._trading_intensity
+
+    @trading_intensity.setter
+    def trading_intensity(self, indicator: TradingIntensityIndicator):
+        self._trading_intensity = indicator
+
+    def get_config_map_indicators(self):
+        volatility_buffer_size = self._config_map.volatility_buffer_size
+        trading_intensity_buffer_size = self._config_map.trading_intensity_buffer_size
+        ticks_to_be_ready_after = max(volatility_buffer_size, trading_intensity_buffer_size)
+        ticks_to_be_ready_before = max(self._volatility_buffer_size, self._trading_intensity_buffer_size)
+
+        if self._volatility_buffer_size == 0 or self._volatility_buffer_size != volatility_buffer_size:
+            self._volatility_buffer_size = volatility_buffer_size
+
+            if self._avg_vol is None:
+                self._avg_vol = InstantVolatilityIndicator(sampling_length=volatility_buffer_size)
+            else:
+                self._avg_vol.sampling_length = volatility_buffer_size
+
+        if (
+            self._trading_intensity_buffer_size == 0
+            or self._trading_intensity_buffer_size != trading_intensity_buffer_size
+        ):
+            self._trading_intensity_buffer_size = trading_intensity_buffer_size
+            if self._trading_intensity is not None:
+                self._trading_intensity.sampling_length = trading_intensity_buffer_size
+
+        if self._trading_intensity is None and self.market_info.market.ready:
+            self._trading_intensity = TradingIntensityIndicator(
+                order_book=self.market_info.order_book,
+                price_delegate=self._price_delegate,
+                sampling_length=self._trading_intensity_buffer_size,
+            )
+
+        self._ticks_to_be_ready += (ticks_to_be_ready_after - ticks_to_be_ready_before)
+        if self._ticks_to_be_ready < 0:
+            self._ticks_to_be_ready = 0
 
     def perpetual_mm_assets_df(self) -> pd.DataFrame:
         market, trading_pair, base_asset, quote_asset = self._market_info
@@ -383,6 +437,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
         return pd.DataFrame(data=data, columns=columns)
 
+    
     def active_positions_df(self) -> pd.DataFrame:
         columns = ["Symbol", "Type", "Entry Price", "Amount", "Leverage", "Unrealized PnL"]
         data = []
@@ -455,6 +510,18 @@ class WhiteRabbitStrategy(StrategyPyBase):
             lines.extend(["", "  Positions:"] + ["    " + line for line in df.to_string(index=False).split("\n")])
         else:
             lines.extend(["", "  No active positions."])
+        
+        volatility_pct = self._avg_vol.current_value / float(self.get_price()) * 100.0
+        if all((self.gamma, self._alpha, self._kappa, not isnan(volatility_pct))):
+            lines.extend(["", f"  Strategy parameters:",
+                          f"    risk_factor(\u03B3)= {self.gamma:.5E}",
+                          f"    order_book_intensity_factor(\u0391)= {self._alpha:.5E}",
+                          f"    order_book_depth_factor(\u03BA)= {self._kappa:.5E}",
+                          f"    volatility= {volatility_pct:.3f}%"])
+            if self._execution_state.time_left is not None:
+                lines.extend([f"    time until end of trading cycle = {str(datetime.timedelta(seconds=float(self._execution_state.time_left)//1e3))}"])
+            else:
+                lines.extend([f"    time until end of trading cycle = N/A"])
 
         if len(warning_lines) > 0:
             lines.extend(["", "*** WARNINGS ***"] + warning_lines)
