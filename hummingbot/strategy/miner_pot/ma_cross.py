@@ -12,7 +12,6 @@ from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_averag
 class MACross:
     ma_enabled: bool = False  # Indicator for whether the moving average cross strategy is enabled or not
     ma_type: str = "sma"  # The type of moving average to use (e.g. simple moving average)
-    tf: pd.Timedelta = timeframe  # Instantiate MovingAverageIndicator instead of using the class directly
     fast_ma: int = 9  # The period for the fast moving average
     slow_ma: int = 50  # The period for the slow moving average
     _prices: List[float] = dataclasses.field(default_factory=list)  # Initialize the prices list
