@@ -1,4 +1,4 @@
-from base_trailing_indicator import BaseTrailingIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.base_trailing_indicator import BaseTrailingIndicator
 import pandas as pd
 
 
