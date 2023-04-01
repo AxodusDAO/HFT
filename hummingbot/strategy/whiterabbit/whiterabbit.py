@@ -763,7 +763,12 @@ class WhiteRabbitStrategy(StrategyPyBase):
             proposal.sells = []
 
     def apply_ma_cross(self, proposal: Proposal):
-        
+        if self.get_last_price() = self._ma_cross.golden_cross():
+            proposal.buys = []
+        if self.get_last_price() = self._ma_cross.death_cross():
+            proposal.sells = []
+
+
     def apply_order_price_modifiers(self, proposal: Proposal):
         if self._order_optimization_enabled:
             self.apply_order_optimization(proposal)
