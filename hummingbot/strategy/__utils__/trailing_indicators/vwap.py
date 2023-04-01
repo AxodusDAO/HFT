@@ -1,4 +1,4 @@
-from base_trailing_indicator import BaseTrailingIndicator
+from .base_trailing_indicator import BaseTrailingIndicator
 import pandas as pd
 
 class VWAPIndicator(BaseTrailingIndicator):
