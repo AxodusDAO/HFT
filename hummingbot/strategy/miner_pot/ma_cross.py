@@ -4,14 +4,14 @@ import dataclasses
 from dataclasses import dataclass
 from typing import List
 from decimal import Decimal
-from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MACalc
-
+from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MovingAverageIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_average import ExponentialMovingAverageIndicator
 # Define the MACross dataclass
 @dataclass
 class MACross:
     ma_enabled: bool = False  # Indicator for whether the moving average cross strategy is enabled or not
     ma_type: str = "sma"  # The type of moving average to use (e.g. simple moving average)
-    tf: MACalc = MACalc()  # Instantiate MACalc instead of using the class directly
+    tf: MovingAverageIndicator = MovingAverageIndicator()  # Instantiate MovingAverageIndicator instead of using the class directly
     fast_ma: int = 9  # The period for the fast moving average
     slow_ma: int = 50  # The period for the slow moving average
     _prices: List[float] = dataclasses.field(default_factory=list)  # Initialize the prices list
@@ -25,8 +25,8 @@ class MACross:
     def get_ma(self, price, tf):
         self.tf = tf
         self._prices.append(price)  # Append the latest price before calculating the MA
-        self.sma = MACalc.get_sma(price, tf)
-        self.ema = MACalc.get_ema(price, tf)
+        self.sma = MovingAverageIndicator()
+        self.ema = ExponentialMovingAverageIndicator()
         if self.ma_type == "sma":
             ma = self.sma(price, tf)
         elif self.ma_type == "ema":
