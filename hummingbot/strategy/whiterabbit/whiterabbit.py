@@ -103,7 +103,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
 
-                    rsi: RSIIndicator,
+                    #rsi: RSIIndicator,
                     #ema: ExponentialMovingAverageIndicator,
                     #sma: MovingAverageIndicator,
                     ma_cross: Optional[MACross] = None,
