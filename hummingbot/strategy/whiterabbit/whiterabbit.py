@@ -103,7 +103,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
 
-                    #rsi: RSIIndicator,
+                    rsi: RSIIndicator,
                     #ema: ExponentialMovingAverageIndicator,
                     #sma: MovingAverageIndicator,
                     ma_cross: Optional[MACross] = None,
@@ -162,6 +162,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_sell_exit_order_timestamp = 0
 
         self.add_markets([market_info.market])
+        self._resi = rsi
         self._volatility_buffer_size = 0
         self._trading_intensity_buffer_size = 0
         self._ticks_to_be_ready = -1
