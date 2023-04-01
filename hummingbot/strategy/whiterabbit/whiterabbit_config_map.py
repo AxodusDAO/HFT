@@ -1,14 +1,16 @@
-
+from datetime import datetime, time
 from decimal import Decimal
-from typing import Optional
+from typing import Dict, Optional, Union
 
 from hummingbot.client.config.config_validators import (
     validate_bool,
-    validate_decimal,
+    validate_decimal,    
+    validate_datetime_iso_string,
     validate_derivative,
     validate_exchange,
     validate_int,
     validate_market_trading_pair,
+    validate_time_iso_string,
 )
 from hummingbot.client.config.config_var import ConfigVar
 from hummingbot.client.settings import AllConnectorSettings, required_exchanges
