@@ -103,9 +103,9 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
 
-                    rsi: RSIIndicator,
-                    ema: ExponentialMovingAverageIndicator,
-                    sma: MovingAverageIndicator,
+                    #rsi: RSIIndicator,
+                    #ema: ExponentialMovingAverageIndicator,
+                    #sma: MovingAverageIndicator,
                     ma_cross: Optional[MACross] = None,
                     moving_price_band: Optional[MovingPriceBand] = None,
                     order_override: Dict[str, List[str]] = {},
