@@ -25,6 +25,24 @@ from hummingbot.core.network_iterator import NetworkStatus
 from hummingbot.core.utils import map_df_to_str
 from hummingbot.strategy.__utils__.trailing_indicators.instant_volatility import InstantVolatilityIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.trading_intensity import TradingIntensityIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_average import ExponentialMovingAverageIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MovingAverageIndicator
+from hummingbot.strategy.whiterabbit.whiterabbit_config_map import (
+    AvellanedaMarketMakingConfigMap,
+    DailyBetweenTimesModel,
+    FromDateToDateModel,
+    MultiOrderLevelModel,
+    TrackHangingOrdersModel,
+)
+from hummingbot.strategy.conditional_execution_state import (
+    RunAlwaysExecutionState,
+    RunInTimeConditionalExecutionState
+)
+from hummingbot.strategy.hanging_orders_tracker import (
+    CreatedPairOfOrders,
+    HangingOrdersTracker,
+)
 from hummingbot.strategy.asset_price_delegate import AssetPriceDelegate
 from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 from hummingbot.strategy.order_book_asset_price_delegate import OrderBookAssetPriceDelegate
@@ -85,6 +103,9 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
 
+                    rsi: RSIIndicator,
+                    ema: ExponentialMovingAverageIndicator,
+                    sma: MovingAverageIndicator,
                     ma_cross: Optional[MACross] = None,
                     moving_price_band: Optional[MovingPriceBand] = None,
                     order_override: Dict[str, List[str]] = {},
@@ -141,7 +162,33 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_sell_exit_order_timestamp = 0
 
         self.add_markets([market_info.market])
+        self._volatility_buffer_size = 0
+        self._trading_intensity_buffer_size = 0
+        self._ticks_to_be_ready = -1
+        self._avg_vol = None
+        self._trading_intensity = None
+        self._last_sampling_timestamp = 0
+        self._alpha = None
+        self._kappa = None
+        self._execution_mode = None
+        self._execution_timeframe = None
+        self._execution_state = None
+        self._start_time = None
+        self._end_time = None
+        self._reservation_price = s_decimal_zero
+        self._optimal_spread = s_decimal_zero
+        self._optimal_ask = s_decimal_zero
+        self._optimal_bid = s_decimal_zero
+        self._debug_csv_path = debug_csv_path
+        self._is_debug = is_debug
+        try:
+            if self._is_debug:
+                os.unlink(self._debug_csv_path)
+        except FileNotFoundError:
+            pass
 
+        self.get_config_map_execution_mode()
+        self.get_config_map_hanging_orders()
         self._close_order_type = OrderType.LIMIT
         self._time_between_stop_loss_orders = time_between_stop_loss_orders
         self._stop_loss_slippage_buffer = stop_loss_slippage_buffer
