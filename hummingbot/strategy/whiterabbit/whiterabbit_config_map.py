@@ -13,6 +13,333 @@ from hummingbot.client.config.config_validators import (
 from hummingbot.client.config.config_var import ConfigVar
 from hummingbot.client.settings import AllConnectorSettings, required_exchanges
 
+class InfiniteModel(BaseClientModel):
+    class Config:
+        title = "infinite"
+
+
+class FromDateToDateModel(BaseClientModel):
+    start_datetime: datetime = Field(
+        default=...,
+        description="The start date and time for date-to-date execution timeframe.",
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Please enter the start date and time (YYYY-MM-DD HH:MM:SS)",
+            prompt_on_new=True,
+        ),
+    )
+    end_datetime: datetime = Field(
+        default=...,
+        description="The end date and time for date-to-date execution timeframe.",
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Please enter the end date and time (YYYY-MM-DD HH:MM:SS)",
+            prompt_on_new=True,
+        ),
+    )
+
+    class Config:
+        title = "from_date_to_date"
+
+    @validator("start_datetime", "end_datetime", pre=True)
+    def validate_execution_time(cls, v: str) -> Optional[str]:
+        ret = validate_datetime_iso_string(v)
+        if ret is not None:
+            raise ValueError(ret)
+        return v
+
+
+class DailyBetweenTimesModel(BaseClientModel):
+    start_time: time = Field(
+        default=...,
+        description="The start time for daily-between-times execution timeframe.",
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Please enter the start time (HH:MM:SS)",
+            prompt_on_new=True,
+        ),
+    )
+    end_time: time = Field(
+        default=...,
+        description="The end time for daily-between-times execution timeframe.",
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Please enter the end time (HH:MM:SS)",
+            prompt_on_new=True,
+        ),
+    )
+
+    class Config:
+        title = "daily_between_times"
+
+    @validator("start_time", "end_time", pre=True)
+    def validate_execution_time(cls, v: str) -> Optional[str]:
+        ret = validate_time_iso_string(v)
+        if ret is not None:
+            raise ValueError(ret)
+        return v
+
+
+EXECUTION_TIMEFRAME_MODELS = {
+    InfiniteModel.Config.title: InfiniteModel,
+    FromDateToDateModel.Config.title: FromDateToDateModel,
+    DailyBetweenTimesModel.Config.title: DailyBetweenTimesModel,
+}
+class SingleOrderLevelModel(BaseClientModel):
+    class Config:
+        title = "single_order_level"
+
+
+class MultiOrderLevelModel(BaseClientModel):
+    order_levels: int = Field(
+        default=2,
+        description="The number of orders placed on either side of the order book.",
+        ge=2,
+        client_data=ClientFieldData(
+            prompt=lambda mi: "How many orders do you want to place on both sides?",
+            prompt_on_new=True,
+        ),
+    )
+    level_distances: Decimal = Field(
+        default=Decimal("0"),
+        description="The spread between order levels, expressed in % of optimal spread.",
+        ge=0,
+        client_data=ClientFieldData(
+            prompt=lambda mi: "How far apart in % of optimal spread should orders on one side be?",
+            prompt_on_new=True,
+        ),
+    )
+
+    class Config:
+        title = "multi_order_level"
+
+    @validator("order_levels", pre=True)
+    def validate_int_zero_or_above(cls, v: str):
+        ret = validate_int(v, min_value=2)
+        if ret is not None:
+            raise ValueError(ret)
+        return v
+
+    @validator("level_distances", pre=True)
+    def validate_decimal_zero_or_above(cls, v: str):
+        ret = validate_decimal(v, min_value=Decimal("0"), inclusive=True)
+        if ret is not None:
+            raise ValueError(ret)
+        return v
+
+
+ORDER_LEVEL_MODELS = {
+    SingleOrderLevelModel.Config.title: SingleOrderLevelModel,
+    MultiOrderLevelModel.Config.title: MultiOrderLevelModel,
+}
+
+
+class TrackHangingOrdersModel(BaseClientModel):
+    hanging_orders_cancel_pct: Decimal = Field(
+        default=Decimal("10"),
+        description="The spread percentage at which hanging orders will be cancelled.",
+        gt=0,
+        lt=100,
+        client_data=ClientFieldData(
+            prompt=lambda mi: (
+                "At what spread percentage (from mid price) will hanging orders be canceled?"
+                " (Enter 1 to indicate 1%)"
+            ),
+        )
+    )
+
+    class Config:
+        title = "track_hanging_orders"
+
+    @validator("hanging_orders_cancel_pct", pre=True)
+    def validate_pct_exclusive(cls, v: str):
+        ret = validate_decimal(v, min_value=Decimal("0"), max_value=Decimal("100"), inclusive=False)
+        if ret is not None:
+            raise ValueError(ret)
+        return v
+
+
+class IgnoreHangingOrdersModel(BaseClientModel):
+    class Config:
+        title = "ignore_hanging_orders"
+
+
+HANGING_ORDER_MODELS = {
+    TrackHangingOrdersModel.Config.title: TrackHangingOrdersModel,
+    IgnoreHangingOrdersModel.Config.title: IgnoreHangingOrdersModel,
+}
+
+class AvellanedaMarketMakingConfigMap(BaseTradingStrategyConfigMap):
+    strategy: str = Field(default="avellaneda_market_making", client_data=None)
+    execution_timeframe_mode: Union[InfiniteModel, FromDateToDateModel, DailyBetweenTimesModel] = Field(
+        default=...,
+        description="The execution timeframe.",
+        client_data=ClientFieldData(
+            prompt=lambda mi: f"Select the execution timeframe ({'/'.join(EXECUTION_TIMEFRAME_MODELS.keys())})",
+            prompt_on_new=True,
+        ),
+    )
+    order_amount: Decimal = Field(
+        default=...,
+        description="The strategy order amount.",
+        gt=0,
+        client_data=ClientFieldData(
+            prompt=lambda mi: AvellanedaMarketMakingConfigMap.order_amount_prompt(mi),
+            prompt_on_new=True,
+        )
+    )
+    order_optimization_enabled: bool = Field(
+        default=True,
+        description=(
+            "Allows the bid and ask order prices to be adjusted based on"
+            " the current top bid and ask prices in the market."
+        ),
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Do you want to enable best bid ask jumping? (Yes/No)"
+        ),
+    )
+    risk_factor: Decimal = Field(
+        default=Decimal("1"),
+        description="The risk factor (\u03B3).",
+        gt=0,
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Enter risk factor (\u03B3)",
+            prompt_on_new=True,
+        ),
+    )
+    order_amount_shape_factor: Decimal = Field(
+        default=Decimal("0"),
+        description="The amount shape factor (\u03b7)",
+        ge=0,
+        le=1,
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Enter order amount shape factor (\u03B7)",
+        ),
+    )
+    min_spread: Decimal = Field(
+        default=Decimal("0"),
+        description="The minimum spread limit as percentage of the mid price.",
+        ge=0,
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Enter minimum spread limit (as % of mid price)",
+        ),
+    )
+    order_refresh_time: float = Field(
+        default=...,
+        description="The frequency at which the orders' spreads will be re-evaluated.",
+        gt=0.,
+        client_data=ClientFieldData(
+            prompt=lambda mi: "How often do you want to cancel and replace bids and asks (in seconds)?",
+            prompt_on_new=True,
+        ),
+    )
+    max_order_age: float = Field(
+        default=1800.,
+        description="A given order's maximum lifetime irrespective of spread.",
+        gt=0.,
+        client_data=ClientFieldData(
+            prompt=lambda mi: (
+                "How long do you want to cancel and replace bids and asks with the same price (in seconds)?"
+            ),
+        ),
+    )
+    order_refresh_tolerance_pct: Decimal = Field(
+        default=Decimal("0"),
+        description=(
+            "The range of spreads tolerated on refresh cycles."
+            " Orders over that range are cancelled and re-submitted."
+        ),
+        ge=-10,
+        le=10,
+        client_data=ClientFieldData(
+            prompt=lambda mi: (
+                "Enter the percent change in price needed to refresh orders at each cycle"
+                " (Enter 1 to indicate 1%)"
+            )
+        ),
+    )
+    filled_order_delay: float = Field(
+        default=60.,
+        description="The delay before placing a new order after an order fill.",
+        gt=0.,
+        client_data=ClientFieldData(
+            prompt=lambda mi: (
+                "How long do you want to wait before placing the next order"
+                " if your order gets filled (in seconds)?"
+            )
+        ),
+    )
+    inventory_target_base_pct: Decimal = Field(
+        default=Decimal("50"),
+        description="Defines the inventory target for the base asset.",
+        ge=0,
+        le=100,
+        client_data=ClientFieldData(
+            prompt=lambda mi: "What is the inventory target for the base asset? Enter 50 for 50%",
+            prompt_on_new=True,
+        ),
+    )
+    add_transaction_costs: bool = Field(
+        default=False,
+        description="If activated, transaction costs will be added to order prices.",
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Do you want to add transaction costs automatically to order prices? (Yes/No)",
+        ),
+    )
+    volatility_buffer_size: int = Field(
+        default=200,
+        description="The number of ticks that will be stored to calculate volatility.",
+        ge=1,
+        le=10_000,
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Enter amount of ticks that will be stored to estimate order book liquidity",
+        ),
+    )
+    trading_intensity_buffer_size: int = Field(
+        default=200,
+        description="The number of ticks that will be stored to calculate order book liquidity.",
+        ge=1,
+        le=10_000,
+        client_data=ClientFieldData(
+            prompt=lambda mi: "Enter amount of ticks that will be stored to estimate order book liquidity",
+        ),
+    )
+    order_levels_mode: Union[SingleOrderLevelModel, MultiOrderLevelModel] = Field(
+        default=SingleOrderLevelModel.construct(),
+        description="Allows activating multi-order levels.",
+        client_data=ClientFieldData(
+            prompt=lambda mi: f"Select the order levels mode ({'/'.join(list(ORDER_LEVEL_MODELS.keys()))})",
+        ),
+    )
+    order_override: Optional[Dict] = Field(
+        default=None,
+        description="Allows custom specification of the order levels and their spreads and amounts.",
+        client_data=None,
+    )
+    hanging_orders_mode: Union[IgnoreHangingOrdersModel, TrackHangingOrdersModel] = Field(
+        default=IgnoreHangingOrdersModel(),
+        description="When tracking hanging orders, the orders on the side opposite to the filled orders remain active.",
+        client_data=ClientFieldData(
+            prompt=(
+                lambda mi: f"How do you want to handle hanging orders? ({'/'.join(list(HANGING_ORDER_MODELS.keys()))})"
+            ),
+        ),
+    )
+    should_wait_order_cancel_confirmation: bool = Field(
+        default=True,
+        description=(
+            "If activated, the strategy will await cancellation confirmation from the exchange"
+            " before placing a new order."
+        ),
+        client_data=ClientFieldData(
+            prompt=lambda mi: (
+                "Should the strategy wait to receive a confirmation for orders cancellation"
+                " before creating a new set of orders?"
+                " (Not waiting requires enough available balance) (Yes/No)"
+            ),
+        )
+    )
+
+    class Config:
+        title = "avellaneda_market_making"
+
+    # === prompts ===
 
 def maker_trading_pair_prompt():
     derivative = whiterabbit_config_map.get("derivative").value
@@ -99,7 +426,6 @@ def validate_price_floor_ceiling(value: str) -> Optional[str]:
     if not (decimal_value == Decimal("-1") or decimal_value > Decimal("0")):
         return "Value must be more than 0 or -1 to disable this feature."
 
-
 def derivative_on_validated(value: str):
     required_exchanges.add(value)
 
@@ -117,10 +443,6 @@ def validate_ma_type(value: str) -> Optional[str]:
     if value.upper() not in {"SMA", "EMA"}:
         return "Invalid input. Please enter 'SMA' or 'EMA'"
         
-#def ma_period_prompt() -> str:
-#    return "Candlestick count to calculate MA (default: 3200)"
-
-
 def on_validated_ma_cross_enabled(value: str):
     if value.lower() == "enabled":
         whiterabbit_config_map["fast_ma"].value = None
@@ -267,7 +589,6 @@ whiterabbit_config_map = {
                   prompt=ma_type_prompt,
                   validator=validate_ma_type,
                   required_if=lambda: whiterabbit_config_map.get("ma_cross_enabled").value,
-                  prompt_on_new=True,
                   default="SMA"),
     "fast_ma":
         ConfigVar(key="fast_ma",
@@ -275,14 +596,14 @@ whiterabbit_config_map = {
                   validator=validate_int,
                   on_validated=on_validated_ma_cross_enabled,
                   required_if=lambda: whiterabbit_config_map.get("ma_cross_enabled").value,
-                  prompt_on_new=True),
+                  default=9),
     "slow_ma":
         ConfigVar(key="slow_ma",
                   prompt="Enter the SLOW MA time period >>> ",
                   validator=validate_int,
                   on_validated=on_validated_ma_cross_enabled,
                   required_if=lambda: whiterabbit_config_map.get("ma_cross_enabled").value,
-                  prompt_on_new=True),
+                  default=50),
 
    "moving_price_band_enabled":
         ConfigVar(key="moving_price_band_enabled",
