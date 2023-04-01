@@ -27,8 +27,13 @@ from .inventory_skew_calculator cimport c_calculate_bid_ask_ratios_from_base_ass
 from .inventory_skew_calculator import calculate_total_order_size
 from .miner_pot_order_tracker import MinerPOTOrderTracker
 from .moving_price_band import MovingPriceBand
-from .ma_cross import MACross
+from hummingbot.strategy.miner_pot.ma_cross import MACross
 
+from hummingbot.strategy.__utils__.trailing_indicators.instant_volatility import InstantVolatilityIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.trading_intensity import TradingIntensityIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_average import ExponentialMovingAverageIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MovingAverageIndicator
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
