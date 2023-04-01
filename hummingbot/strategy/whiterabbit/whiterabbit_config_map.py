@@ -15,6 +15,8 @@ from hummingbot.client.config.config_validators import (
 from hummingbot.client.config.config_var import ConfigVar
 from hummingbot.client.settings import AllConnectorSettings, required_exchanges
 from hummingbot.client.config.config_data_types import BaseClientModel, ClientFieldData
+from hummingbot.client.config.strategy_config_data_types import BaseTradingStrategyConfigMap
+
 from pydantic import Field, root_validator, validator
 
 class InfiniteModel(BaseClientModel):
