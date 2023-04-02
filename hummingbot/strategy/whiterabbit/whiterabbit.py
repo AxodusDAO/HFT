@@ -420,6 +420,67 @@ class WhiteRabbitStrategy(StrategyPyBase):
     def asset_price_delegate(self, value):
         self._asset_price_delegate = value
 
+    def get_config_map_execution_mode(self):
+        try:
+            execution_mode = self._config_map.execution_timeframe_mode.title
+            execution_timeframe = self._config_map.execution_timeframe_mode.Config.title
+            if execution_mode == FromDateToDateModel.Config.title:
+                start_time = self._config_map.execution_timeframe_mode.start_datetime
+                end_time = self._config_map.execution_timeframe_mode.end_datetime
+                execution_state = RunInTimeConditionalExecutionState(start_timestamp=start_time, end_timestamp=end_time)
+            elif execution_mode == DailyBetweenTimesModel.Config.title:
+                start_time = self._config_map.execution_timeframe_mode.start_time
+                end_time = self._config_map.execution_timeframe_mode.end_time
+                execution_state = RunInTimeConditionalExecutionState(start_timestamp=start_time, end_timestamp=end_time)
+            else:
+                start_time = None
+                end_time = None
+                execution_state = RunAlwaysExecutionState()
+
+            # Something has changed?
+            if self._execution_state is None or self._execution_state != execution_state:
+                self._execution_state = execution_state
+                self._execution_mode = execution_mode
+                self._execution_timeframe = execution_timeframe
+                self._start_time = start_time
+                self._end_time = end_time
+        except AttributeError:
+            # A parameter is missing in the execution timeframe mode configuration
+            pass
+
+    def get_config_map_indicators(self):
+        volatility_buffer_size = self._config_map.volatility_buffer_size
+        trading_intensity_buffer_size = self._config_map.trading_intensity_buffer_size
+        ticks_to_be_ready_after = max(volatility_buffer_size, trading_intensity_buffer_size)
+        ticks_to_be_ready_before = max(self._volatility_buffer_size, self._trading_intensity_buffer_size)
+
+        if self._volatility_buffer_size == 0 or self._volatility_buffer_size != volatility_buffer_size:
+            self._volatility_buffer_size = volatility_buffer_size
+
+            if self._avg_vol is None:
+                self._avg_vol = InstantVolatilityIndicator(sampling_length=volatility_buffer_size)
+            else:
+                self._avg_vol.sampling_length = volatility_buffer_size
+
+        if (
+            self._trading_intensity_buffer_size == 0
+            or self._trading_intensity_buffer_size != trading_intensity_buffer_size
+        ):
+            self._trading_intensity_buffer_size = trading_intensity_buffer_size
+            if self._trading_intensity is not None:
+                self._trading_intensity.sampling_length = trading_intensity_buffer_size
+
+        if self._trading_intensity is None and self.market_info.market.ready:
+            self._trading_intensity = TradingIntensityIndicator(
+                order_book=self.market_info.order_book,
+                price_delegate=self._price_delegate,
+                sampling_length=self._trading_intensity_buffer_size,
+            )
+
+        self._ticks_to_be_ready += (ticks_to_be_ready_after - ticks_to_be_ready_before)
+        if self._ticks_to_be_ready < 0:
+            self._ticks_to_be_ready = 0
+            
     def perpetual_mm_assets_df(self) -> pd.DataFrame:
         market, trading_pair, base_asset, quote_asset = self._market_info
         quote_balance = float(market.get_balance(quote_asset))
