@@ -1,11 +1,8 @@
 import logging
-import datetime
-import os
-import time
 from decimal import Decimal
 from itertools import chain
 from math import ceil, floor
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -23,26 +20,6 @@ from hummingbot.core.event.events import (
 )
 from hummingbot.core.network_iterator import NetworkStatus
 from hummingbot.core.utils import map_df_to_str
-from hummingbot.strategy.__utils__.trailing_indicators.instant_volatility import InstantVolatilityIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.trading_intensity import TradingIntensityIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_average import ExponentialMovingAverageIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MovingAverageIndicator
-from hummingbot.strategy.whiterabbit.whiterabbit_config_map import (
-    AvellanedaMarketMakingConfigMap,
-    DailyBetweenTimesModel,
-    FromDateToDateModel,
-    MultiOrderLevelModel,
-    TrackHangingOrdersModel,
-)
-from hummingbot.strategy.conditional_execution_state import (
-    RunAlwaysExecutionState,
-    RunInTimeConditionalExecutionState
-)
-from hummingbot.strategy.hanging_orders_tracker import (
-    CreatedPairOfOrders,
-    HangingOrdersTracker,
-)
 from hummingbot.strategy.asset_price_delegate import AssetPriceDelegate
 from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 from hummingbot.strategy.order_book_asset_price_delegate import OrderBookAssetPriceDelegate
@@ -53,7 +30,6 @@ from hummingbot.strategy.whiterabbit.whiterabbit_order_tracker import (
 from hummingbot.strategy.strategy_py_base import StrategyPyBase
 from hummingbot.strategy.utils import order_age
 from hummingbot.strategy.whiterabbit.moving_price_band import MovingPriceBand
-from hummingbot.strategy.whiterabbit.ma_cross import MACross
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
@@ -102,20 +78,12 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     status_report_interval: float = 900,
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
-
-                    #rsi: RSIIndicator,
-                    #ema: ExponentialMovingAverageIndicator,
-                    #sma: MovingAverageIndicator,
-                    ma_cross: Optional[MACross] = None,
                     moving_price_band: Optional[MovingPriceBand] = None,
                     order_override: Dict[str, List[str]] = {},
                     ):
         if moving_price_band is None:
             moving_price_band = MovingPriceBand()
 
-        if ma_cross is None:
-            ma_cross = MACross()
-        
         if price_ceiling != s_decimal_neg_one and price_ceiling < price_floor:
             raise ValueError("Parameter price_ceiling cannot be lower than price_floor.")
 
@@ -162,34 +130,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_sell_exit_order_timestamp = 0
 
         self.add_markets([market_info.market])
-        self._resi = rsi
-        self._volatility_buffer_size = 0
-        self._trading_intensity_buffer_size = 0
-        self._ticks_to_be_ready = -1
-        self._avg_vol = None
-        self._trading_intensity = None
-        self._last_sampling_timestamp = 0
-        self._alpha = None
-        self._kappa = None
-        self._execution_mode = None
-        self._execution_timeframe = None
-        self._execution_state = None
-        self._start_time = None
-        self._end_time = None
-        self._reservation_price = s_decimal_zero
-        self._optimal_spread = s_decimal_zero
-        self._optimal_ask = s_decimal_zero
-        self._optimal_bid = s_decimal_zero
-        self._debug_csv_path = debug_csv_path
-        self._is_debug = is_debug
-        try:
-            if self._is_debug:
-                os.unlink(self._debug_csv_path)
-        except FileNotFoundError:
-            pass
 
-        self.get_config_map_execution_mode()
-        self.get_config_map_hanging_orders()
         self._close_order_type = OrderType.LIMIT
         self._time_between_stop_loss_orders = time_between_stop_loss_orders
         self._stop_loss_slippage_buffer = stop_loss_slippage_buffer
@@ -201,23 +142,23 @@ class WhiteRabbitStrategy(StrategyPyBase):
         return all([market.ready for market in self.active_markets])
 
     @property
-    def order_refresh_tolerance_pct(self) -> Decimal: #ok
+    def order_refresh_tolerance_pct(self) -> Decimal:
         return self._order_refresh_tolerance_pct
 
-    @order_refresh_tolerance_pct.setter #ok
+    @order_refresh_tolerance_pct.setter
     def order_refresh_tolerance_pct(self, value: Decimal):
         self._order_refresh_tolerance_pct = value
 
     @property
-    def order_amount(self) -> Decimal: #ok
+    def order_amount(self) -> Decimal:
         return self._order_amount
 
-    @order_amount.setter #ok
+    @order_amount.setter
     def order_amount(self, value: Decimal):
         self._order_amount = value
 
     @property
-    def order_levels(self) -> int: #ok
+    def order_levels(self) -> int:
         return self._order_levels
 
     @order_levels.setter
@@ -227,7 +168,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._sell_levels = value
 
     @property
-    def buy_levels(self) -> int: #ok
+    def buy_levels(self) -> int:
         return self._buy_levels
 
     @buy_levels.setter
@@ -235,7 +176,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._buy_levels = value
 
     @property
-    def sell_levels(self) -> int: #ok
+    def sell_levels(self) -> int:
         return self._sell_levels
 
     @sell_levels.setter
@@ -275,7 +216,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._ask_spread = value
 
     @property
-    def order_optimization_enabled(self) -> bool: #ok
+    def order_optimization_enabled(self) -> bool:
         return self._order_optimization_enabled
 
     @order_optimization_enabled.setter
@@ -290,9 +231,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
     def order_refresh_time(self, value: float):
         self._order_refresh_time = value
 
-    @property
-    def ma_cross(self) -> MACross:
-        return self._ma_cross
     @property
     def moving_price_band(self) -> MovingPriceBand:
         return self._moving_price_band
@@ -390,55 +328,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
     @asset_price_delegate.setter
     def asset_price_delegate(self, value):
         self._asset_price_delegate = value
-    
-    @property
-    def avg_vol(self):
-        return self._avg_vol
-
-    @avg_vol.setter
-    def avg_vol(self, indicator: InstantVolatilityIndicator):
-        self._avg_vol = indicator
-
-    @property
-    def trading_intensity(self):
-        return self._trading_intensity
-
-    @trading_intensity.setter
-    def trading_intensity(self, indicator: TradingIntensityIndicator):
-        self._trading_intensity = indicator
-
-    def get_config_map_indicators(self):
-        volatility_buffer_size = self._config_map.volatility_buffer_size
-        trading_intensity_buffer_size = self._config_map.trading_intensity_buffer_size
-        ticks_to_be_ready_after = max(volatility_buffer_size, trading_intensity_buffer_size)
-        ticks_to_be_ready_before = max(self._volatility_buffer_size, self._trading_intensity_buffer_size)
-
-        if self._volatility_buffer_size == 0 or self._volatility_buffer_size != volatility_buffer_size:
-            self._volatility_buffer_size = volatility_buffer_size
-
-            if self._avg_vol is None:
-                self._avg_vol = InstantVolatilityIndicator(sampling_length=volatility_buffer_size)
-            else:
-                self._avg_vol.sampling_length = volatility_buffer_size
-
-        if (
-            self._trading_intensity_buffer_size == 0
-            or self._trading_intensity_buffer_size != trading_intensity_buffer_size
-        ):
-            self._trading_intensity_buffer_size = trading_intensity_buffer_size
-            if self._trading_intensity is not None:
-                self._trading_intensity.sampling_length = trading_intensity_buffer_size
-
-        if self._trading_intensity is None and self.market_info.market.ready:
-            self._trading_intensity = TradingIntensityIndicator(
-                order_book=self.market_info.order_book,
-                price_delegate=self._price_delegate,
-                sampling_length=self._trading_intensity_buffer_size,
-            )
-
-        self._ticks_to_be_ready += (ticks_to_be_ready_after - ticks_to_be_ready_before)
-        if self._ticks_to_be_ready < 0:
-            self._ticks_to_be_ready = 0
 
     def perpetual_mm_assets_df(self) -> pd.DataFrame:
         market, trading_pair, base_asset, quote_asset = self._market_info
@@ -485,7 +374,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
         return pd.DataFrame(data=data, columns=columns)
 
-    
     def active_positions_df(self) -> pd.DataFrame:
         columns = ["Symbol", "Type", "Entry Price", "Amount", "Leverage", "Unrealized PnL"]
         data = []
@@ -558,18 +446,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
             lines.extend(["", "  Positions:"] + ["    " + line for line in df.to_string(index=False).split("\n")])
         else:
             lines.extend(["", "  No active positions."])
-        
-        volatility_pct = self._avg_vol.current_value / float(self.get_price()) * 100.0
-        if all((self.gamma, self._alpha, self._kappa, not isnan(volatility_pct))):
-            lines.extend(["", f"  Strategy parameters:",
-                          f"    risk_factor(\u03B3)= {self.gamma:.5E}",
-                          f"    order_book_intensity_factor(\u0391)= {self._alpha:.5E}",
-                          f"    order_book_depth_factor(\u03BA)= {self._kappa:.5E}",
-                          f"    volatility= {volatility_pct:.3f}%"])
-            if self._execution_state.time_left is not None:
-                lines.extend([f"    time until end of trading cycle = {str(datetime.timedelta(seconds=float(self._execution_state.time_left)//1e3))}"])
-            else:
-                lines.extend([f"    time until end of trading cycle = N/A"])
 
         if len(warning_lines) > 0:
             lines.extend(["", "*** WARNINGS ***"] + warning_lines)
@@ -809,13 +685,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
             proposal.buys = []
         if self._price_floor > 0 and self.get_price() <= self._price_floor:
             proposal.sells = []
-
-    def apply_ma_cross(self, proposal: Proposal):
-        if self.get_last_price() >= self._ma_cross.golden_cross():
-            proposal.buys = []
-        if self.get_last_price() <= self._ma_cross.death_cross():
-            proposal.sells = []
-
 
     def apply_order_price_modifiers(self, proposal: Proposal):
         if self._order_optimization_enabled:
