@@ -85,7 +85,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     ):
         if ma_cross is None:
             ma_cross = MACross()
-            
+
         if moving_price_band is None:
             moving_price_band = MovingPriceBand()
 
@@ -147,7 +147,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         return all([market.ready for market in self.active_markets])
 
     @property
-    def ma_cross(self) -> MACross
+    def ma_cross(self) -> MACross:
         return self._ma_cross
     @property
     def order_refresh_tolerance_pct(self) -> Decimal:
