@@ -29,8 +29,16 @@ from hummingbot.strategy.whiterabbit.whiterabbit_order_tracker import (
 )
 from hummingbot.strategy.strategy_py_base import StrategyPyBase
 from hummingbot.strategy.utils import order_age
+
+#tools
 from hummingbot.strategy.whiterabbit.moving_price_band import MovingPriceBand
 from hummingbot.strategy.whiterabbit.ma_cross import MACross
+from hummingbot.strategy.__utils__.trailing_indicators.instant_volatility import InstantVolatilityIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.trading_intensity import TradingIntensityIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_average import ExponentialMovingAverageIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MovingAverageIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.vwap import VWAPIndicator
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
@@ -135,11 +143,25 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_sell_exit_order_timestamp = 0
 
         self.add_markets([market_info.market])
+        self._volatility_buffer_size = 0
+        self._trading_intensity_buffer_size = 0
+        self._ticks_to_be_ready = -1
+        self._avg_vol = None
+        self._trading_intensity = None
+        self._last_sampling_timestamp = 0
+        self._alpha = None
+        self._kappa = None
+        self._execution_mode = None
+        self._execution_timeframe = None
+        self._execution_state = None
+        self._start_time = None
+        self._end_time = None
 
         self._close_order_type = OrderType.LIMIT
         self._time_between_stop_loss_orders = time_between_stop_loss_orders
         self._stop_loss_slippage_buffer = stop_loss_slippage_buffer
-
+        
+        self.get_config_map_execution_mode()
         self._position_mode_ready = False
         self._position_mode_not_ready_counter = 0
 
@@ -149,6 +171,67 @@ class WhiteRabbitStrategy(StrategyPyBase):
     @property
     def ma_cross(self) -> MACross:
         return self._ma_cross
+    
+    @property
+    def avg_vol(self):
+        return self._avg_vol
+
+    @avg_vol.setter
+    def avg_vol(self, indicator: InstantVolatilityIndicator):
+        self._avg_vol = indicator
+
+    @property
+    def trading_intensity(self):
+        return self._trading_intensity
+
+    @trading_intensity.setter
+    def trading_intensity(self, indicator: TradingIntensityIndicator):
+        self._trading_intensity = indicator
+
+    @property
+    def gamma(self):
+        return self._config_map.risk_factor
+
+    @property
+    def alpha(self):
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, value):
+        self._alpha = value
+
+    @property
+    def kappa(self):
+        return self._kappa
+
+    @kappa.setter
+    def kappa(self, value):
+        self._kappa = value
+
+    @property
+    def eta(self):
+        return self._config_map.order_amount_shape_factor
+    
+    @property
+    def execution_timeframe(self):
+        return self._execution_timeframe
+
+    @property
+    def start_time(self) -> time:
+        return self._start_time
+
+    @start_time.setter
+    def start_time(self, value):
+        self._start_time = value
+
+    @property
+    def end_time(self) -> time:
+        return self._end_time
+
+    @end_time.setter
+    def end_time(self, value):
+        self._end_time = value
+        
     @property
     def order_refresh_tolerance_pct(self) -> Decimal:
         return self._order_refresh_tolerance_pct
