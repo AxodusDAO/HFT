@@ -114,8 +114,13 @@ custom_api_update_interval: null
 # Please make sure there is a space between : and [
 order_override: null
 
+                                                                                                                                                                                                                                                  
+moving_price_band_enabled: null                                                                                                                                                                                                                                 
+ping_pong_enabled: null                                                                                                                                                                                                                                   
+add_transaction_costs: null
+
 # Moving Average Cross
-ma_cross: null
+ma_cross_enabled: null
 ma_type: null
 fast_ma: null
 slow_ma: null
