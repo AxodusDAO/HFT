@@ -30,6 +30,7 @@ from hummingbot.strategy.whiterabbit.whiterabbit_order_tracker import (
 from hummingbot.strategy.strategy_py_base import StrategyPyBase
 from hummingbot.strategy.utils import order_age
 from hummingbot.strategy.whiterabbit.moving_price_band import MovingPriceBand
+from hummingbot.strategy.whiterabbit.ma_cross import MACross
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
@@ -79,8 +80,12 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
                     moving_price_band: Optional[MovingPriceBand] = None,
+                    ma_cross: Optional[MACross] = None,
                     order_override: Dict[str, List[str]] = {},
                     ):
+        if ma_cross is None:
+            ma_cross = MACross()
+            
         if moving_price_band is None:
             moving_price_band = MovingPriceBand()
 
@@ -141,6 +146,9 @@ class WhiteRabbitStrategy(StrategyPyBase):
     def all_markets_ready(self):
         return all([market.ready for market in self.active_markets])
 
+    @property
+    def ma_cross(self) -> MACross
+        return self._ma_cross
     @property
     def order_refresh_tolerance_pct(self) -> Decimal:
         return self._order_refresh_tolerance_pct
