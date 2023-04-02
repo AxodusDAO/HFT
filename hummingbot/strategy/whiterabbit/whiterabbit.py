@@ -420,6 +420,10 @@ class WhiteRabbitStrategy(StrategyPyBase):
     def asset_price_delegate(self, value):
         self._asset_price_delegate = value
 
+    def update_from_config_map(self):
+        self.get_config_map_execution_mode()
+        self.get_config_map_indicators()
+        
     def get_config_map_execution_mode(self):
         try:
             execution_mode = self._config_map.execution_timeframe_mode.title
@@ -603,7 +607,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 lines.extend([f"    time until end of trading cycle = {str(datetime.timedelta(seconds=float(self._execution_state.time_left)//1e3))}"])
             else:
                 lines.extend([f"    time until end of trading cycle = N/A"])
-                
+
 
         # See if there're any active positions.
         if len(self.active_positions) > 0:

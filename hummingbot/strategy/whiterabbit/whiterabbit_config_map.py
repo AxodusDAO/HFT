@@ -171,7 +171,7 @@ HANGING_ORDER_MODELS = {
     IgnoreHangingOrdersModel.Config.title: IgnoreHangingOrdersModel,
 }
 
-class AvellanedaMarketMakingConfigMap(BaseTradingStrategyConfigMap):
+class WhiteRabbitConfigMap(BaseTradingStrategyConfigMap):
     strategy: str = Field(default="avellaneda_market_making", client_data=None)
     execution_timeframe_mode: Union[InfiniteModel, FromDateToDateModel, DailyBetweenTimesModel] = Field(
         default=...,
@@ -186,7 +186,7 @@ class AvellanedaMarketMakingConfigMap(BaseTradingStrategyConfigMap):
         description="The strategy order amount.",
         gt=0,
         client_data=ClientFieldData(
-            prompt=lambda mi: AvellanedaMarketMakingConfigMap.order_amount_prompt(mi),
+            prompt=lambda mi: WhiteRabbitConfigMap.order_amount_prompt(mi),
             prompt_on_new=True,
         )
     )
@@ -343,7 +343,7 @@ class AvellanedaMarketMakingConfigMap(BaseTradingStrategyConfigMap):
     )
 
     class Config:
-        title = "avellaneda_market_making"
+        title = "whiterabbit"
 
     # === prompts ===
 
