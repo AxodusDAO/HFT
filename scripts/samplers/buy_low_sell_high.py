@@ -6,16 +6,25 @@ from hummingbot.core.data_type.common import OrderType
 from hummingbot.strategy.script_strategy_base import ScriptStrategyBase
 
 
+<<<<<<< HEAD:scripts/samplers/buy_low_sell_high.py
 class buyLowSellHigh(ScriptStrategyBase):
     markets = {"binance": {"BTC-BUSD"}}
-    #: pingpong is a variable to allow alternating between buy & sell signals
-    pingpong = 0
-
+=======
+class BuyLowSellHigh(ScriptStrategyBase):
     """
-    for the sake of simplicity in testing, we will define fast MA as the 5-secondly-MA, and slow MA as the
+    BotCamp Cohort: Sept 2022
+    Design Template: https://hummingbot-foundation.notion.site/Buy-low-sell-high-35b89d84f0d94d379951a98f97179053
+    Video: -
+    Description:
+    The script will be calculating the MA for a certain pair, and will execute a buy_order at the golden cross
+    and a sell_order at the death cross.
+    For the sake of simplicity in testing, we will define fast MA as the 5-secondly-MA, and slow MA as the
     20-secondly-MA. User can change this as desired
     """
-
+    markets = {"binance_paper_trade": {"BTC-USDT"}}
+>>>>>>> d5b2662ab59b5eb786f9c607ee7605d257529fd5:scripts/buy_low_sell_high.py
+    #: pingpong is a variable to allow alternating between buy & sell signals
+    pingpong = 0
     de_fast_ma = deque([], maxlen=5)
     de_slow_ma = deque([], maxlen=20)
 
