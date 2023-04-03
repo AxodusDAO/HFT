@@ -1,3 +1,5 @@
+import datetime
+import time
 import logging
 from decimal import Decimal
 from itertools import chain
@@ -681,6 +683,30 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.manage_positions(session_positions)
         finally:
             self._last_timestamp = timestamp
+
+        # Method to determine if a golden cross occurred (fast_ma > slow_ma) and should buy
+    def golden_cross(self, fast_ma: Decimal, slow_ma: Decimal) -> bool:
+        if fast_ma > slow_ma:
+            self._buys.append("BUY")
+            return True
+        return False
+
+    # Method to determine if a death cross occurred (slow_ma > fast_ma) and should sell
+    def death_cross(self, fast_ma: Decimal, slow_ma: Decimal) -> bool:
+        if slow_ma > fast_ma:
+            self._sells.append("SELL")
+            return True
+        return False
+    
+    def should_buy(self, price, slow_ma):
+        self._prices.append(price)
+        if len(self._prices) < slow_ma:
+            self._buys.append("BUY")
+
+    def should_sell(self, price, slow_ma):
+        self._prices.append(price)
+        if len(self._prices) > slow_ma:
+            self._sells.append("SELL")
 
     def manage_positions(self, session_positions: List[Position]):
         mode = self._position_mode
