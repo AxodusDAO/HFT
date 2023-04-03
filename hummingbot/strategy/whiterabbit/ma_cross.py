@@ -1,5 +1,5 @@
 import pandas as pd
-from dataclasses import dataclass
+import dataclasses
 from typing import List
 from decimal import Decimal
 from hummingbot.core.data_type.common import PriceType
