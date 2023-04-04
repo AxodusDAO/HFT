@@ -90,6 +90,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     status_report_interval: float = 900,
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
+                    fast_ma: int = 9,
+                    slow_ma: int = 50,
                     moving_price_band: Optional[MovingPriceBand] = None,
                     ma_cross: Optional[MACross] = None,
                     order_override: Dict[str, List[str]] = {},
@@ -131,6 +133,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._price_floor = price_floor
         self._hb_app_notification = hb_app_notification
         self._order_override = order_override
+        self._fast_ma = fast_ma
+        self._slow_ma = slow_ma
 
         self._cancel_timestamp = 0
         self._create_timestamp = 0
@@ -175,6 +179,22 @@ class WhiteRabbitStrategy(StrategyPyBase):
     def ma_cross(self) -> MACross:
         return self._ma_cross
     
+    @property
+    def fast_ma(self):
+        return self._fast_ma
+    
+    @fast_ma.setter
+    def fast_ma(self, fast_ma: MACross):
+        self._fast_ma = fast_ma
+
+    @property
+    def slow_ma(self):
+        return self._slow_ma
+    
+    @slow_ma.setter
+    def slow_ma(self, slow_ma: MACross):
+        self._slow_ma = slow_ma
+        
     @property
     def avg_vol(self):
         return self._avg_vol
@@ -688,16 +708,16 @@ class WhiteRabbitStrategy(StrategyPyBase):
         # Method to determine if a golden cross occurred (fast_ma > slow_ma) and should buy
     def golden_cross(self, fast_ma: Decimal, slow_ma: Decimal) -> bool:
         if fast_ma > slow_ma:
-            self._buys.append("BUY")
-            return True
-        return False
+            self.execute_orders_proposal(proposal, PositionAction.OPEN)
+            proposal.buys = []
+        return Proposal(buys, sells)
 
     # Method to determine if a death cross occurred (slow_ma > fast_ma) and should sell
-    def death_cross(self, fast_ma: Decimal, slow_ma: Decimal) -> bool:
-        if slow_ma > fast_ma:
-            self._sells.append("SELL")
-            return True
-        return False
+    def death_cross(self, proposal: Proposal):
+        if self._slow_ma > fast_ma:
+            sself.execute_orders_proposal(proposal, PositionAction.OPEN)
+            proposal.buys = []
+        return Proposal(buys, sells)
     
     def should_buy(self, price, slow_ma):
         self._prices.append(price)
