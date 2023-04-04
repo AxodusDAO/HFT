@@ -10,58 +10,67 @@ from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_averag
 # Define the MACross dataclass
 @dataclass
 class MACross:
-    ma_enabled: bool = False  # Indicator for whether the moving average cross strategy is enabled or not
-    ma_type: str = "sma"  # The type of moving average to use (e.g., simple moving average)
-    fast_ma: int = 9  # The period for the fast moving average
-    slow_ma: int = 50  # The period for the slow moving average
-    _prices: List[Decimal] = dataclasses.field(default_factory=list)
+    ma_enabled: bool = False
+    ma_type: str = "sma"
+    fast_ma: int = 9
+    slow_ma: int = 50
+
+    def __init__(self, ma_type: str = "sma", fast_ma: int = 9, slow_ma: int = 50):
+        self._ma_type = ma_type
+        self._fast_ma = fast_ma
+        self._slow_ma = slow_ma
+        self._prices: List[Decimal] = []
+
+    @property
+    def fast_ma(self):
+        return self._fast_ma
+
+    @fast_ma.setter
+    def fast_ma(self, fast_ma: int):
+        self._fast_ma = fast_ma
+
+    @property
+    def slow_ma(self):
+        return self._slow_ma
+
+    @slow_ma.setter
+    def slow_ma(self, slow_ma: int):
+        self._slow_ma = slow_ma
 
     def get_price(self) -> float:
-        if self._asset_price_delegate is not None:
-            price_provider = self._asset_price_delegate
-        else:
-            price_provider = self._market_info
-        if self._price_type is PriceType.LastOwnTrade:
-            price = self._last_own_trade_price
-        else:
-            price = price_provider.get_price_by_type(self._price_type)
-        if price.is_nan():
-            price = price_provider.get_price_by_type(PriceType.MidPrice)
-        return price
+        # Implement your logic to get the latest price
+        pass
 
-    def get_ma(self, price: Decimal, tf: int):
+    def get_ma(self, price: Decimal, period: int):
         self._prices.append(price)  # Append the latest price before calculating the MA
-        if self.ma_type == "sma":
-            ma = MovingAverageIndicator(self._prices, tf)
-        elif self.ma_type == "ema":
-            ma = ExponentialMovingAverageIndicator(self._prices, tf)
+
+        if self._ma_type == "sma":
+            ma = MovingAverageIndicator(self._prices, period)
+        elif self._ma_type == "ema":
+            ma = ExponentialMovingAverageIndicator(self._prices, period)
+
         return ma.get_value()
 
-    def golden_cross(self, fast_ma: Decimal, slow_ma: Decimal) -> bool:
+    def golden_cross(self, fast_ma: Decimal, slow_ma: Decimal):
         return fast_ma > slow_ma
 
-    def death_cross(self, fast_ma: Decimal, slow_ma: Decimal) -> bool:
+    def death_cross(self, fast_ma: Decimal, slow_ma: Decimal):
         return slow_ma > fast_ma
 
-    def disable_sells(self, price: Decimal, slow_ma: Decimal) -> None:
-        pass  # Implement logic to disable sells
-
-    def disable_buys(self, price: Decimal, slow_ma: Decimal) -> None:
-        pass  # Implement logic to disable buys
-
-    # Method to update the prices list and calculate moving averages when enough data is available
     def update(self) -> bool:
         price = self.get_price()
         self._prices.append(price)
 
-        if len(self._prices) >= self.slow_ma:
-            fast_ma = self.get_ma(price, self.fast_ma)
-            slow_ma = self.get_ma(price, self.slow_ma)
+        if len(self._prices) >= self._slow_ma:
+            fast_ma = self.get_ma(price, self._fast_ma)
+            slow_ma = self.get_ma(price, self._slow_ma)
 
             if price < slow_ma:
-                self.disable_sells(price, slow_ma)
+                # Implement logic to disable sells
+                pass
             elif price > slow_ma:
-                self.disable_buys(price, slow_ma)
+                # Implement logic to disable buys
+                pass
 
             return self.golden_cross(fast_ma, slow_ma) or self.death_cross(fast_ma, slow_ma)
 
