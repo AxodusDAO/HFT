@@ -91,11 +91,11 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
                     moving_price_band: Optional[MovingPriceBand] = None,
-                    ma_cross: Optional[MACross] = None,
+                    #ma_cross: Optional[MACross] = None,
                     order_override: Dict[str, List[str]] = {},
                     ):
-        if ma_cross is None:
-            ma_cross = MACross()
+        #if ma_cross is None:
+        #    ma_cross = MACross()
 
         if moving_price_band is None:
             moving_price_band = MovingPriceBand()
