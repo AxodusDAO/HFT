@@ -796,7 +796,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     order for order in self.active_orders
                     if ((order.price != price or order.quantity != size)
                     and order.client_order_id in self._exit_orders.keys()
-                    and ((position.amount > 0 and not order.is_buy) or (position.amount < 0 and order.is_buy))]
+                    and ((position.amount > 0 and not order.is_buy) or (position.amount < 0 and order.is_buy)))]
                 
                 if (not existent_stop_loss_orders
                         or (self._should_renew_stop_loss(existent_stop_loss_orders[0]))):
