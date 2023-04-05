@@ -810,7 +810,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     for order in existent_stop_loss_orders:
                         previous_stop_loss_price = order.price
                         self.cancel_order(self._market_info, order.client_order_id)
-                        elf.logger().info(
+                        self.logger().info(
                             f"Initiated cancelation of previous take profit order {old_order.client_order_id} in favour of new take profit order.")
                     
                     exit_order_exists = [o for o in self.active_orders if o.price == price]
