@@ -35,7 +35,6 @@ from hummingbot.strategy.utils import order_age
 
 #tools
 from hummingbot.strategy.whiterabbit.moving_price_band import MovingPriceBand
-from hummingbot.strategy.whiterabbit.ma_cross import MACross
 from hummingbot.strategy.__utils__.trailing_indicators.instant_volatility import InstantVolatilityIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.trading_intensity import TradingIntensityIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
@@ -91,12 +90,9 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
                     moving_price_band: Optional[MovingPriceBand] = None,
-                    #ma_cross: Optional[MACross] = None,
                     order_override: Dict[str, List[str]] = {},
                     ):
-        #if ma_cross is None:
-        #    ma_cross = MACross()
-
+        
         if moving_price_band is None:
             moving_price_band = MovingPriceBand()
 
@@ -171,26 +167,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
     def all_markets_ready(self):
         return all([market.ready for market in self.active_markets])
 
-    @property
-    def ma_cross(self) -> MACross:
-        return self._ma_cross
-    
-    @property
-    def fast_ma(self):
-        return self._fast_ma
-    
-    @fast_ma.setter
-    def fast_ma(self, fast_ma: MACross):
-        self._fast_ma = fast_ma
-
-    @property
-    def slow_ma(self):
-        return self._slow_ma
-    
-    @slow_ma.setter
-    def slow_ma(self, slow_ma: MACross):
-        self._slow_ma = slow_ma
-        
     @property
     def avg_vol(self):
         return self._avg_vol
@@ -700,30 +676,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.manage_positions(session_positions)
         finally:
             self._last_timestamp = timestamp
-
-        # Method to determine if a golden cross occurred (fast_ma > slow_ma) and should buy
-    def golden_cross(self, fast_ma: Decimal, slow_ma: Decimal) -> bool:
-        if fast_ma > slow_ma:
-            self.execute_orders_proposal(proposal, PositionAction.OPEN)
-            proposal.buys = []
-        return Proposal(buys, sells)
-
-    # Method to determine if a death cross occurred (slow_ma > fast_ma) and should sell
-    def death_cross(self, proposal: Proposal):
-        if self._slow_ma > fast_ma:
-            sself.execute_orders_proposal(proposal, PositionAction.OPEN)
-            proposal.buys = []
-        return Proposal(buys, sells)
-    
-    def should_buy(self, price, slow_ma):
-        self._prices.append(price)
-        if len(self._prices) < slow_ma:
-            self._buys.append("BUY")
-
-    def should_sell(self, price, slow_ma):
-        self._prices.append(price)
-        if len(self._prices) > slow_ma:
-            self._sells.append("SELL")
 
     def manage_positions(self, session_positions: List[Position]):
         mode = self._position_mode
