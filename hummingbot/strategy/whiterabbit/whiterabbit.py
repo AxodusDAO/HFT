@@ -789,10 +789,14 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 stop_loss_price = position.entry_price * (Decimal("1") + stop_spread) if position.amount < 0 \
                     else position.entry_price * (Decimal("1") - stop_spread)
                 
+                price = market.quantize_order_price(self.trading_pair, stop_loss_price)
+                size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
+                
                 existent_stop_loss_orders = [order for order in self.active_orders
                                             if order.client_order_id in self._exit_orders.keys()
                                             and ((position.amount > 0 and not order.is_buy)
                                                 or (position.amount < 0 and order.is_buy))]
+                
                 if (not existent_stop_loss_orders
                         or (self._should_renew_stop_loss(existent_stop_loss_orders[0]))):
                     previous_stop_loss_price = None
