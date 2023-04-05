@@ -734,11 +734,14 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     o for o in self.active_orders
                     if ((o.price != price or o.quantity != size)
                         and o.client_order_id in self._exit_orders.keys()
-                        and ((position.amount < 0 and o.is_buy) or (position.amount > 0 and not o.is_buy)))]
+                        and ((position.amount < 0 and o.is_buy) 
+                             or (position.amount > 0 and not o.is_buy)))]
+                
                 for old_order in old_exit_orders:
                     self.cancel_order(self._market_info, old_order.client_order_id)
                     self.logger().info(
                         f"Initiated cancelation of previous take profit order {old_order.client_order_id} in favour of new take profit order.")
+                
                 exit_order_exists = [o for o in self.active_orders if o.price == price]
                 if len(exit_order_exists) == 0:
                     if size > 0 and price > 0:
@@ -807,6 +810,18 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     for order in existent_stop_loss_orders:
                         previous_stop_loss_price = order.price
                         self.cancel_order(self._market_info, order.client_order_id)
+                        elf.logger().info(
+                            f"Initiated cancelation of previous take profit order {old_order.client_order_id} in favour of new take profit order.")
+                    
+                    exit_order_exists = [o for o in self.active_orders if o.price == price]
+                    if len(exit_order_exists) == 0:
+                    if size > 0 and price > 0:
+                        if position.amount < 0:
+                            buys.append(PriceSize(price, size))
+                        else:
+                            sells.append(PriceSize(price, size))
+
+
                     new_price = previous_stop_loss_price or stop_loss_price
                     
                     if (top_ask <= stop_loss_price and position.amount > 0):
