@@ -435,32 +435,6 @@ def validate_price_floor_ceiling(value: str) -> Optional[str]:
 def derivative_on_validated(value: str):
     required_exchanges.add(value)
 
-def ma_cross_enabled_prompt() -> str:
-    return "Enable Moving Average Crossover strategy? (Enabled/Disabled) >>> "
-
-def validate_ma_cross_enabled(value: str) -> Optional[str]:
-    if value.lower() not in {"enabled", "disabled"}:
-        return "Invalid input. Please enter 'enabled' or 'disabled'"
-
-def ma_type_prompt() -> str:
-    return "Select Moving Average type (SMA/EMA) >>> "
-
-def validate_ma_type(value: str) -> Optional[str]:
-    if value.upper() not in {"SMA", "EMA"}:
-        return "Invalid input. Please enter 'SMA' or 'EMA'"
-        
-def on_validated_ma_cross_enabled(value: str):
-    if value.lower() == "enabled":
-        whiterabbit_config_map["fast_ma"].value = None
-        whiterabbit_config_map["slow_ma"].value = None
-    else:
-        if value.upper() == "SMA":
-            whiterabbit_config_map["fast_ma"].prompt = "Enter the FAST SMA time period >>> "
-            whiterabbit_config_map["slow_ma"].prompt = "Enter the SLOW SMA time period >>> "
-        elif value.upper() == "EMA":
-            whiterabbit_config_map["fast_ma"].prompt = "Enter the FAST EMA time period >>> "
-            whiterabbit_config_map["slow_ma"].prompt = "Enter the SLOW EMA time period >>> "
-
 whiterabbit_config_map = {
     "strategy":
         ConfigVar(key="strategy",
@@ -582,34 +556,7 @@ whiterabbit_config_map = {
                   default=Decimal("-1"),
                   validator=validate_price_floor_ceiling),
 
-   # Golden / Death Cross strategy
-    "ma_cross_enabled":
-        ConfigVar(key="ma_cross_enabled",
-                  prompt=ma_cross_enabled_prompt,
-                  type_str="bool",
-                  validator=validate_ma_cross_enabled,
-                  on_validated=on_validated_ma_cross_enabled,
-                  prompt_on_new=True),
-    "ma_type":
-        ConfigVar(key="ma_type",
-                  prompt=ma_type_prompt,
-                  validator=validate_ma_type,
-                  required_if=lambda: whiterabbit_config_map.get("ma_cross_enabled").value,
-                  default="SMA"),
-    "fast_ma":
-        ConfigVar(key="fast_ma",
-                  prompt="Enter the FAST MA time period >>> ",
-                  validator=validate_int,
-                  on_validated=on_validated_ma_cross_enabled,
-                  required_if=lambda: whiterabbit_config_map.get("ma_cross_enabled").value,
-                  default=9),
-    "slow_ma":
-        ConfigVar(key="slow_ma",
-                  prompt="Enter the SLOW MA time period >>> ",
-                  validator=validate_int,
-                  on_validated=on_validated_ma_cross_enabled,
-                  required_if=lambda: whiterabbit_config_map.get("ma_cross_enabled").value,
-                  default=50),
+
 
    "moving_price_band_enabled":
         ConfigVar(key="moving_price_band_enabled",

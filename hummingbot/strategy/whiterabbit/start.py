@@ -7,7 +7,6 @@ from hummingbot.strategy.api_asset_price_delegate import APIAssetPriceDelegate
 from hummingbot.strategy.market_trading_pair_tuple import MarketTradingPairTuple
 from hummingbot.strategy.order_book_asset_price_delegate import OrderBookAssetPriceDelegate
 from hummingbot.strategy.whiterabbit import WhiteRabbitStrategy
-from hummingbot.strategy.whiterabbit.ma_cross import MACross
 from hummingbot.strategy.whiterabbit.whiterabbit_config_map import (
     whiterabbit_config_map as c_map,
 )
@@ -47,12 +46,6 @@ def start(self):
         order_refresh_tolerance_pct = c_map.get("order_refresh_tolerance_pct").value / Decimal('100')
         order_override = c_map.get("order_override").value
 
-        ma_cross = MACross(
-            ma_enabled=c_map.get("ma_cross_enabled").value,
-            ma_type=c_map.get("ma_type").value,
-            fast_ma=c_map.get("fast_ma").value,
-            slow_ma=c_map.get("slow_ma").value
-)
 
         trading_pair: str = raw_trading_pair
         maker_assets: Tuple[str, str] = self._initialize_market_assets(exchange, [trading_pair])[0]
@@ -106,7 +99,6 @@ def start(self):
             logging_options=strategy_logging_options,
             minimum_spread=minimum_spread,
             hb_app_notification=True,
-            ma_cross=ma_cross,
             order_override=order_override,
         )
     except Exception as e:
