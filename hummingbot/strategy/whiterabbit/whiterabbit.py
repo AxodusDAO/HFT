@@ -69,7 +69,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     order_amount: Decimal,
                     long_profit_taking_spread: Decimal,
                     short_profit_taking_spread: Decimal,
-                    stop_loss_spread: Decimal,
+                    long_stop_spread: Decimal,
+                    short_stop_spread: Decimal,
                     time_between_stop_loss_orders: float,
                     stop_loss_slippage_buffer: Decimal,
                     order_levels: int = 1,
@@ -109,7 +110,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._order_amount = order_amount
         self._long_profit_taking_spread = long_profit_taking_spread
         self._short_profit_taking_spread = short_profit_taking_spread
-        self._stop_loss_spread = stop_loss_spread
+        self._long_stop_spread = long_stop_spread
+        self._short_stop_spread = short_stop_spread
         self._order_levels = order_levels
         self._buy_levels = order_levels
         self._sell_levels = order_levels
@@ -717,13 +719,17 @@ class WhiteRabbitStrategy(StrategyPyBase):
         for position in active_positions:
             if (ask_price > position.entry_price and position.amount > 0) or (
                     bid_price < position.entry_price and position.amount < 0):
+                
                 # check if there is an active order to take profit, and create if none exists
                 profit_spread = self._long_profit_taking_spread if position.amount > 0 else self._short_profit_taking_spread
-
+                
+                #Check if take profit order need be placed
                 take_profit_price = position.entry_price * (Decimal("1") + profit_spread) if position.amount > 0 \
                     else position.entry_price * (Decimal("1") - profit_spread)
+                
                 price = market.quantize_order_price(self.trading_pair, take_profit_price)
                 size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
+                
                 old_exit_orders = [
                     o for o in self.active_orders
                     if ((o.price != price or o.quantity != size)
@@ -747,8 +753,11 @@ class WhiteRabbitStrategy(StrategyPyBase):
         time_since_stop_loss = self.current_timestamp - stop_loss_creation_timestamp
         return time_since_stop_loss >= self._time_between_stop_loss_orders
 
-    def stop_loss_proposal(self, mode: PositionMode, active_positions: List[Position]) -> Proposal:
+    def stop_loss_proposal(self, mode: PositionMode, active_positions: List) -> Proposal:
+        
         market: DerivativeBase = self._market_info.market
+        unwanted_exit_orders = [o for o in self.active_orders
+                                if o.client_order_id not in self._exit_orders.keys()]
         top_ask = market.get_price(self.trading_pair, False)
         top_bid = market.get_price(self.trading_pair, True)
         buys = []
@@ -772,10 +781,14 @@ class WhiteRabbitStrategy(StrategyPyBase):
         for position in active_positions:
             if (top_ask > position.entry_price and position.amount > 0) or (
                     top_bid < position.entry_price and position.amount < 0):
-            
+                
+                # check if there is an active order to take profit, and create if none exists
+                stop_spread = self._long_stop_spread if position.amount > 0 else self._short_stop_spread
+           
                 # check if stop loss order needs to be placed
-                stop_loss_price = position.entry_price * (Decimal("1") + self._stop_loss_spread) if position.amount < 0 \
-                    else position.entry_price * (Decimal("1") - self._stop_loss_spread)
+                stop_loss_price = position.entry_price * (Decimal("1") + stop_spread) if position.amount < 0 \
+                    else position.entry_price * (Decimal("1") - stop_spread)
+                
                 existent_stop_loss_orders = [order for order in self.active_orders
                                             if order.client_order_id in self._exit_orders.keys()
                                             and ((position.amount > 0 and not order.is_buy)

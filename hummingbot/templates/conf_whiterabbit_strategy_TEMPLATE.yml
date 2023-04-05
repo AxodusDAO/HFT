@@ -51,7 +51,8 @@ long_profit_taking_spread: null
 short_profit_taking_spread: null
 
 # Spread from position entry price to place a stop-loss order to close position
-stop_loss_spread: null
+long_stop_spread: null
+short_stop_spread: null
 
 # Time to wait before refreshing a stop loss order that has not been executed
 time_between_stop_loss_orders: null
@@ -120,10 +121,10 @@ ping_pong_enabled: null
 add_transaction_costs: null
 
 # Moving Average Cross
-ma_cross_enabled: null
-ma_type: null
-fast_ma: null
-slow_ma: null
+#ma_cross_enabled: null
+#ma_type: null
+#fast_ma: null
+#slow_ma: null
 
 # For more detailed information, see:
 # https://docs.hummingbot.io/strategies/pure-market-making/#configuration-parameters
