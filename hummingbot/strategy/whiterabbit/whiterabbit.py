@@ -770,8 +770,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                            f"{order.client_order_id} in favour of stop loose order.")
         
         for position in active_positions:
-            if (ask_price > position.entry_price and position.amount > 0) or (
-                    bid_price < position.entry_price and position.amount < 0):
+            if (top_ask > position.entry_price and position.amount > 0) or (
+                    top_bid < position.entry_price and position.amount < 0):
             
                 # check if stop loss order needs to be placed
                 stop_loss_price = position.entry_price * (Decimal("1") + self._stop_loss_spread) if position.amount < 0 \
