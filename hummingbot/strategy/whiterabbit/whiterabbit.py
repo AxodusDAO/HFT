@@ -90,8 +90,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     status_report_interval: float = 900,
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
-                    fast_ma: int = 9,
-                    slow_ma: int = 50,
                     moving_price_band: Optional[MovingPriceBand] = None,
                     ma_cross: Optional[MACross] = None,
                     order_override: Dict[str, List[str]] = {},
@@ -133,9 +131,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._price_floor = price_floor
         self._hb_app_notification = hb_app_notification
         self._order_override = order_override
-        self._fast_ma = fast_ma
-        self._slow_ma = slow_ma
-
+        
         self._cancel_timestamp = 0
         self._create_timestamp = 0
         self._all_markets_ready = False
