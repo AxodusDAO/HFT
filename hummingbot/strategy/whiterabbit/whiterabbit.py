@@ -815,11 +815,11 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     
                     exit_order_exists = [o for o in self.active_orders if o.price == price]
                     if len(exit_order_exists) == 0:
-                    if size > 0 and price > 0:
-                        if position.amount < 0:
-                            buys.append(PriceSize(price, size))
-                        else:
-                            sells.append(PriceSize(price, size))
+                        if size > 0 and price > 0:
+                            if position.amount < 0:
+                                buys.append(PriceSize(price, size))
+                            else:
+                                sells.append(PriceSize(price, size))
 
 
                     new_price = previous_stop_loss_price or stop_loss_price
