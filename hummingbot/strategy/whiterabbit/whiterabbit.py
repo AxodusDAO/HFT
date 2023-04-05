@@ -756,8 +756,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
     def stop_loss_proposal(self, mode: PositionMode, active_positions: List) -> Proposal:
         
         market: DerivativeBase = self._market_info.market
-        unwanted_exit_orders = [o for o in self.active_orders
-                                if o.client_order_id not in self._exit_orders.keys()]
+        unwanted_exit_orders = [order for order in self.active_orders
+                                if order.client_order_id not in self._exit_orders.keys()]
         top_ask = market.get_price(self.trading_pair, False)
         top_bid = market.get_price(self.trading_pair, True)
         buys = []
@@ -770,7 +770,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                     "Kindly ensure you do not interact with the exchange through "
                                     "other platforms and restart this strategy.")
             else:
-                # Cancel open order that could potentially close position before reaching take_profit_limit 
+                # Cancel open order that could potentially close position before reaching stop_loss_limit 
                 for order in unwanted_exit_orders:
                     if ((active_positions[0].amount < 0 and order.is_buy)
                             or (active_positions[0].amount > 0 and not order.is_buy)):
@@ -792,10 +792,11 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 price = market.quantize_order_price(self.trading_pair, stop_loss_price)
                 size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
                 
-                existent_stop_loss_orders = [order for order in self.active_orders
-                                            if order.client_order_id in self._exit_orders.keys()
-                                            and ((position.amount > 0 and not order.is_buy)
-                                                or (position.amount < 0 and order.is_buy))]
+                existent_stop_loss_orders = [
+                    order for order in self.active_orders
+                    if ((order.price != price or order.quantity != size)
+                    and order.client_order_id in self._exit_orders.keys()
+                    and ((position.amount > 0 and not order.is_buy) or (position.amount < 0 and order.is_buy))]
                 
                 if (not existent_stop_loss_orders
                         or (self._should_renew_stop_loss(existent_stop_loss_orders[0]))):
