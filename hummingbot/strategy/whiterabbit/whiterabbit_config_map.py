@@ -527,8 +527,8 @@ whiterabbit_config_map = {
                   default=Decimal("0"),
                   validator=lambda v: validate_decimal(v, 0, 101, False),
                   prompt_on_new=True),
-    "long_stop_spread":
-        ConfigVar(key="long_stop_spread",
+    "short_stop_spread":
+        ConfigVar(key="short_stop_spread",
                   prompt="At what spread from position entry price do you want to place stop_loss order? (Enter 1 for 1%) >>> ",
                   type_str="decimal",
                   default=Decimal("0"),
