@@ -54,6 +54,9 @@ short_profit_taking_spread: null
 long_stop_spread: null
 short_stop_spread: null
 
+#safe stop
+safe_stop_rate: null
+
 # Time to wait before refreshing a stop loss order that has not been executed
 time_between_stop_loss_orders: null
 
