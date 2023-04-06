@@ -24,6 +24,7 @@ def start(self):
         short_profit_taking_spread = c_map.get("short_profit_taking_spread").value / Decimal('100')
         long_stop_spread = c_map.get("long_stop_spread").value / Decimal('100')
         short_stop_spread = c_map.get("short_stop_spread").value / Decimal('100')
+        safe_stop_rate = c_map.get("safe_stop_rate").value / Decimal('100')
         time_between_stop_loss_orders = c_map.get("time_between_stop_loss_orders").value
         stop_loss_slippage_buffer = c_map.get("stop_loss_slippage_buffer").value / Decimal('100')
         minimum_spread = c_map.get("minimum_spread").value / Decimal('100')
@@ -83,6 +84,7 @@ def start(self):
             short_profit_taking_spread=short_profit_taking_spread,
             long_stop_spread=long_stop_spread,
             short_stop_spread=short_stop_spread,
+            safe_stop_rate=safe_stop_rate,
             time_between_stop_loss_orders=time_between_stop_loss_orders,
             stop_loss_slippage_buffer=stop_loss_slippage_buffer,
             order_levels=order_levels,
