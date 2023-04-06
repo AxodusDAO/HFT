@@ -820,6 +820,47 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                 buys.append(PriceSize(price, size))
                             else:
                                 sells.append(PriceSize(price, size))
+
+
+                    new_price = previous_stop_loss_price or stop_loss_price
+                    
+                    if (top_ask <= stop_loss_price and position.amount > 0):
+                        price = market.quantize_order_price(
+                            self.trading_pair,
+                            new_price * (Decimal(1) - self._stop_loss_slippage_buffer))
+                        take_profit_orders = [o for o in self.active_orders
+                                            if (not o.is_buy and o.price > price
+                                                and o.client_order_id in self._exit_orders.keys())]
+                        
+                        # cancel take profit orders if they exist
+                        for old_order in take_profit_orders:
+                            self.cancel_order(self._market_info, old_order.client_order_id)
+                        size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
+                        if size > 0 and price > 0:
+                            self.logger().info(
+                                f"({self.trading_pair}) Creating {len(proposal.buys)} stop loss sell order"
+                                f"at (Size, Price): {price_quote_str} to {position_action.name} long position.")                            
+                            sells.append(PriceSize(price, size))
+                    
+                    elif (top_bid >= stop_loss_price and position.amount < 0):
+                        price = market.quantize_order_price(
+                            self.trading_pair,
+                            new_price * (Decimal(1) + self._stop_loss_slippage_buffer))
+                        
+                        take_profit_orders = [o for o in self.active_orders
+                                            if (o.is_buy and o.price < price
+                                                and o.client_order_id in self._exit_orders.keys())]
+                        
+                        # cancel take profit orders if they exist
+                        for old_order in take_profit_orders:
+                            self.cancel_order(self._market_info, old_order.client_order_id)
+                        size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
+                        if size > 0 and price > 0:
+                            self.logger().info(
+                                f"({self.trading_pair}) Creating {len(proposal.buys)} stop loss buy order"
+                                f"at (Size, Price): {price_quote_str} to {position_action.name} short position.")
+                            buys.append(PriceSize(price, size))
+        
         return Proposal(buys, sells)
 
     def create_base_proposal(self):
