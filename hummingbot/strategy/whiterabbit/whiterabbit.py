@@ -164,9 +164,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._time_between_stop_loss_orders = time_between_stop_loss_orders
         self._stop_loss_slippage_buffer = stop_loss_slippage_buffer
         
-        self.get_config_map_execution_mode()
-        self._position_mode_ready = False
-        self._position_mode_not_ready_counter = 0
+
 
     def all_markets_ready(self):
         return all([market.ready for market in self.active_markets])
