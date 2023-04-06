@@ -706,7 +706,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     self.cancel_order(self._market_info, order.client_order_id)
                 new_price = previous_stop_loss_price or stop_loss_price
                 
-                if (top_ask <= stop_loss_price and position.amount > 0):
+            if (top_ask <= stop_loss_price and position.amount > 0):
                     price = market.quantize_order_price(
                         self.trading_pair,
                         new_price * (Decimal(1) - self._stop_loss_slippage_buffer))
@@ -722,7 +722,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                         self.logger().info("Creating stop loss sell order to close long position.")
                         sells.append(PriceSize(price, size))
                 
-                elif (top_bid >= stop_loss_price and position.amount < 0):
+            elif (top_bid >= stop_loss_price and position.amount < 0):
                     price = market.quantize_order_price(
                         self.trading_pair,
                         new_price * (Decimal(1) + self._stop_loss_slippage_buffer))
