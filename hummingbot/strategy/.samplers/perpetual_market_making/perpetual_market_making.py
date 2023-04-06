@@ -569,10 +569,13 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
                     if ((o.price != price or o.quantity != size)
                         and o.client_order_id in self._exit_orders.keys()
                         and ((position.amount < 0 and o.is_buy) or (position.amount > 0 and not o.is_buy)))]
+                
                 for old_order in old_exit_orders:
                     self.cancel_order(self._market_info, old_order.client_order_id)
                     self.logger().info(
                         f"Initiated cancelation of previous take profit order {old_order.client_order_id} in favour of new take profit order.")
+                
+                
                 exit_order_exists = [o for o in self.active_orders if o.price == price]
                 if len(exit_order_exists) == 0:
                     if size > 0 and price > 0:
