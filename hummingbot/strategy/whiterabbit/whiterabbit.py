@@ -528,19 +528,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
         else:
             lines.extend(["", "  No active maker orders."])
         
-        volatility_pct = self._avg_vol.current_value / float(self.get_price()) * 100.0
-        if all((self.gamma, self._alpha, self._kappa, not isnan(volatility_pct))):
-            lines.extend(["", f"  Strategy parameters:",
-                          f"    risk_factor(\u03B3)= {self.gamma:.5E}",
-                          f"    order_book_intensity_factor(\u0391)= {self._alpha:.5E}",
-                          f"    order_book_depth_factor(\u03BA)= {self._kappa:.5E}",
-                          f"    volatility= {volatility_pct:.3f}%"])
-            if self._execution_state.time_left is not None:
-                lines.extend([f"    time until end of trading cycle = {str(datetime.timedelta(seconds=float(self._execution_state.time_left)//1e3))}"])
-            else:
-                lines.extend([f"    time until end of trading cycle = N/A"])
-
-
         # See if there're any active positions.
         if len(self.active_positions) > 0:
             df = self.active_positions_df()
