@@ -837,7 +837,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                             self.cancel_order(self._market_info, old_order.client_order_id)
                         size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
                         if size > 0 and price > 0:
-                            self.logger().info("Creating stop loss sell order to close long position.")
+                            self.logger().info(
+                                f"({self.trading_pair}) Creating {len(proposal.buys)} stop loss sell order to {position_action.name} long position.")
                             sells.append(PriceSize(price, size))
                     
                     elif (top_bid >= stop_loss_price and position.amount < 0):
@@ -854,7 +855,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                             self.cancel_order(self._market_info, old_order.client_order_id)
                         size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
                         if size > 0 and price > 0:
-                            self.logger().info("Creating stop loss buy order to close short position.")
+                            self.logger().info(
+                                f"({self.trading_pair}) Creating {len(proposal.buys)} stop loss buy order to {position_action.name} short position.")
                             buys.append(PriceSize(price, size))
         
         return Proposal(buys, sells)
