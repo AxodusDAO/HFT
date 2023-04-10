@@ -161,6 +161,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._end_time = None
 
         self._close_order_type = OrderType.LIMIT
+        self._safe_stop_order_type = OrderType.MARKET
         self._time_between_stop_loss_orders = time_between_stop_loss_orders
         self._stop_loss_slippage_buffer = stop_loss_slippage_buffer
         
@@ -618,7 +619,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         # check if safe stop loss needs to be placed
         proposals = self.safe_stop_proposal(mode, session_positions)
         if proposals is not None:
-            self.execute_orders_proposal(proposals, PositionAction.CLOSE)
+            self.execute_orders_proposal(proposals, PositionAction.CLOSE, OrderType.MARKET)
 
     def profit_taking_proposal(self, mode: PositionMode, active_positions: List) -> Proposal:
 
@@ -748,46 +749,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         
         return Proposal(buys, sells)
 
-    def safe_stop_proposal(self, mode: PositionMode, active_positions: List[Position]) -> Proposal:
-        market: DerivativeBase = self._market_info.market
-        top_ask = market.get_price(self.trading_pair, False)
-        top_bid = market.get_price(self.trading_pair, True)
-        buys = []
-        sells = []
 
-        for position in active_positions:
-            
-            
-            # check if stop loss order needs to be placed
-            safe_loss_price = position.entry_price * (Decimal("1") + self._safe_stop_rate) if position.amount < 0 \
-                else position.entry_price * (Decimal("1") - self._safe_stop_rate)
-            
-            if (top_ask <= safe_loss_price and position.amount > 0) or (top_bid >= safe_loss_price and position.amount < 0):
-                    
-                price = market.quantize_order_price(self.trading_pair, safe_loss_price)
-                size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
-                
-                old_exit_orders = [
-                    o for o in self.active_orders
-                    if ((o.price != price or o.quantity != size)
-                        and o.client_order_id in self._exit_orders.keys()
-                        and ((position.amount < 0 and o.is_buy) or (position.amount > 0 and not o.is_buy)))]
-                
-                for old_order in old_exit_orders:
-                    self.cancel_order(self._market_info, old_order.client_order_id)
-                    self.logger().info(
-                        f"Initiated cancelation of previous stop loss order {old_order.client_order_id} in favour of new stop loss order.")
-                
-                
-                exit_order_exists = [o for o in self.active_orders if o.price == price]
-                if len(exit_order_exists) == 0:
-                    if size > 0 and price > 0:
-                        if position.amount < 0:
-                            buys.append(PriceSize(price, size))
-                        else:
-                            sells.append(PriceSize(price, size))           
-            
-        return Proposal(buys, sells)
     
     def create_base_proposal(self):
         market: DerivativeBase = self._market_info.market
