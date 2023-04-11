@@ -783,14 +783,14 @@ class WhiteRabbitStrategy(StrategyPyBase):
             size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
 
             if position.amount > 0:
-                self.logger().info("Creating stop loss market sell order to close long position.")
+                self.logger().info("SAFE STOP: Creating stop loss market sell order to close long position.")
                 sells.append({
                     "order_type": OrderType.MARKET,
                     "size": size,
                     "price": stop_loss_price
                 })
             elif position.amount < 0:
-                self.logger().info("Creating stop loss market buy order to close short position.")
+                self.logger().info("SAFE STOP: Creating stop loss market buy order to close short position.")
                 buys.append({
                     "order_type": OrderType.MARKET,
                     "size": size,
