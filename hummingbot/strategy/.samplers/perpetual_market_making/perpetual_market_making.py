@@ -653,6 +653,8 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
         
         return Proposal(buys, sells)
 
+    
+    
     def create_base_proposal(self):
         market: DerivativeBase = self._market_info.market
         buys = []
