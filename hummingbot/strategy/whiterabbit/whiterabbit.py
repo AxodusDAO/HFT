@@ -678,6 +678,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                             sells.append(PriceSize(price, size))
         return Proposal(buys, sells)
 
+    
     def _should_renew_stop_loss(self, stop_loss_order: LimitOrder) -> bool:
         stop_loss_creation_timestamp = self._exit_orders.get(stop_loss_order.client_order_id)
         time_since_stop_loss = self.current_timestamp - stop_loss_creation_timestamp
@@ -726,7 +727,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     o for o in self.active_orders
                     if ((o.price != price or o.quantity != size)
                         and o.client_order_id in self._exit_orders.keys()
-                        and ((position.amount > 0 and not o.is_buy) or (position.amount < 0 and o.is_buy)))]
+                        and ((position.amount > 0 and not o.is_buy) 
+                             or (position.amount < 0 and o.is_buy)))]
                 
                 for old_order in old_exit_orders:
                     self.cancel_order(self._market_info, old_order.client_order_id)
@@ -744,8 +746,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
         return Proposal(buys, sells)
 
 
-
-    
     def create_base_proposal(self):
         market: DerivativeBase = self._market_info.market
         buys = []

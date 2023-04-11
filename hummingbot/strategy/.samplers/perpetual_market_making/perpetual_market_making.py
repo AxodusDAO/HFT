@@ -594,6 +594,7 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
         market: DerivativeBase = self._market_info.market
         top_ask = market.get_price(self.trading_pair, False)
         top_bid = market.get_price(self.trading_pair, True)
+        
         buys = []
         sells = []
 
@@ -614,8 +615,9 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
                 for order in existent_stop_loss_orders:
                     previous_stop_loss_price = order.price
                     self.cancel_order(self._market_info, order.client_order_id)
-                new_price = previous_stop_loss_price or stop_loss_price
-                
+                #new_price = previous_stop_loss_price or stop_loss_price
+                new_price = previous_stop_loss_price if previous_stop_loss_price is not None else stop_loss_price
+
                 if (top_ask <= stop_loss_price and position.amount > 0):
                     price = market.quantize_order_price(
                         self.trading_pair,
