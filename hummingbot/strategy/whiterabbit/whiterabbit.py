@@ -769,16 +769,15 @@ class WhiteRabbitStrategy(StrategyPyBase):
         
         return Proposal(buys, sells)
     
-    def safe_stop_proposal(self, active_positions: List[Position]) -> Proposal:  # Update the return type hint
+    def safe_stop_proposal(self, active_positions: List[Position]) -> Proposal:
         market = self._market_info.market
         buys = []
         sells = []
 
         for position in active_positions:
-            stop_loss_spread = self._safe_stop_rate if position.amount > 0 else self._safe_stop_rate
 
-            stop_loss_price = position.entry_price * (Decimal("1") - stop_loss_spread) if position.amount > 0 \
-                else position.entry_price * (Decimal("1") + stop_loss_spread)
+            stop_loss_price = position.entry_price * (Decimal("1") - self._safe_stop_rate) if position.amount > 0 \
+                else position.entry_price * (Decimal("1") + self._safe_stop_rate)
 
             size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
 
@@ -798,6 +797,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 })
 
         return Proposal(buys, sells)
+
     
     def create_base_proposal(self):
         market: DerivativeBase = self._market_info.market
