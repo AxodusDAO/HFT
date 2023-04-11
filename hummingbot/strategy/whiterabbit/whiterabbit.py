@@ -686,68 +686,63 @@ class WhiteRabbitStrategy(StrategyPyBase):
         time_since_stop_loss = self.current_timestamp - stop_loss_creation_timestamp
         return time_since_stop_loss >= self._time_between_stop_loss_orders
 
-    def stop_loss_proposal(self, mode: PositionMode, active_positions: List[Position]) -> Proposal:
+    def stop_loss_proposal(self, mode: PositionMode, active_positions: List) -> Proposal:
+
         market: DerivativeBase = self._market_info.market
-        top_ask = market.get_price(self.trading_pair, False)
-        top_bid = market.get_price(self.trading_pair, True)
+        unwanted_exit_orders = [o for o in self.active_orders
+                                if o.client_order_id not in self._exit_orders.keys()]
+        ask_price = market.get_price(self.trading_pair, True)
+        bid_price = market.get_price(self.trading_pair, False)
         buys = []
         sells = []
 
+        if mode == PositionMode.ONEWAY:
+            # in one-way mode, only one active position is expected per time
+            if len(active_positions) > 1:
+                self.logger().error(f"More than one open position in {mode.name} position mode. "
+                                    "Kindly ensure you do not interact with the exchange through "
+                                    "other platforms and restart this strategy.")
+            else:
+                # Cancel open order that could potentially close position before reaching stop_loss_limit
+                for order in unwanted_exit_orders:
+                    if ((active_positions[0].amount < 0 and order.is_buy)
+                            or (active_positions[0].amount > 0 and not order.is_buy)):
+                        self.cancel_order(self._market_info, order.client_order_id)
+                        self.logger().info(f"Initiated cancelation of {'buy' if order.is_buy else 'sell'} order "
+                                        f"{order.client_order_id} in favour of stop loss order.")
+
         for position in active_positions:
+            # Determine the stop spread based on whether the position amount is positive or negative
+            stop_spread = self._long_stop_spread if position.amount > 0 else self._short_stop_spread
             
+            # Calculate the stop-loss price
+            stop_loss_price = position.entry_price * (Decimal("1") - stop_spread) if position.amount > 0 \
+                else position.entry_price * (Decimal("1") + stop_spread)
+
+            price = market.quantize_order_price(self.trading_pair, stop_loss_price)
+            size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
+
+            old_exit_orders = [
+                o for o in self.active_orders
+                if ((o.price != price or o.quantity != size)
+                    and o.client_order_id in self._exit_orders.keys()
+                    and ((position.amount > 0 and not o.is_buy) or (position.amount < 0 and o.is_buy)))]
             
-            # check if stop loss order needs to be placed
-            stop_loss_price = position.entry_price * (Decimal("1") + self._long_stop_spread) if position.amount < 0 \
-                else position.entry_price * (Decimal("1") - self._short_stop_spread)
+            for old_order in old_exit_orders:
+                self.cancel_order(self._market_info, old_order.client_order_id)
+                self.logger().info(
+                    f"Initiated cancelation of previous stop loss order {old_order.client_order_id} in favour of new stop loss order.")
             
-            existent_stop_loss_orders = [order for order in self.active_orders
-                                         if order.client_order_id in self._exit_orders.keys()
-                                         and ((position.amount > 0 and not order.is_buy)
-                                              or (position.amount < 0 and order.is_buy))]
-            
-            if (not existent_stop_loss_orders
-                    or (self._should_renew_stop_loss(existent_stop_loss_orders[0]))):
-                
-                previous_stop_loss_price = None
-                for order in existent_stop_loss_orders:
-                    previous_stop_loss_price = order.price
-                    self.cancel_order(self._market_info, order.client_order_id)
-                new_price = previous_stop_loss_price or stop_loss_price
-                
-            if (top_ask <= stop_loss_price and position.amount > 0):
-                    price = market.quantize_order_price(
-                        self.trading_pair,
-                        new_price * (Decimal(1) - self._stop_loss_slippage_buffer))
-                    take_profit_orders = [o for o in self.active_orders
-                                          if (not o.is_buy and o.price > price
-                                              and o.client_order_id in self._exit_orders.keys())]
-                    
-                    # cancel take profit orders if they exist
-                    for old_order in take_profit_orders:
-                        self.cancel_order(self._market_info, old_order.client_order_id)
-                    size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
-                    if size > 0 and price > 0:
-                        self.logger().info("Creating stop loss sell order to close long position.")
-                        sells.append(PriceSize(price, size))
-                
-            elif (top_bid >= stop_loss_price and position.amount < 0):
-                    price = market.quantize_order_price(
-                        self.trading_pair,
-                        new_price * (Decimal(1) + self._stop_loss_slippage_buffer))
-                    
-                    take_profit_orders = [o for o in self.active_orders
-                                          if (o.is_buy and o.price < price
-                                              and o.client_order_id in self._exit_orders.keys())]
-                    
-                    # cancel take profit orders if they exist
-                    for old_order in take_profit_orders:
-                        self.cancel_order(self._market_info, old_order.client_order_id)
-                    size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
-                    if size > 0 and price > 0:
-                        self.logger().info("Creating stop loss buy order to close short position.")
+            exit_order_exists = [o for o in self.active_orders if o.price == price]
+            if len(exit_order_exists) == 0:
+                if size > 0 and price > 0:
+                    if position.amount < 0:
                         buys.append(PriceSize(price, size))
-        
+                    else:
+                        sells.append(PriceSize(price, size))
+
         return Proposal(buys, sells)
+
 
 
     
