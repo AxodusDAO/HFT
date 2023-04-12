@@ -783,8 +783,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
             # Determine the stop spread based on whether the position amount is positive or negative
             safe_stop_spread = self._safe_stop_rate if position.amount > 0 else self._safe_stop_rate
 
-            stop_loss_price = position.entry_price * (Decimal("1") - self._safe_stop_rate) if position.amount > 0 \
-                else position.entry_price * (Decimal("1") + self._safe_stop_rate)
+            stop_loss_price = position.entry_price * (Decimal("1") - safe_stop_spread) if position.amount > 0 \
+                else position.entry_price * (Decimal("1") + safe_stop_spread)
 
             size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
 
