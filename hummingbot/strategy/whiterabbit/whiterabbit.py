@@ -616,7 +616,10 @@ class WhiteRabbitStrategy(StrategyPyBase):
         if proposals is not None:
             self.execute_orders_proposal(proposals, PositionAction.CLOSE)
         
-       
+        # check if stop loss needs to be placed
+        proposals = self.safe_stop_proposal(mode, session_positions)
+        if proposals is not None:
+            self.execute_orders_proposal(proposals, PositionAction.CLOSE)
 
     def profit_taking_proposal(self, mode: PositionMode, active_positions: List) -> Proposal:
 
@@ -770,7 +773,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         return Proposal(buys, sells)
     
     def safe_stop_proposal(self, active_positions: List[Position]) -> Proposal:
-        market = self._market_info.market
+        market: DerivativeBase = self._market_info.market
         buys = []
         sells = []
 
