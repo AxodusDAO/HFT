@@ -1150,7 +1150,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"{buy.price.normalize()} {self.quote_asset}"
                                    for buy in proposal.buys]
                 self.logger().info(
-                    f"({self.trading_pair}) Creating {len(proposal.buys)} {self._close_order_type.name} bid orders "
+                    f"({self.trading_pair}) STOP LOSS: Creating {len(proposal.buys)} {self._close_order_type.name} bid orders "
                     f"at (Size, Price): {price_quote_str} to {position_action.name} position."
                 )
             for buy in proposal.buys:
@@ -1175,7 +1175,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"{sell.price.normalize()} {self.quote_asset}"
                                    for sell in proposal.sells]
                 self.logger().info(
-                    f"({self.trading_pair}) Creating {len(proposal.sells)}  {self._close_order_type.name} ask "
+                    f"({self.trading_pair}) STOP LOSS: Creating {len(proposal.sells)}  {self._close_order_type.name} ask "
                     f"orders at (Size, Price): {price_quote_str} to {position_action.name} position."
                 )
             for sell in proposal.sells:
@@ -1206,7 +1206,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"{buy.price.normalize()} {self.quote_asset}"
                                    for buy in proposal.buys]
                 self.logger().info(
-                    f"({self.trading_pair}) Creating {len(proposal.buys)} {self._safe_stop_order_type.name} bid orders "
+                    f"({self.trading_pair}) SAFE STOP: Creating {len(proposal.buys)} {self._safe_stop_order_type.name} bid orders "
                     f"at (Size, Price): {price_quote_str} to {position_action.name} position."
                 )
             for buy in proposal.buys:
@@ -1231,7 +1231,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"{sell.price.normalize()} {self.quote_asset}"
                                    for sell in proposal.sells]
                 self.logger().info(
-                    f"({self.trading_pair}) Creating {len(proposal.sells)}  {self._safe_stop_order_type.name} ask "
+                    f"({self.trading_pair}) SAFE STOP: Creating {len(proposal.sells)}  {self._safe_stop_order_type.name} ask "
                     f"orders at (Size, Price): {price_quote_str} to {position_action.name} position."
                 )
             for sell in proposal.sells:
