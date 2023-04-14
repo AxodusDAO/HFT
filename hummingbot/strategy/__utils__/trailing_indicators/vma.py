@@ -2,7 +2,7 @@ import pandas as pd
 from .base_trailing_indicator import BaseTrailingIndicator
 
 
-class VolumeAverageIndicator(BaseTrailingIndicator):
+class VMA(BaseTrailingIndicator):
     def __init__(self, sampling_length: int = 20, processing_length: int = 10):
         super().__init__(sampling_length, processing_length)
 
@@ -18,7 +18,7 @@ class VolumeAverageIndicator(BaseTrailingIndicator):
 
 '''
 
-vma_indicator = VolumeAverageIndicator(sampling_length=20, processing_length=10)
+vma_indicator = VMA(sampling_length=20, processing_length=10)
 
     for volume in trading_volumes:
         vma_indicator.add_sample(volume)
