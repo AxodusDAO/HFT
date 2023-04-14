@@ -3,7 +3,7 @@ from .base_trailing_indicator import BaseTrailingIndicator
 
 
 class VolumeAverageIndicator(BaseTrailingIndicator):
-    def __init__(self, sampling_length: int = 20, processing_length: int = 15):
+    def __init__(self, sampling_length: int = 20, processing_length: int = 10):
         super().__init__(sampling_length, processing_length)
 
     def _indicator_calculation(self) -> float:
@@ -15,3 +15,14 @@ class VolumeAverageIndicator(BaseTrailingIndicator):
         volume = self._processing_buffer.get('Volume')
         if not volume.empty:
             return volume.mean()
+
+'''
+
+vma_indicator = VolumeAverageIndicator(sampling_length=20, processing_length=10)
+
+    for volume in trading_volumes:
+        vma_indicator.add_sample(volume)
+        if vma_indicator.is_processing_ready():
+            vma_value = vma_indicator.get_processing_result()
+            # Do something with vma_value
+'''
