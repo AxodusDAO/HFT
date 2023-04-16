@@ -14,6 +14,7 @@ from hummingbot.connector.derivative.position import Position
 from hummingbot.connector.derivative_base import DerivativeBase
 from hummingbot.core.data_type.common import OrderType, PositionAction, PositionMode, PriceType, TradeType
 from hummingbot.core.data_type.limit_order import LimitOrder
+from hummingbot.core.data_type.order_book import OrderBook
 from hummingbot.core.data_type.order_candidate import PerpetualOrderCandidate
 from hummingbot.core.event.events import (
     BuyOrderCompletedEvent,
@@ -41,6 +42,7 @@ from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_average import ExponentialMovingAverageIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MovingAverageIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.vwap import VWAPIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.vma import VAvgIndicator
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
@@ -92,6 +94,9 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
                     moving_price_band: Optional[MovingPriceBand] = None,
+                    volume_period: int = 300,
+                    sampling_length: int = 300, 
+                    processing_length: int = 150,
                     order_override: Dict[str, List[str]] = {},
                     ):
         
@@ -144,6 +149,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._exit_orders = dict()
         self._next_buy_exit_order_timestamp = 0
         self._next_sell_exit_order_timestamp = 0
+
+        self._volume_period = volume_period
 
         self.add_markets([market_info.market])
         self._volatility_buffer_size = 0
@@ -1132,26 +1139,23 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"ID - {order.client_order_id}")
                 self.cancel_order(self._market_info, order.client_order_id)
 
-    def cancel_orders_on_high_volume(self, session_positions: List[Position]):
-        # Retrieve the trading volume data
-        order_book: OrderBook = self._market_info.market.get_order_book(self.trading_pair)
-        trading_volume = order_book.get_volume()
+    def cancel_orders_on_high_volume(self, active_orders: WhiteRabbitOrderTracker, trading_pair: str, volume_period: int):
+        # Step 1: Retrieve the trading volume data
+        market = self._market_info.market
+        volume_data = market.get_historical_trading_volume(trading_pair, volume_period)
 
-        # Calculate the average trading volume
-        average_trading_volume = sum(trading_volume) / len(trading_volume)
+        # Step 2: Calculate the average trading volume
+        avg_volume = sum(volume_data) / len(volume_data)
 
-        # Compare the current trading volume with the average trading volume
-        current_trading_volume = trading_volume[-1]
+        # Step 3: Check if the current trading volume is above the calculated average
+        if volume_data[-1] > avg_volume:
 
-        if current_trading_volume > average_trading_volume:
-            # Cancel the orders if the current trading volume is higher than the average trading volume
-            for position in session_positions:
-                if position.mode == PositionMode.OPEN:
-                    for order in self.active_orders:
-                        if order.position == position:
-                            self.cancel_order(self._market_info, order.client_order_id)
-                            self.logger().info(f"Canceled {'buy' if order.is_buy else 'sell'} order {order.client_order_id} due to high trading volume.")
-
+            # Step 4: Cancel the PositionMode.OPEN orders
+            for order in active_orders:
+                if order.position_mode == PositionMode.OPEN:
+                    self.cancel_order(self._market_info, order.client_order_id)
+                    self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")
+            
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and
                 proposal is not None and
