@@ -1,26 +1,32 @@
-import numpy as np
 from .base_trailing_indicator import BaseTrailingIndicator
+import pandas as pd
 
-class VAvgIndicator(BaseTrailingIndicator):
-    def __init__(self, sampling_length: int = 300, processing_length: int = 150):
+class VolAvgIndicator(BaseTrailingIndicator):
+    def __init__(self, sampling_length: int = 20, processing_length: int = 1):
+        if processing_length != 1:
+            raise Exception("VolumeAverageIndicator processing_length should be 1")
         super().__init__(sampling_length, processing_length)
 
     def _indicator_calculation(self) -> float:
-        volumes = self._sampling_buffer.get_as_numpy_array()
-        if volumes.size > 0:
-            return np.mean(volumes)
+        volume_data = pd.DataFrame(self._sampling_buffer.get_as_numpy_array(),
+                                   columns=['volume'])
+        cumulative_volume = volume_data['volume'].sum()
+        vol_avg = cumulative_volume / self.sampling_length
+
+        return vol_avg
 
     def _processing_calculation(self) -> float:
-        processing_array = self._processing_buffer.get_as_numpy_array()
-        if processing_array.size > 0:
-            return np.sum(processing_array) / processing_array.size
+        return self._processing_buffer.get_last_value()
+
 
 '''
-    vma_indicator = VolumeAverageIndicator(sampling_length=300, processing_length=150)
+    volume_indicator = VolAvgIndicator(sampling_length=20)
 
-        for volume in trading_volumes:
-            vma_indicator.add_sample(volume)
-            if vma_indicator.is_processing_ready():
-                vma_value = vma_indicator.get_processing_result()
-                # Do something with vma_value
+# Add volume samples to the indicator
+for volume_sample in volume_data:
+    volume_indicator.add_sample(volume_sample)
+
+# Get the current value of the Volume Average Indicator
+current_volume_average = volume_indicator.current_value
+print("Current Volume Average:", current_volume_average)
 '''

@@ -42,7 +42,7 @@ from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_average import ExponentialMovingAverageIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MovingAverageIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.vwap import VWAPIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.vma import VAvgIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.vma import VolAvgIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.insta_volume import VolumeIndicator
 
 NaN = float("nan")
@@ -1141,17 +1141,17 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
     def cancel_orders_on_high_volume(self):
         # Create a new VMA indicator
-        vma_indicator = VAvgIndicator(sampling_length=300, processing_length=150)
-        trading_volumes = VolumeIndicator(sampling_length=10, processing_length=1)
+        vol_avg = VolAvgIndicator(sampling_length=30)
+        trading_vol = VolumeIndicator()
         # Add trading volumes to the indicator
-        for volume in trading_volumes:
-            vma_indicator.add_sample(volume)
+        for volume in trading_vol:
+            vol_avg.add_sample(volume)
 
         # Get the current VMA value
-        vma_value = vma_indicator.get_processing_result()
+        vma_value = vol_avg.get_processing_result()
 
         # Check if the current trading volume is above the calculated average
-        if trading_volumes[-1] > vma_value:
+        if trading_vol[-1] > vol_avg:
             # Cancel the PositionMode.OPEN orders
             for order in self.active_orders:
                 if order.position_mode == PositionMode.OPEN:
