@@ -1138,18 +1138,18 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"ID - {order.client_order_id}")
                 self.cancel_order(self._market_info, order.client_order_id)
 
-    def cancel_orders_on_high_volume(self, active_orders: WhiteRabbitOrderTracker, trading_pair: str, volume_period: int):
-        # Step 1: Retrieve the trading volume data
-        market = self._market_info.market
-        volume_data = market.get_historical_trading_volume(trading_pair, volume_period)
+    def cancel_orders_on_high_volume(self):
+        vma_indicator = VAvgIndicator(sampling_length=300, processing_length=150)
 
-        # Step 2: Calculate the average trading volume
-        avg_volume = sum(volume_data) / len(volume_data)
+        for volume in trading_volumes:
+                vma_indicator.add_sample(volume)
+                if vma_indicator.is_processing_ready():
+                    vma_value = vma_indicator.get_processing_result()
 
-        # Step 3: Check if the current trading volume is above the calculated average
-        if volume_data[-1] > avg_volume:
+        # Check if the current trading volume is above the calculated average
+        if volume[-1] > vma_value:
 
-            # Step 4: Cancel the PositionMode.OPEN orders
+            # Cancel the PositionMode.OPEN orders
             for order in active_orders:
                 if order.position_mode == PositionMode.OPEN:
                     self.cancel_order(self._market_info, order.client_order_id)

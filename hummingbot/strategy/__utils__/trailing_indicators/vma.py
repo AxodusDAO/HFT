@@ -6,10 +6,21 @@ class VAvgIndicator(BaseTrailingIndicator):
         super().__init__(sampling_length, processing_length)
 
     def _indicator_calculation(self) -> float:
-        if not self.is_sampling_buffer_full:
-            return np.nan
+        volumes = self._sampling_buffer.get_as_numpy_array()
+        if volumes.size > 0:
+            return np.mean(volumes)
 
-        volume_data = self._sampling_buffer.get_as_numpy_array()
-        average_volume = np.mean(volume_data)
-        return average_volume
+    def _processing_calculation(self) -> float:
+        processing_array = self._processing_buffer.get_as_numpy_array()
+        if processing_array.size > 0:
+            return np.sum(processing_array) / processing_array.size
 
+'''
+    vma_indicator = VolumeAverageIndicator(sampling_length=300, processing_length=150)
+
+        for volume in trading_volumes:
+            vma_indicator.add_sample(volume)
+            if vma_indicator.is_processing_ready():
+                vma_value = vma_indicator.get_processing_result()
+                # Do something with vma_value
+'''
