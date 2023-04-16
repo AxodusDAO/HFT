@@ -594,6 +594,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
                 self.cancel_active_orders(proposal)
                 self.cancel_orders_below_min_spread()
+                self.cancel_orders_on_high_volume()
                 if self.to_create_orders(proposal):
                     self.execute_orders_proposal(proposal, PositionAction.OPEN)
                 # Reset peak ask and bid prices
@@ -1130,6 +1131,26 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f" Canceling Order: ({'Buy' if order.is_buy else 'Sell'}) "
                                    f"ID - {order.client_order_id}")
                 self.cancel_order(self._market_info, order.client_order_id)
+
+    def cancel_orders_on_high_volume(self, session_positions: List[Position]):
+        # Retrieve the trading volume data
+        order_book: OrderBook = self._market_info.market.get_order_book(self.trading_pair)
+        trading_volume = order_book.get_volume()
+
+        # Calculate the average trading volume
+        average_trading_volume = sum(trading_volume) / len(trading_volume)
+
+        # Compare the current trading volume with the average trading volume
+        current_trading_volume = trading_volume[-1]
+
+        if current_trading_volume > average_trading_volume:
+            # Cancel the orders if the current trading volume is higher than the average trading volume
+            for position in session_positions:
+                if position.mode == PositionMode.OPEN:
+                    for order in self.active_orders:
+                        if order.position == position:
+                            self.cancel_order(self._market_info, order.client_order_id)
+                            self.logger().info(f"Canceled {'buy' if order.is_buy else 'sell'} order {order.client_order_id} due to high trading volume.")
 
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and
