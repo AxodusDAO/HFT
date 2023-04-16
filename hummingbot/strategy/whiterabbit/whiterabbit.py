@@ -1138,7 +1138,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"ID - {order.client_order_id}")
                 self.cancel_order(self._market_info, order.client_order_id)
 
-    def cancel_orders_on_high_volume(self, trading_volumes, active_orders):
+    def cancel_orders_on_high_volume(self):
         # Create a new VMA indicator
         vma_indicator = VAvgIndicator(sampling_length=300, processing_length=150)
 
