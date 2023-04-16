@@ -43,7 +43,7 @@ from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_averag
 from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MovingAverageIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.vwap import VWAPIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.vma import VAvgIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.insta_volume import iVolumeIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.insta_volume import VolumeIndicator
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
@@ -1142,7 +1142,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
     def cancel_orders_on_high_volume(self):
         # Create a new VMA indicator
         vma_indicator = VAvgIndicator(sampling_length=300, processing_length=150)
-        trading_volumes = iVolumeIndicator(sampling_length=10, processing_length=1)
+        trading_volumes = VolumeIndicator(sampling_length=10, processing_length=1)
         # Add trading volumes to the indicator
         for volume in trading_volumes:
             vma_indicator.add_sample(volume)

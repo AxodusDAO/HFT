@@ -2,7 +2,7 @@ from .base_trailing_indicator import BaseTrailingIndicator
 import numpy as np
 
 
-class iVolumeIndicator(BaseTrailingIndicator):
+class VolumeIndicator(BaseTrailingIndicator):
     def __init__(self, sampling_length: int = 10, processing_length: int = 1):
         super().__init__(sampling_length, processing_length)
 
