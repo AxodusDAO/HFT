@@ -1,5 +1,5 @@
 import numpy as np
-from base_trailing_indicator import BaseTrailingIndicator
+from .base_trailing_indicator import BaseTrailingIndicator
 
 class VAvgIndicator(BaseTrailingIndicator):
     def __init__(self, sampling_length: int = 300, processing_length: int = 150):
