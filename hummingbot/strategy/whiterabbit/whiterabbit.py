@@ -1147,7 +1147,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     vma_value = vma_indicator.get_processing_result()
 
         # Check if the current trading volume is above the calculated average
-        if volume[-1] > vma_value:
+        if trading_volumes[-1] > vma_value:
 
             # Cancel the PositionMode.OPEN orders
             for order in active_orders:
