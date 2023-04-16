@@ -95,8 +95,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     hb_app_notification: bool = False,
                     moving_price_band: Optional[MovingPriceBand] = None,
                     volume_period: int = 300,
-                    sampling_length: int = 300, 
-                    processing_length: int = 150,
+                    
                     order_override: Dict[str, List[str]] = {},
                     ):
         
