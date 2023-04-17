@@ -11,7 +11,11 @@ class VolumeIndicator(BaseTrailingIndicator):
         volume_data = pd.DataFrame(self._sampling_buffer.get_as_numpy_array(),
                                    columns=['volume'])
         trading_vol = volume_data['volume'].iloc[-1]
-
+        
+        if not volume_data['volume'].empty:
+            trading_vol = volume_data['volume'].iloc[-1]
+        else:
+            trading_vol = 0
         return trading_vol
 
     def _processing_calculation(self) -> float:
