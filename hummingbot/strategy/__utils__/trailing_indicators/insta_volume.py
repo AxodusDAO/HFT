@@ -1,5 +1,6 @@
 from .base_trailing_indicator import BaseTrailingIndicator
 import pandas as pd
+import numpy as np
 
 class VolumeIndicator(BaseTrailingIndicator):
     def __init__(self, sampling_length: int = 1, processing_length: int = 1):
@@ -8,14 +9,13 @@ class VolumeIndicator(BaseTrailingIndicator):
         super().__init__(sampling_length, processing_length)
 
     def _indicator_calculation(self) -> float:
-        volume_data = pd.DataFrame(self._sampling_buffer.get_as_numpy_array(),
-                                   columns=['volume'])
-        trading_vol = volume_data['volume'].iloc[-1]
+        np_sampling_buffer = self._sampling_buffer.get_as_numpy_array()
         
-        if not volume_data['volume'].empty:
-            trading_vol = volume_data['volume'].iloc[-1]
-        else:
+        if not np_sampling_buffer.size:
             trading_vol = 0
+        else:
+            trading_vol = np.sum(np_sampling_buffer)
+            
         return trading_vol
 
     def _processing_calculation(self) -> float:
