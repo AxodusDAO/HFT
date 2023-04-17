@@ -605,13 +605,11 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
                     self.filter_out_takers(proposal)
 
-                volume_data = pd.DataFrame(self._sampling_buffer.get_as_numpy_array(),
-                                   columns=['volume'])
-                trading_vol = volume_data['volume'].iloc[-1]
                 
+
                 self.cancel_active_orders(proposal)
                 self.cancel_orders_below_min_spread()
-                self.cancel_orders_on_high_volume(trading_vol)
+                self.cancel_orders_on_high_volume()
                 if self.to_create_orders(proposal):
                     self.execute_orders_proposal(proposal, PositionAction.OPEN)
                 # Reset peak ask and bid prices
@@ -1149,19 +1147,18 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"ID - {order.client_order_id}")
                 self.cancel_order(self._market_info, order.client_order_id)
 
-    def cancel_orders_on_high_volume(self, proposal: Proposal, trading_vol: List[float]):
+    def cancel_orders_on_high_volume(self):
         to_defer_canceling = False
+        
+        # historical volume
+        trading_vol = VolumeIndicator(self.sampling_length)._indicator_calculation()
         # Create a new VMA indicator
-        vol_avg = VolAvgIndicator(self.sampling_length)
-
-        # Add trading volumes to the indicator
-        for volume in trading_vol:
-            vol_avg.add_sample(volume)
+        vol_avg = VolAvgIndicator(self.sampling_length, trading_vol)
 
         # Get the current VMA value
         vma_value = vol_avg._processing_calculation()
 
-        if trading_vol[-1] > vma_value:
+        if trading_vol > vma_value:
             to_defer_canceling = True
 
         # Cancel the PositionMode.OPEN orders
@@ -1170,6 +1167,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if order.position_mode == PositionMode.OPEN:
                     self.cancel_order(self._market_info, order.client_order_id)
                     self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")
+
 
             
     def to_create_orders(self, proposal: Proposal) -> bool:
