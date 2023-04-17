@@ -1148,7 +1148,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
 
     def cancel_orders_on_high_volume(self):
-            trading_vol = VolumeIndicator(sampling_length=10)
+            trading_vol = VolumeIndicator(sampling_length=1)
             vol_avg = VolAvgIndicator(sampling_length=50)
 
             trading_vol_value = trading_vol._indicator_calculation()
