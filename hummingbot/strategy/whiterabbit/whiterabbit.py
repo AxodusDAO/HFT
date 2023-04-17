@@ -605,9 +605,13 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
                     self.filter_out_takers(proposal)
 
+                volume_data = pd.DataFrame(self._sampling_buffer.get_as_numpy_array(),
+                                   columns=['volume'])
+                trading_vol = volume_data['volume'].iloc[-1]
+                
                 self.cancel_active_orders(proposal)
                 self.cancel_orders_below_min_spread()
-                self.cancel_orders_on_high_volume(proposal, trading_vol)
+                self.cancel_orders_on_high_volume(trading_vol)
                 if self.to_create_orders(proposal):
                     self.execute_orders_proposal(proposal, PositionAction.OPEN)
                 # Reset peak ask and bid prices
