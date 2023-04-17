@@ -95,8 +95,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     minimum_spread: Decimal = Decimal(0),
                     hb_app_notification: bool = False,
                     moving_price_band: Optional[MovingPriceBand] = None,
-                    volume_period: int = 300,
-                    
                     order_override: Dict[str, List[str]] = {},
                     ):
         
@@ -150,7 +148,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_buy_exit_order_timestamp = 0
         self._next_sell_exit_order_timestamp = 0
 
-        self._volume_period = volume_period
+        self._trading_vol = None
 
         self.add_markets([market_info.market])
         self._volatility_buffer_size = 0
@@ -186,6 +184,14 @@ class WhiteRabbitStrategy(StrategyPyBase):
     @avg_vol.setter
     def avg_vol(self, indicator: InstantVolatilityIndicator):
         self._avg_vol = indicator
+
+    @property
+    def trading_vol(self):
+        return self._trading_vol
+    
+    @trading_vol.setter
+    def trading_vol(self, indicator: VolumeIndicator):
+        self._trading_vol = indicator
 
     @property
     def trading_intensity(self):
@@ -601,7 +607,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
                 self.cancel_active_orders(proposal)
                 self.cancel_orders_below_min_spread()
-                self.cancel_orders_on_high_volume()
+                self.cancel_orders_on_high_volume(proposal)
                 if self.to_create_orders(proposal):
                     self.execute_orders_proposal(proposal, PositionAction.OPEN)
                 # Reset peak ask and bid prices
