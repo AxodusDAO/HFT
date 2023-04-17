@@ -1145,9 +1145,12 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"ID - {order.client_order_id}")
                 self.cancel_order(self._market_info, order.client_order_id)
 
-    def cancel_orders_on_high_volume(self, trading_vol: List[float]):
+    def cancel_orders_on_high_volume(self, proposal: Proposal, trading_vol: List[float]):
+        if trading_vol[-1] > vma_value:
+            
+        
         # Create a new VMA indicator
-        vol_avg = VolAvgIndicator(self.sampling_length)
+            vol_avg = VolAvgIndicator(self.sampling_length)
 
         # Add trading volumes to the indicator
         for volume in trading_vol:
@@ -1156,14 +1159,12 @@ class WhiteRabbitStrategy(StrategyPyBase):
         # Get the current VMA value
         vma_value = vol_avg._processing_calculation()
 
-        # Check if the current trading volume is above the calculated average
-        if trading_vol[-1] > vma_value:
             # Cancel the PositionMode.OPEN orders
-            for order in self.active_orders:
+        for order in self.active_orders:
                 if order.position_mode == PositionMode.OPEN:
                     self.cancel_order(self._market_info, order.client_order_id)
-                    self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")
-
+                    self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")   
+        return
             
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and
