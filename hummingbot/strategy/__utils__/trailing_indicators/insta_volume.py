@@ -4,7 +4,7 @@ import pandas as pd
 class VolumeIndicator(BaseTrailingIndicator):
     def __init__(self, sampling_length: int = 1, processing_length: int = 1):
         if sampling_length != 1:
-            raise Exception("InstantVolumeIndicator sampling_length should be 1")
+            raise Exception("VolumeIndicator sampling_length should be 1")
         super().__init__(sampling_length, processing_length)
 
     def _indicator_calculation(self) -> float:
