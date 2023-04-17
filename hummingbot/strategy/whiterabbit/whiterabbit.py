@@ -607,7 +607,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
                 self.cancel_active_orders(proposal)
                 self.cancel_orders_below_min_spread()
-                self.cancel_orders_on_high_volume(proposal)
+                self.cancel_orders_on_high_volume(proposal, trading_vol)
                 if self.to_create_orders(proposal):
                     self.execute_orders_proposal(proposal, PositionAction.OPEN)
                 # Reset peak ask and bid prices
@@ -1146,11 +1146,9 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
 
     def cancel_orders_on_high_volume(self, proposal: Proposal, trading_vol: List[float]):
-        if trading_vol[-1] > vma_value:
-            
-        
+        to_defer_canceling = False
         # Create a new VMA indicator
-            vol_avg = VolAvgIndicator(self.sampling_length)
+        vol_avg = VolAvgIndicator(self.sampling_length)
 
         # Add trading volumes to the indicator
         for volume in trading_vol:
@@ -1159,12 +1157,16 @@ class WhiteRabbitStrategy(StrategyPyBase):
         # Get the current VMA value
         vma_value = vol_avg._processing_calculation()
 
-            # Cancel the PositionMode.OPEN orders
-        for order in self.active_orders:
+        if trading_vol[-1] > vma_value:
+            to_defer_canceling = True
+
+        # Cancel the PositionMode.OPEN orders
+        if to_defer_canceling:
+            for order in self.active_orders:
                 if order.position_mode == PositionMode.OPEN:
                     self.cancel_order(self._market_info, order.client_order_id)
-                    self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")   
-        return
+                    self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")
+
             
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and
