@@ -148,7 +148,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_buy_exit_order_timestamp = 0
         self._next_sell_exit_order_timestamp = 0
 
-        self._trading_vol = None
+        self.volume_indicator = VolumeIndicator()
 
         self.add_markets([market_info.market])
         self._volatility_buffer_size = 0
@@ -1148,20 +1148,14 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
 
     def cancel_orders_on_high_volume(self):
-            trading_vol = VolumeIndicator(sampling_length=1)
-            vol_avg = VolAvgIndicator(sampling_length=50)
+            trading_vol = self.volume_indicator.get_last_value()
+            vol_avg = self.volume_indicator._processing_calculation()
 
-            trading_vol_value = trading_vol._indicator_calculation()
-            vol_avg_value = vol_avg._processing_calculation()
-
-            if trading_vol_value > vol_avg_value:
+            if trading_vol > vol_avg:
                 for order in self.active_orders:
                     if order.position_mode == PositionMode.OPEN:
-                        cancelled = self.cancel_order(self._market_info, order.client_order_id)
-                        if cancelled:
-                            self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")
-                        else:
-                            self.logger().warning(f"Failed to cancel order {order.client_order_id} due to high trading volume.")
+                        self.cancel_order(self.market_info, order.client_order_id)
+                        self.logger.info(f"Cancelled order {order.client_order_id} due to high trading volume.")
 
 
             
