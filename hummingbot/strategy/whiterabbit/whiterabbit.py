@@ -40,7 +40,7 @@ from hummingbot.strategy.__utils__.trailing_indicators.instant_volatility import
 from hummingbot.strategy.__utils__.trailing_indicators.trading_intensity import TradingIntensityIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_average import ExponentialMovingAverageIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MovingAverageIndicator
+from hummingbot.strategy.__utils__.trailing_indicators.vma import VolumeAverageIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.vwap import VWAPIndicator
 
 
@@ -1141,25 +1141,17 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
 
     def cancel_orders_on_high_volume(self):
-        trading_vol = self.get_current_trading_volume()
-        vol_avg = self.get_average_trading_volume()
+        volume_indicator = VolumeAverageIndicator(sampling_length=30)
+        for volume in self.volume_data:
+            volume_indicator.add_sample(volume)
+        current_volume = volume_indicator.get_current_trading_volume()
+        avg_volume = volume_indicator.get_average_trading_volume()
 
-        if trading_vol > vol_avg:
+        if current_volume > avg_volume:
             for order in self.active_orders:
                 self.cancel_order(self._market_info, order.client_order_id)
                 self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")
-
-
-    def get_current_trading_volume(self) -> float:
-        last_row = self.trading_data.iloc[-1]
-        current_volume = last_row['volume']
-        return current_volume
-
-    def get_average_trading_volume(self) -> float:
-        avg_volume = self.trading_data['volume'].mean()
-        return avg_volume
-
-            
+         
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and
                 proposal is not None and
