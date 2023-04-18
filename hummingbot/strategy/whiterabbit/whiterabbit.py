@@ -148,6 +148,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_sell_exit_order_timestamp = 0
 
         self.volume_indicator = VolumeIndicator()
+        self.trading_data = pd.DataFrame()
 
         self.add_markets([market_info.market])
         self._volatility_buffer_size = 0
@@ -1147,15 +1148,23 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
 
     def cancel_orders_on_high_volume(self):
-            trading_vol = self.volume_indicator.get_last_value()
-            vol_avg = self.volume_indicator._processing_calculation()
+        trading_vol = self.get_current_trading_volume()
+        vol_avg = self.get_average_trading_volume()
 
-            if trading_vol > vol_avg:
-                for order in self.active_orders:
-                    if order.position_mode == PositionMode.OPEN:
-                        self.cancel_order(self.market_info, order.client_order_id)
-                        self.logger.info(f"Cancelled order {order.client_order_id} due to high trading volume.")
+        if trading_vol > vol_avg:
+            for order in self.active_orders:
+                self.cancel_order(self._market_info, order.client_order_id)
+                self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")
 
+
+    def get_current_trading_volume(self) -> float:
+        last_row = self.trading_data.iloc[-1]
+        current_volume = last_row['volume']
+        return current_volume
+
+    def get_average_trading_volume(self) -> float:
+        avg_volume = self.trading_data['volume'].mean()
+        return avg_volume
 
             
     def to_create_orders(self, proposal: Proposal) -> bool:
