@@ -18,14 +18,4 @@ class VolumeIndicator(BaseTrailingIndicator):
         return self._processing_buffer.get_last_value()
 
 
-'''
-    volume_indicator = VolAvgIndicator(sampling_length=20)
 
-# Add volume samples to the indicator
-for volume_sample in volume_data:
-    volume_indicator.add_sample(volume_sample)
-
-# Get the current value of the Volume Average Indicator
-current_volume_average = volume_indicator.current_value
-print("Current Volume Average:", current_volume_average)
-'''
