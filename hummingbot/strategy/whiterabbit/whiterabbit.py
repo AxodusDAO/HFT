@@ -42,7 +42,7 @@ from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_average import ExponentialMovingAverageIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.moving_average import MovingAverageIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.vwap import VWAPIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.vma import VolumeIndicator
+
 
 NaN = float("nan")
 s_decimal_zero = Decimal(0)
