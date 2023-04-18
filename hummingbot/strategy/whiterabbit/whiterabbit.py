@@ -184,13 +184,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
     def avg_vol(self, indicator: InstantVolatilityIndicator):
         self._avg_vol = indicator
 
-    @property
-    def trading_vol(self):
-        return self._trading_vol
-    
-    @trading_vol.setter
-    def trading_vol(self, indicator: VolumeIndicator):
-        self._trading_vol = indicator
+
 
     @property
     def trading_intensity(self):
