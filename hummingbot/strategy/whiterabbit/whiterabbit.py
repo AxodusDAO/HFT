@@ -149,7 +149,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_buy_exit_order_timestamp = 0
         self._next_sell_exit_order_timestamp = 0
 
-        self.trading_data = pd.DataFrame()
+        self.trading_data = pd.DataFrame({"volume"})
+       
 
 
         self.add_markets([market_info.market])
