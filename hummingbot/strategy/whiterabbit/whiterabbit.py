@@ -850,7 +850,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                         self.cancel_order(self._market_info, old_order.client_order_id)
                     size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
                     if size > 0 and price > 0:
-                        self.logger().info("STOP LOSS: Creating buy order to close short position.")
+                        self.logger().info("SAFE STOP: Creating buy order to close short position.")
                         buys.append(PriceSize(price, size))
                     
         return Proposal(buys, sells)
@@ -1181,7 +1181,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"{buy.price.normalize()} {self.quote_asset}"
                                    for buy in proposal.buys]
                 self.logger().info(
-                    f"({self.trading_pair}) STOP LOSS: Creating {len(proposal.buys)} {self._close_order_type.name} bid orders "
+                    f"({self.trading_pair}) BUY: Creating {len(proposal.buys)} {self._close_order_type.name} bid orders "
                     f"at (Size, Price): {price_quote_str} to {position_action.name} position."
                 )
             for buy in proposal.buys:
@@ -1206,7 +1206,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"{sell.price.normalize()} {self.quote_asset}"
                                    for sell in proposal.sells]
                 self.logger().info(
-                    f"({self.trading_pair}) STOP LOSS: Creating {len(proposal.sells)}  {self._close_order_type.name} ask "
+                    f"({self.trading_pair}) SELL: Creating {len(proposal.sells)}  {self._close_order_type.name} ask "
                     f"orders at (Size, Price): {price_quote_str} to {position_action.name} position."
                 )
             for sell in proposal.sells:
