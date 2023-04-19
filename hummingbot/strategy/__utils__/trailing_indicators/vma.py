@@ -20,9 +20,13 @@ class VolumeAverageIndicator(BaseTrailingIndicator):
             return np.mean(np.nan_to_num(processing_array))
 
     def get_current_trading_volume(self) -> float:
+        if len(self.trading_data) == 0:
+            return 0.0
+
         last_row = self.trading_data.iloc[-1]
         current_volume = last_row['volume']
         return current_volume
+
 
     def get_average_trading_volume(self) -> float:
         avg_volume = self.trading_data['volume'].mean()
