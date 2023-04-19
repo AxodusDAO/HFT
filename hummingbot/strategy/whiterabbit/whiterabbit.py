@@ -1151,15 +1151,16 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
 
     def cancel_orders_on_high_volume(self):
-        volume_data = VolumeAverageIndicator(sampling_length=30, trading_data=self.trading_data)
-        volume_data.add_sample(volume_data.get_current_trading_volume())
-        current_volume = volume_data.get_current_trading_volume()
-        avg_volume = volume_data.get_average_trading_volume()
+        data = VolumeAverageIndicator(sampling_length=30, trading_data=self.trading_data)
+        current_volume = data.get_current_trading_volume()
+        avg_volume = data.get_average_trading_volume()
 
-        if current_volume > avg_volume:
+        if current_volume > (avg_volume * 1.3):  # cancel orders if current volume is 30% higher than average volume
+            self.logger().info(f"Cancelling all active orders due to high trading volume (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})")
             for order in self.active_orders:
                 self.cancel_order(self._market_info, order.client_order_id)
-                self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")
+        else:
+            self.logger().info(f"Trading volume is within normal range (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})")
 
          
     def to_create_orders(self, proposal: Proposal) -> bool:
@@ -1175,7 +1176,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if self.current_timestamp < self._next_buy_exit_order_timestamp:
                     return
                 else:
-                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.filled_order_delay
+                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.filled_order_delay 
             if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
                 price_quote_str = [f"{buy.size.normalize()} {self.base_asset}, "
                                    f"{buy.price.normalize()} {self.quote_asset}"
@@ -1195,6 +1196,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if position_action == PositionAction.CLOSE:
                     self._exit_orders[bid_order_id] = self.current_timestamp
                 orders_created = True
+        
         if len(proposal.sells) > 0:
             if position_action == PositionAction.CLOSE:
                 if self.current_timestamp < self._next_sell_exit_order_timestamp:
@@ -1277,9 +1279,11 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     self._exit_orders[ask_order_id] = self.current_timestamp
                 orders_created = True
         if orders_created:
-            self.set_timers()
             # A time delay after a safe stop proposal occurs
-            time.sleep(self.stop_order_delay)
+            if position_action == PositionAction.CLOSE:
+                time.sleep(self.stop_order_delay)
+            self.set_timers()
+            
 
     def set_timers(self):
         next_cycle = self.current_timestamp + self._order_refresh_time
