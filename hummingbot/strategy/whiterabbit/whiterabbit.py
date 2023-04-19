@@ -854,11 +854,13 @@ class WhiteRabbitStrategy(StrategyPyBase):
         return Proposal(buys, sells)
 
     def adjust_spread(self, spread: Decimal) -> Decimal:
-        if self._avg_vol > 0:
-            adjustment_factor = 1 / self._avg_vol
+        avg_vol = self._avg_vol if self._avg_vol is not None else 1
+        if avg_vol > 0:
+            adjustment_factor = 1 / avg_vol
         else:
             adjustment_factor = 1
         return spread * Decimal(adjustment_factor)
+
 
     def create_base_proposal(self):
         market: DerivativeBase = self._market_info.market
