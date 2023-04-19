@@ -1142,8 +1142,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
     def cancel_orders_on_high_volume(self):
         volume_data = VolumeAverageIndicator(sampling_length=30, trading_data=self.trading_data)
-        for volume in volume_data:
-            volume_data.add_sample(volume)
+        volume_data.add_sample(volume_data.get_current_trading_volume())
         current_volume = volume_data.get_current_trading_volume()
         avg_volume = volume_data.get_average_trading_volume()
 
@@ -1151,6 +1150,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
             for order in self.active_orders:
                 self.cancel_order(self._market_info, order.client_order_id)
                 self.logger().info(f"Cancelled order {order.client_order_id} due to high trading volume.")
+
          
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and
