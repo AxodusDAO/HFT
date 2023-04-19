@@ -11,7 +11,7 @@ class VolumeAverageIndicator(BaseTrailingIndicator):
     def _indicator_calculation(self) -> float:
         volume_data = pd.DataFrame(self._sampling_buffer.get_as_numpy_array(),
                                    columns=['volume'])
-        cumulative_volume = volume_data['volume'].sum()
+        cumulative_volume = volume_data['volume'].tail(self.sampling_length).sum()
         return cumulative_volume / self.sampling_length
 
     def _processing_calculation(self) -> float:
@@ -24,13 +24,13 @@ class VolumeAverageIndicator(BaseTrailingIndicator):
             return 0.0
 
         last_row = self.trading_data.iloc[-1]
-        current_volume = last_row['volume']
+        current_volume = last_row.get('volume', 0.0)
         return current_volume
 
-
     def get_average_trading_volume(self) -> float:
-        avg_volume = self.trading_data['volume'].mean()
+        avg_volume = self.trading_data.get('volume', pd.Series()).mean()
         return avg_volume
+
 
 
 
