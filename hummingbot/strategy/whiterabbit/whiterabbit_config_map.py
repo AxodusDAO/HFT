@@ -622,7 +622,7 @@ whiterabbit_config_map = {
                   validator=lambda v: validate_decimal(v, min_value=0, inclusive=False),
                   default=60),
     "stop_order_delay":
-        ConfigVar(key="filled_order_delay",
+        ConfigVar(key="stop_order_delay",
                   prompt="How long do you want to wait before placing the next order after STOP LOSS occurs"
                          "if your order gets filled (in seconds)? >>> ",
                   type_str="float",
