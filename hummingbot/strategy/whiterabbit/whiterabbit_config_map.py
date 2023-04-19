@@ -621,6 +621,13 @@ whiterabbit_config_map = {
                   type_str="float",
                   validator=lambda v: validate_decimal(v, min_value=0, inclusive=False),
                   default=60),
+    "stop_order_delay":
+        ConfigVar(key="filled_order_delay",
+                  prompt="How long do you want to wait before placing the next order after STOP LOSS occurs"
+                         "if your order gets filled (in seconds)? >>> ",
+                  type_str="float",
+                  validator=lambda v: validate_decimal(v, min_value=0, inclusive=False),
+                  default=3600),
     "order_optimization_enabled":
         ConfigVar(key="order_optimization_enabled",
                   prompt="Do you want to enable best bid ask jumping? (Yes/No) >>> ",

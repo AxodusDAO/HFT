@@ -36,6 +36,7 @@ def start(self):
         exchange = c_map.get("derivative").value.lower()
         raw_trading_pair = c_map.get("market").value
         filled_order_delay = c_map.get("filled_order_delay").value
+        stop_order_delay = c_map.get("stop_order_delay").value
         order_optimization_enabled = c_map.get("order_optimization_enabled").value
         ask_order_optimization_depth = c_map.get("ask_order_optimization_depth").value
         bid_order_optimization_depth = c_map.get("bid_order_optimization_depth").value
@@ -93,6 +94,7 @@ def start(self):
             order_refresh_time=order_refresh_time,
             order_refresh_tolerance_pct=order_refresh_tolerance_pct,
             filled_order_delay=filled_order_delay,
+            stop_order_delay=stop_order_delay,
             order_optimization_enabled=order_optimization_enabled,
             ask_order_optimization_depth=ask_order_optimization_depth,
             bid_order_optimization_depth=bid_order_optimization_depth,
