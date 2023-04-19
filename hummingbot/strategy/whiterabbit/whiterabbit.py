@@ -149,6 +149,9 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_buy_exit_order_timestamp = 0
         self._next_sell_exit_order_timestamp = 0
 
+        self.trading_data = pd.DataFrame()
+
+
         self.add_markets([market_info.market])
         self._volatility_buffer_size = 0
         self._trading_intensity_buffer_size = 0
