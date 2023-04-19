@@ -149,8 +149,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_buy_exit_order_timestamp = 0
         self._next_sell_exit_order_timestamp = 0
 
-        self.trading_data = pd.DataFrame()
-
         self.add_markets([market_info.market])
         self._volatility_buffer_size = 0
         self._trading_intensity_buffer_size = 0
@@ -855,7 +853,13 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     
         return Proposal(buys, sells)
 
-    
+    def adjust_spread(self, spread: Decimal) -> Decimal:
+        if self._avg_vol > 0:
+            adjustment_factor = 1 / self._avg_vol
+        else:
+            adjustment_factor = 1
+        return spread * Decimal(adjustment_factor)
+
     def create_base_proposal(self):
         market: DerivativeBase = self._market_info.market
         buys = []
@@ -882,15 +886,19 @@ class WhiteRabbitStrategy(StrategyPyBase):
                         if size > 0 and price > 0:
                             sells.append(PriceSize(price, size))
         else:
+            adjusted_bid_spread = self.adjust_spread(self._bid_spread)
+            adjusted_ask_spread = self.adjust_spread(self._ask_spread)
+
             for level in range(0, self._buy_levels):
-                price = self.get_price() * (Decimal("1") - self._bid_spread - (level * self._order_level_spread))
+                price = self.get_price() * (Decimal("1") - adjusted_bid_spread - (level * self._order_level_spread))
                 price = market.quantize_order_price(self.trading_pair, price)
                 size = self._order_amount + (self._order_level_amount * level)
                 size = market.quantize_order_amount(self.trading_pair, size)
                 if size > 0:
                     buys.append(PriceSize(price, size))
+
             for level in range(0, self._sell_levels):
-                price = self.get_price() * (Decimal("1") + self._ask_spread + (level * self._order_level_spread))
+                price = self.get_price() * (Decimal("1") + adjusted_ask_spread + (level * self._order_level_spread))
                 price = market.quantize_order_price(self.trading_pair, price)
                 size = self._order_amount + (self._order_level_amount * level)
                 size = market.quantize_order_amount(self.trading_pair, size)
