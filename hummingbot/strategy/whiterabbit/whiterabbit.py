@@ -82,6 +82,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     order_refresh_time: float = 30.0,
                     order_refresh_tolerance_pct: Decimal = s_decimal_neg_one,
                     filled_order_delay: float = 60.0,
+                    stop_order_delay: float = 3600,
                     order_optimization_enabled: bool = False,
                     ask_order_optimization_depth: Decimal = s_decimal_zero,
                     bid_order_optimization_depth: Decimal = s_decimal_zero,
@@ -124,6 +125,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._order_refresh_time = order_refresh_time
         self._order_refresh_tolerance_pct = order_refresh_tolerance_pct
         self._filled_order_delay = filled_order_delay
+        self._stop_order_delay = stop_order_delay
         self._order_optimization_enabled = order_optimization_enabled
         self._ask_order_optimization_depth = ask_order_optimization_depth
         self._bid_order_optimization_depth = bid_order_optimization_depth
@@ -339,6 +341,14 @@ class WhiteRabbitStrategy(StrategyPyBase):
     @filled_order_delay.setter
     def filled_order_delay(self, value: float):
         self._filled_order_delay = value
+
+    @property
+    def stop_order_delay(self) -> float:
+        return self._stop_order_delay
+
+    @stop_order_delay.setter
+    def stop_order_delay(self, value: float):
+        self._stop_order_delay = value
 
     @property
     def price_ceiling(self) -> Decimal:
@@ -1268,7 +1278,9 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 orders_created = True
         if orders_created:
             self.set_timers()
-    
+            # A time delay after a safe stop proposal occurs
+            time.sleep(self.stop_order_delay)
+
     def set_timers(self):
         next_cycle = self.current_timestamp + self._order_refresh_time
         if self._create_timestamp <= self.current_timestamp:
