@@ -1171,17 +1171,23 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
      
     def cancel_orders_on_high_volume(self):
-        data = self.get_trading_data()
-        current_volume = VolumeAverageIndicator.get_current_trading_volume(self)
-        avg_volume = VolumeAverageIndicator.get_average_trading_volume(self)
+        volume_indicator = VolumeAverageIndicator(
+            self.get_trading_data(self._market_info.trading_pair, "1m")
+        )
+        current_volume = volume_indicator.get_current_trading_volume()
+        avg_volume = volume_indicator.get_average_trading_volume()
 
-        if current_volume > (avg_volume * 1.3):  # cancel orders if current volume is 30% higher than average volume
-            self.logger().info(f"Cancelling all active orders due to high trading volume (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})")
+        if current_volume > (avg_volume * 1.3):
+            self.logger().info(
+                f"Cancelling all active orders due to high trading volume (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})"
+            )
             for order in self.active_orders:
                 self.cancel_order(self._market_info, order.client_order_id)
         else:
-            self.logger().info(f"Trading volume is within normal range (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})")
-         
+            self.logger().info(
+                f"Trading volume is within normal range (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})"
+            )
+            
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and
                 proposal is not None and
