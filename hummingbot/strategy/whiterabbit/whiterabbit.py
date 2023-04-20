@@ -393,23 +393,10 @@ class WhiteRabbitStrategy(StrategyPyBase):
             price = price_provider.get_price_by_type(PriceType.MidPrice)
         return price
     
-    def get_trading_data(self, trading_pair: str, candle_size: str) -> pd.DataFrame:
-        market: DerivativeBase = self._market_info.market
-        if not market.supports_candles(candle_size):
-            self.logger().warning(f"Market {market.name} does not support {candle_size} candles, returning empty DataFrame")
-            return pd.DataFrame()
-
-        raw_data = market.get_raw_trading_data(trading_pair, candle_size, self.current_timestamp)
-        if not isinstance(raw_data, pd.DataFrame):
-            self.logger().warning(f"Market {market.name} returned invalid trading data, returning empty DataFrame")
-            return pd.DataFrame()
-
-        trading_data = raw_data.dropna().reset_index(drop=True)
-        trading_data.set_index("timestamp", inplace=True)
-        trading_data["volume"] = trading_data["volume"].astype(float)
-        trading_data["close"] = trading_data["close"].astype(float)
-
-        return trading_data
+    def get_trading_data(self):
+            trading_pair = self._market_info.trading_pair
+            candle_size = "1m"
+            return self._market_info.market.get_trading_data(trading_pair, candle_size)
 
     def get_last_price(self) -> float:
         return self._market_info.get_last_price()
@@ -1182,10 +1169,11 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                    f"ID - {order.client_order_id}")
                 self.cancel_order(self._market_info, order.client_order_id)
 
+     
     def cancel_orders_on_high_volume(self):
-        volume_indicator = VolumeAverageIndicator(sampling_length=30, trading_data=self.get_trading_data())
-        current_volume = volume_indicator.get_current_trading_volume()
-        avg_volume = volume_indicator.get_average_trading_volume()
+        data = self.get_trading_data()
+        current_volume = VolumeAverageIndicator.get_current_trading_volume(self)
+        avg_volume = VolumeAverageIndicator.get_average_trading_volume(self)
 
         if current_volume > (avg_volume * 1.3):  # cancel orders if current volume is 30% higher than average volume
             self.logger().info(f"Cancelling all active orders due to high trading volume (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})")
@@ -1193,7 +1181,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
         else:
             self.logger().info(f"Trading volume is within normal range (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})")
-
          
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and
