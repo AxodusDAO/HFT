@@ -149,10 +149,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._next_buy_exit_order_timestamp = 0
         self._next_sell_exit_order_timestamp = 0
 
-        self.trading_data = pd.DataFrame({"volume"})
        
-
-
         self.add_markets([market_info.market])
         self._volatility_buffer_size = 0
         self._trading_intensity_buffer_size = 0
@@ -188,7 +185,10 @@ class WhiteRabbitStrategy(StrategyPyBase):
     def avg_vol(self, indicator: InstantVolatilityIndicator):
         self._avg_vol = indicator
 
-
+    @property
+    def trading_data(self):
+        # Return a pandas dataframe containing trading data (OHLCV) for the current trading pair
+        return self._market_info.market.get_trading_data(self._market_info.trading_pair, "1m")
 
     @property
     def trading_intensity(self):
@@ -1165,9 +1165,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
 
     def cancel_orders_on_high_volume(self):
-        data = VolumeAverageIndicator(sampling_length=30, trading_data=self.trading_data)
-        current_volume = data.get_current_trading_volume()
-        avg_volume = data.get_average_trading_volume()
+        current_volume = VolumeAverageIndicator.get_current_trading_volume()
+        avg_volume = VolumeAverageIndicator.get_average_trading_volume()
 
         if current_volume > (avg_volume * 1.3):  # cancel orders if current volume is 30% higher than average volume
             self.logger().info(f"Cancelling all active orders due to high trading volume (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})")
