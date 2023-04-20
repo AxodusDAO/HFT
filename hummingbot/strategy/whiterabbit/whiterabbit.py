@@ -186,11 +186,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
         self._avg_vol = indicator
 
     @property
-    def trading_data(self):
-        # Return a pandas dataframe containing trading data (OHLCV) for the current trading pair
-        return self._market_info.market.get_trading_data(self._market_info.trading_pair, "1m")
-
-    @property
     def trading_intensity(self):
         return self._trading_intensity
 
@@ -393,10 +388,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
             price = price_provider.get_price_by_type(PriceType.MidPrice)
         return price
     
-    def get_trading_data(self, trading_pair: str, candle_size: str) -> pd.DataFrame:
-        data = self._market_info.market.get_trading_data(trading_pair, candle_size)
-        return data
-
     def get_last_price(self) -> float:
         return self._market_info.get_last_price()
 
@@ -407,7 +398,11 @@ class WhiteRabbitStrategy(StrategyPyBase):
         else:
             mid_price = self._market_info.get_mid_price()
         return mid_price
-
+    
+    def get_trading_data(self, trading_pair: str, candle_size: str) -> pd.DataFrame:
+        data = self._market_info.market.get_trading_data(trading_pair, candle_size)
+        return data
+    
     @property
     def active_orders(self) -> List[LimitOrder]:
         if self._market_info not in self._sb_order_tracker.market_pair_to_active_orders:
@@ -1169,24 +1164,23 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
 
      
-    def cancel_orders_on_high_volume(self):
-        volume_indicator = VolumeAverageIndicator(
-            self.get_trading_data(self._market_info.trading_pair, "1m")
-        )
-        current_volume = volume_indicator.get_current_trading_volume()
-        avg_volume = volume_indicator.get_average_trading_volume()
+    def cancel_orders_on_high_trading_volume(self):
+        current_volume = VolumeAverageIndicator.get_current_trading_volume(self)
+        avg_volume = VolumeAverageIndicator.get_average_trading_volume(self)
+        trading_intensity = TradingIntensityIndicator(self._order_book, self._price_delegate).current_value
 
-        if current_volume > (avg_volume * 1.3):
-            self.logger().info(
-                f"Cancelling all active orders due to high trading volume (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})"
-            )
+        if current_volume > (avg_volume * 1.3) and trading_intensity[0] > self._trading_intensity_buffer_size:
+            self.logger().info(f"Cancelling all active orders due to high trading volume "
+                            f"(current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})"
+                                f" and high trading intensity (current trading intensity: {trading_intensity[0]:.2f},"
+                                f" average trading intensity: {trading_intensity[1]:.2f})")
             for order in self.active_orders:
                 self.cancel_order(self._market_info, order.client_order_id)
         else:
-            self.logger().info(
-                f"Trading volume is within normal range (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})"
-            )
-            
+            self.logger().info(f"Trading volume is within normal range (current volume: {current_volume:.2f},"
+                            f"average volume: {avg_volume:.2f}) and trading intensity is within normal range"
+                            f"(current trading intensity: {trading_intensity[0]:.2f}, average trading intensity: {trading_intensity[1]:.2f})")
+                
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and
                 proposal is not None and
