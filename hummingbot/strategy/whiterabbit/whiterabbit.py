@@ -38,10 +38,6 @@ from hummingbot.strategy.utils import order_age
 from hummingbot.strategy.whiterabbit.moving_price_band import MovingPriceBand
 from hummingbot.strategy.__utils__.trailing_indicators.instant_volatility import InstantVolatilityIndicator
 from hummingbot.strategy.__utils__.trailing_indicators.trading_intensity import TradingIntensityIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.rsi import RSIIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.exponential_moving_average import ExponentialMovingAverageIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.vma import VolumeAverageIndicator
-from hummingbot.strategy.__utils__.trailing_indicators.vwap import VWAPIndicator
 
 
 NaN = float("nan")
@@ -614,7 +610,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
                 self.cancel_active_orders(proposal)
                 self.cancel_orders_below_min_spread()
-                self.cancel_orders_on_high_trading_volume()
+                self.cancel_orders_due_to_trading_intensity()
                 if self.to_create_orders(proposal):
                     self.execute_orders_proposal(proposal, PositionAction.OPEN)
                 # Reset peak ask and bid prices
@@ -1165,22 +1161,21 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
 
      
-    def cancel_orders_on_high_trading_volume(self):
-        current_volume = VolumeAverageIndicator.get_current_trading_volume(self)
-        avg_volume = VolumeAverageIndicator.get_average_trading_volume(self)
-        trading_intensity = TradingIntensityIndicator(self._order_book, self._price_delegate).current_value
+    def cancel_orders_due_to_trading_intensity(self, intensity_threshold: float = 1.2):
+        """
+        Cancel orders when the trading intensity volume exceeds the given threshold.
+        
+        :param intensity_threshold: The threshold value for trading intensity volume. Default is 1.2 (120%).
+        """
+        if self.trading_intensity.volume > intensity_threshold:
+            # Get all active orders
+            active_orders = self.active_orders
 
-        if current_volume > (avg_volume * 1.3) and trading_intensity[0] > self._trading_intensity_buffer_size:
-            self.logger().info(f"Cancelling all active orders due to high trading volume "
-                            f"(current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})"
-                                f" and high trading intensity (current trading intensity: {trading_intensity[0]:.2f},"
-                                f" average trading intensity: {trading_intensity[1]:.2f})")
-            for order in self.active_orders:
-                self.cancel_order(self._market_info, order.client_order_id)
-        else:
-            self.logger().info(f"Trading volume is within normal range (current volume: {current_volume:.2f},"
-                            f"average volume: {avg_volume:.2f}) and trading intensity is within normal range"
-                            f"(current trading intensity: {trading_intensity[0]:.2f}, average trading intensity: {trading_intensity[1]:.2f})")
+            # Cancel all active orders
+            for order in active_orders:
+                self.log_with_clock(logging.INFO, f"Canceling order {order.client_order_id} due to high trading intensity volume.")
+                self._sb_order_tracker.cancel_order(self._market_info, order.client_order_id)
+
                 
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and
