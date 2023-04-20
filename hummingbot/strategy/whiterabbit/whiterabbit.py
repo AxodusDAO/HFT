@@ -1165,8 +1165,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_order(self._market_info, order.client_order_id)
 
     def cancel_orders_on_high_volume(self):
-        current_volume = VolumeAverageIndicator.get_current_trading_volume()
-        avg_volume = VolumeAverageIndicator.get_average_trading_volume()
+        current_volume = VolumeAverageIndicator.get_current_trading_volume(self)
+        avg_volume = VolumeAverageIndicator.get_average_trading_volume(self)
 
         if current_volume > (avg_volume * 1.3):  # cancel orders if current volume is 30% higher than average volume
             self.logger().info(f"Cancelling all active orders due to high trading volume (current volume: {current_volume:.2f}, average volume: {avg_volume:.2f})")
