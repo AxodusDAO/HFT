@@ -1167,7 +1167,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         
         :param intensity_threshold: The threshold value for trading intensity volume. Default is 1.2 (120%).
         """
-        if self.trading_intensity.volume > intensity_threshold:
+        if isinstance(self.trading_intensity, TradingIntensityIndicator) and self.trading_intensity.current_value[0] > intensity_threshold:
             # Get all active orders
             active_orders = self.active_orders
 
@@ -1175,6 +1175,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
             for order in active_orders:
                 self.log_with_clock(logging.INFO, f"Canceling order {order.client_order_id} due to high trading intensity volume.")
                 self._sb_order_tracker.cancel_order(self._market_info, order.client_order_id)
+
 
                 
     def to_create_orders(self, proposal: Proposal) -> bool:
