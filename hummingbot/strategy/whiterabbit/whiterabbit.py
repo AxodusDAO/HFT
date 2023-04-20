@@ -393,10 +393,9 @@ class WhiteRabbitStrategy(StrategyPyBase):
             price = price_provider.get_price_by_type(PriceType.MidPrice)
         return price
     
-    def get_trading_data(self):
-            trading_pair = self._market_info.trading_pair
-            candle_size = "1m"
-            return self._market_info.market.get_trading_data(trading_pair, candle_size)
+    def get_trading_data(self, trading_pair: str, candle_size: str) -> pd.DataFrame:
+        data = self._market_info.market.get_trading_data(trading_pair, candle_size)
+        return data
 
     def get_last_price(self) -> float:
         return self._market_info.get_last_price()
