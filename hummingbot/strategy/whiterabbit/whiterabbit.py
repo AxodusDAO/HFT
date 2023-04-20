@@ -392,6 +392,24 @@ class WhiteRabbitStrategy(StrategyPyBase):
         if price.is_nan():
             price = price_provider.get_price_by_type(PriceType.MidPrice)
         return price
+    
+    def get_trading_data(self, trading_pair: str, candle_size: str) -> pd.DataFrame:
+        market: DerivativeBase = self._market_info.market
+        if not market.supports_candles(candle_size):
+            self.logger().warning(f"Market {market.name} does not support {candle_size} candles, returning empty DataFrame")
+            return pd.DataFrame()
+
+        raw_data = market.get_raw_trading_data(trading_pair, candle_size, self.current_timestamp)
+        if not isinstance(raw_data, pd.DataFrame):
+            self.logger().warning(f"Market {market.name} returned invalid trading data, returning empty DataFrame")
+            return pd.DataFrame()
+
+        trading_data = raw_data.dropna().reset_index(drop=True)
+        trading_data.set_index("timestamp", inplace=True)
+        trading_data["volume"] = trading_data["volume"].astype(float)
+        trading_data["close"] = trading_data["close"].astype(float)
+
+        return trading_data
 
     def get_last_price(self) -> float:
         return self._market_info.get_last_price()
