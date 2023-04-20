@@ -613,7 +613,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
                 self.cancel_active_orders(proposal)
                 self.cancel_orders_below_min_spread()
-                self.cancel_orders_on_high_volume()
+                self.cancel_orders_on_high_trading_volume()
                 if self.to_create_orders(proposal):
                     self.execute_orders_proposal(proposal, PositionAction.OPEN)
                 # Reset peak ask and bid prices
