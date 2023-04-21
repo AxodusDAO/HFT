@@ -1162,11 +1162,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
      
     def cancel_orders_due_to_trading_intensity(self, intensity_threshold: float = 1.2):
-        """
-        Cancel orders when the trading intensity volume exceeds the given threshold.
-        
-        :param intensity_threshold: The threshold value for trading intensity volume. Default is 1.2 (120%).
-        """
+
         if isinstance(self.trading_intensity, TradingIntensityIndicator) and self.trading_intensity.current_value[0] > intensity_threshold:
             # Get all active orders
             active_orders = self.active_orders
@@ -1238,6 +1234,9 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     self._exit_orders[ask_order_id] = self.current_timestamp
                 orders_created = True
         if orders_created:
+            # A time delay after a safe stop proposal occurs
+            if position_action == PositionAction.CLOSE:
+                time.sleep(self.stop_order_delay)
             self.set_timers()
 
     def execute_safe_stop_proposal(self, proposal: Proposal, position_action: PositionAction):
