@@ -1187,7 +1187,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if self.current_timestamp < self._next_buy_exit_order_timestamp:
                     return
                 else:
-                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.filled_order_delay 
+                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.stop_order_delay 
             if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
                 price_quote_str = [f"{buy.size.normalize()} {self.base_asset}, "
                                    f"{buy.price.normalize()} {self.quote_asset}"
@@ -1213,7 +1213,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if self.current_timestamp < self._next_sell_exit_order_timestamp:
                     return
                 else:
-                    self._next_sell_exit_order_timestamp = self.current_timestamp + self.filled_order_delay
+                    self._next_sell_exit_order_timestamp = self.current_timestamp + self.stop_order_delay
             if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
                 price_quote_str = [f"{sell.size.normalize()} {self.base_asset}, "
                                    f"{sell.price.normalize()} {self.quote_asset}"
@@ -1234,9 +1234,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     self._exit_orders[ask_order_id] = self.current_timestamp
                 orders_created = True
         if orders_created:
-            # A time delay after a safe stop proposal occurs
-            if position_action == PositionAction.CLOSE:
-                time.sleep(self.stop_order_delay)
             self.set_timers()
 
     def execute_safe_stop_proposal(self, proposal: Proposal, position_action: PositionAction):
@@ -1247,7 +1244,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if self.current_timestamp < self._next_buy_exit_order_timestamp:
                     return
                 else:
-                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.filled_order_delay
+                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.stop_order_delay
             if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
                 price_quote_str = [f"{buy.size.normalize()} {self.base_asset}, "
                                    f"{buy.price.normalize()} {self.quote_asset}"
@@ -1272,7 +1269,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if self.current_timestamp < self._next_sell_exit_order_timestamp:
                     return
                 else:
-                    self._next_sell_exit_order_timestamp = self.current_timestamp + self.filled_order_delay
+                    self._next_sell_exit_order_timestamp = self.current_timestamp + self.stop_order_delay
             if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
                 price_quote_str = [f"{sell.size.normalize()} {self.base_asset}, "
                                    f"{sell.price.normalize()} {self.quote_asset}"
@@ -1293,9 +1290,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     self._exit_orders[ask_order_id] = self.current_timestamp
                 orders_created = True
         if orders_created:
-            # A time delay after a safe stop proposal occurs
-            if position_action == PositionAction.CLOSE:
-                time.sleep(self.stop_order_delay)
+            
             self.set_timers()
             
 
