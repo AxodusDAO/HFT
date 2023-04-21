@@ -1187,7 +1187,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if self.current_timestamp < self._next_buy_exit_order_timestamp:
                     return
                 else:
-                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.stop_order_delay 
+                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.filled_order_delay 
             if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
                 price_quote_str = [f"{buy.size.normalize()} {self.base_asset}, "
                                    f"{buy.price.normalize()} {self.quote_asset}"
@@ -1213,7 +1213,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if self.current_timestamp < self._next_sell_exit_order_timestamp:
                     return
                 else:
-                    self._next_sell_exit_order_timestamp = self.current_timestamp + self.stop_order_delay
+                    self._next_sell_exit_order_timestamp = self.current_timestamp + self.filled_order_delay
             if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
                 price_quote_str = [f"{sell.size.normalize()} {self.base_asset}, "
                                    f"{sell.price.normalize()} {self.quote_asset}"
@@ -1244,7 +1244,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if self.current_timestamp < self._next_buy_exit_order_timestamp:
                     return
                 else:
-                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.stop_order_delay
+                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.filled_order_delay
             if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
                 price_quote_str = [f"{buy.size.normalize()} {self.base_asset}, "
                                    f"{buy.price.normalize()} {self.quote_asset}"
@@ -1269,7 +1269,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if self.current_timestamp < self._next_sell_exit_order_timestamp:
                     return
                 else:
-                    self._next_sell_exit_order_timestamp = self.current_timestamp + self.stop_order_delay
+                    self._next_sell_exit_order_timestamp = self.current_timestamp + self.filled_order_delay
             if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
                 price_quote_str = [f"{sell.size.normalize()} {self.base_asset}, "
                                    f"{sell.price.normalize()} {self.quote_asset}"
