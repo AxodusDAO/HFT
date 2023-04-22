@@ -751,8 +751,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     o for o in self.active_orders
                     if ((o.price != price or o.quantity != size)
                         and o.client_order_id in self._exit_orders.keys()
-                        and ((position.amount < 0 and o.is_buy) 
-                             or (position.amount > 0 and not o.is_buy)))]
+                        and ((position.amount > 0 and o.is_buy) 
+                             or (position.amount < 0 and not o.is_buy)))]
                 
                 for old_order in old_exit_orders:
                     self.cancel_order(self._market_info, old_order.client_order_id)
