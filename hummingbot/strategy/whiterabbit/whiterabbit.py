@@ -757,7 +757,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 for old_order in old_exit_orders:
                     self.cancel_order(self._market_info, old_order.client_order_id)
                     self.logger().info(
-                        f"Initiated cancelation of previous stop´loss order {old_order.client_order_id} in favour of new stop loss order.")
+                        f"Initiated cancelation of previous stop loss order {old_order.client_order_id} in favour of new stop loss order.")
                 
                 exit_order_exists = [o for o in self.active_orders if o.price == price]
                 if len(exit_order_exists) == 0:
