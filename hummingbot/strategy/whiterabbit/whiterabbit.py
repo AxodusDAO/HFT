@@ -734,8 +734,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                         f"{order.client_order_id} in favour of stop loss order.")
 
         for position in active_positions:
-            if (top_ask < position.entry_price and position.amount < 0) or (
-                    top_bid > position.entry_price and position.amount > 0):
+            if (top_bid < position.entry_price and position.amount < 0) or (
+                    top_ask > position.entry_price and position.amount > 0):
                 
                 # check if there is an active order to take profit, and create if none exists
                 stop_spread = self._long_stop_spread if position.amount > 0 else self._short_stop_spread
