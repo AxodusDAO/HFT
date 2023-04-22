@@ -1221,33 +1221,56 @@ class WhiteRabbitStrategy(StrategyPyBase):
         orders_created = False
 
         if len(proposal.buys) > 0:
+            if position_action == PositionAction.CLOSE:
+                if self.current_timestamp < self._next_buy_exit_order_timestamp:
+                    return
+                else:
+                    self._next_buy_exit_order_timestamp = self.current_timestamp + self.filled_order_delay 
+            if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
+                price_quote_str = [f"{buy.size.normalize()} {self.base_asset}, "
+                                   f"{buy.price.normalize()} {self.quote_asset}"
+                                   for buy in proposal.buys]
+                self.logger().info(
+                    f"({self.trading_pair}) BUY: Creating {len(proposal.buys)} {self._safe_stop_order_type.name} bid orders "
+                    f"at (Size, Price): {price_quote_str} to {position_action.name} position."
+                )
             for buy in proposal.buys:
-                size = buy.size
-                if size > 0:
-                    bid_order_id = self.buy_with_specific_market(
-                        self._market_info,
-                        size,
-                        order_type=OrderType.MARKET,  # Use market order type
-                        position_action=position_action
-                    )
-                    if position_action == PositionAction.CLOSE:
-                        self._exit_orders[bid_order_id] = self.current_timestamp
-                    orders_created = True
-
+                bid_order_id = self.buy_with_specific_market(
+                    self._market_info,
+                    buy.size,
+                    order_type=self._safe_stop_order_type,
+                    price=buy.price,
+                    position_action=position_action
+                )
+                if position_action == PositionAction.CLOSE:
+                    self._exit_orders[bid_order_id] = self.current_timestamp
+                orders_created = True
+        
         if len(proposal.sells) > 0:
+            if position_action == PositionAction.CLOSE:
+                if self.current_timestamp < self._next_sell_exit_order_timestamp:
+                    return
+                else:
+                    self._next_sell_exit_order_timestamp = self.current_timestamp + self.filled_order_delay
+            if self._logging_options & self.OPTION_LOG_CREATE_ORDER:
+                price_quote_str = [f"{sell.size.normalize()} {self.base_asset}, "
+                                   f"{sell.price.normalize()} {self.quote_asset}"
+                                   for sell in proposal.sells]
+                self.logger().info(
+                    f"({self.trading_pair}) SELL: Creating {len(proposal.sells)}  {self._safe_stop_order_type.name} ask "
+                    f"orders at (Size, Price): {price_quote_str} to {position_action.name} position."
+                )
             for sell in proposal.sells:
-                size = sell.size
-                if size > 0:
-                    ask_order_id = self.sell_with_specific_market(
-                        self._market_info,
-                        size,
-                        order_type=OrderType.MARKET,  # Use market order type
-                        position_action=position_action
-                    )
-                    if position_action == PositionAction.CLOSE:
-                        self._exit_orders[ask_order_id] = self.current_timestamp
-                    orders_created = True
-
+                ask_order_id = self.sell_with_specific_market(
+                    self._market_info,
+                    sell.size,
+                    order_type=self._safe_stop_order_type,
+                    price=sell.price,
+                    position_action=position_action
+                )
+                if position_action == PositionAction.CLOSE:
+                    self._exit_orders[ask_order_id] = self.current_timestamp
+                orders_created = True
         if orders_created:
             self.set_timers()
 
