@@ -610,9 +610,10 @@ class WhiteRabbitStrategy(StrategyPyBase):
 
                 self.cancel_active_orders(proposal)
                 self.cancel_orders_below_min_spread()
-                self.cancel_orders_due_to_trading_intensity()
                 if self.to_create_orders(proposal):
                     self.execute_orders_proposal(proposal, PositionAction.OPEN)
+                self.cancel_orders_due_to_trading_intensity()
+                if self.to_create_orders(proposal):
                     self.execute_safe_stop_proposal(proposal, PositionAction.OPEN)
                 
                 # Reset peak ask and bid prices
@@ -636,9 +637,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
             self.execute_orders_proposal(proposals, PositionAction.CLOSE)
         
         # check if SAFE stop loss needs to be placed
-        proposals = self.safe_stop_proposal(session_positions)
-        if proposals is not None:
-            self.execute_safe_stop_proposal(proposals, PositionAction.CLOSE)
+        proposal = self.safe_stop_proposal(self.active_positions)
+        self.execute_safe_stop_proposal(proposal, self.position_action)
 
     def profit_taking_proposal(self, mode: PositionMode, active_positions: List) -> Proposal:
 
@@ -1243,6 +1243,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if position_action == PositionAction.CLOSE:
                     self._exit_orders[bid_order_id] = self.current_timestamp
                 orders_created = True
+
         if len(proposal.sells) > 0:
             if position_action == PositionAction.CLOSE:
                 if self.current_timestamp < self._next_sell_exit_order_timestamp:
