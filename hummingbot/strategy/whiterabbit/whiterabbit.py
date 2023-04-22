@@ -738,7 +738,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                     top_ask > position.entry_price and position.amount < 0):
                 
                 # check if there is an active order to take profit, and create if none exists
-                stop_spread = self._long_stop_spread if position.amount > 0 else self._short_stop_spread
+                stop_spread = self._long_stop_spread if position.amount < 0 else self._short_stop_spread
                 
                 #Check if take profit order need be placed
                 stop_price = position.entry_price * (Decimal("1") - stop_spread) if position.amount > 0 \
