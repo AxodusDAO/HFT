@@ -711,7 +711,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         market: DerivativeBase = self._market_info.market
         unwanted_exit_orders = [o for o in self.active_orders
                                 if o.client_order_id not in self._exit_orders.keys()]
-        top_ask = market.get_price(self.trading_pair, True)
+        top_ask = market.get_price(self.trading_pair, False)
         top_bid = market.get_price(self.trading_pair, True)
         buys = []
         sells = []
@@ -734,8 +734,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                                         f"{order.client_order_id} in favour of stop loss order.")
 
         for position in active_positions:
-            if (top_bid < position.entry_price and position.amount < 0) or (
-                    top_ask > position.entry_price and position.amount > 0):
+            if (top_bid < position.entry_price and position.amount > 0) or (
+                    top_ask > position.entry_price and position.amount < 0):
                 
                 # check if there is an active order to take profit, and create if none exists
                 stop_spread = self._long_stop_spread if position.amount > 0 else self._short_stop_spread
