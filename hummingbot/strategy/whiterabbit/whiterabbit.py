@@ -637,7 +637,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
             self.execute_orders_proposal(proposals, PositionAction.CLOSE)
         
         # check if SAFE stop loss needs to be placed
-        proposal = self.safe_stop_proposal(self.active_positions)
+        proposal = self.safe_stop_proposal(mode, session_positions)
         if proposals is not None:
             self.execute_safe_stop_proposal(proposal, PositionAction.CLOSE)
 
