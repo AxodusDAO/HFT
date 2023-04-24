@@ -743,8 +743,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 stop_spread = self._long_stop_spread if position.amount < 0 else self._short_stop_spread
                 
                 #Check if take profit order need be placed
-                stop_price = position.entry_price * (Decimal("1") - stop_spread) if position.amount > 0 \
-                    else position.entry_price * (Decimal("1") + stop_spread)
+                stop_price = position.entry_price * (Decimal("-1") - stop_spread) if position.amount > 0 \
+                    else position.entry_price * (Decimal("-1") + stop_spread)
                 
                 price = market.quantize_order_price(self.trading_pair, stop_price)
                 size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
@@ -781,8 +781,8 @@ class WhiteRabbitStrategy(StrategyPyBase):
             # Determine the stop spread based on whether the position amount is positive or negative
             safe_stop_spread = self._safe_stop_rate if position.amount > 0 else self._safe_stop_rate
 
-            stop_loss_price = position.entry_price * (Decimal("1") + safe_stop_spread) if position.amount > 0 \
-                else position.entry_price * (Decimal("1") - safe_stop_spread)
+            stop_loss_price = position.entry_price * (Decimal("-1") - safe_stop_spread) if position.amount > 0 \
+                else position.entry_price * (Decimal("-1") + safe_stop_spread)
 
             existent_stop_loss_orders = [order for order in self.active_orders
                                          if order.client_order_id in self._exit_orders.keys()
