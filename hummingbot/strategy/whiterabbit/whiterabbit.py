@@ -612,6 +612,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_orders_below_min_spread()
                 if self.to_create_orders(proposal):
                     self.execute_orders_proposal(proposal, PositionAction.OPEN)
+                else:
                     self.execute_safe_stop_proposal(proposal, PositionAction.OPEN)
                 self.cancel_orders_due_to_trading_intensity()
                 
@@ -638,7 +639,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
             self.execute_orders_proposal(proposals, PositionAction.CLOSE)
         
         # check if SAFE stop loss needs to be placed
-        proposals = self.stop_loss_proposal(mode, session_positions)
+        proposals = self.safe_stop_proposal(mode, session_positions)
         if proposals is not None:
             self.execute_safe_stop_proposal(proposals, PositionAction.CLOSE)
 
