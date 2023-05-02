@@ -770,7 +770,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                             sells.append(PriceSize(price, size))
         return Proposal(buys, sells)
     
-    def safe_stop_proposal(self, active_positions: List) -> Proposal:
+    def safe_stop_proposal(self, mode: PositionMode, active_positions: List) -> Proposal:
         market: DerivativeBase = self._market_info.market
         top_ask = market.get_price(self.trading_pair, True)
         top_bid = market.get_price(self.trading_pair, True)
