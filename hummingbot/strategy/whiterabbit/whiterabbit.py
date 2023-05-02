@@ -612,7 +612,6 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 self.cancel_orders_below_min_spread()
                 if self.to_create_orders(proposal):
                     self.execute_orders_proposal(proposal, PositionAction.OPEN)
-                else:
                     self.execute_safe_stop_proposal(proposal, PositionAction.OPEN)
                 self.cancel_orders_due_to_trading_intensity()
                 
