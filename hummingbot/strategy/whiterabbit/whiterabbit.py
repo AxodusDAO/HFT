@@ -581,7 +581,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                 if self._asset_price_delegate is not None and self._all_markets_ready:
                     self._all_markets_ready = self._asset_price_delegate.ready
                 if not self._all_markets_ready:
-                    # M({self.trading_pair}) Maker sell order {order_id}arkets not ready yet. Don't do anything.
+                    # ({self.trading_pair}) Maker sell order {order_id}Markets not ready yet. Don't do anything.
                     if should_report_warnings:
                         self.logger().warning("Markets are not ready. No market making trades are permitted.")
                     return
