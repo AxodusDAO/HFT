@@ -1218,6 +1218,10 @@ class WhiteRabbitStrategy(StrategyPyBase):
             self.set_timers()
 
     def execute_safe_stop_proposal(self, proposal: Proposal, position_action: PositionAction):
+        if position_action != PositionAction.CLOSE:
+            self.logger().info("Safe stop proposal can only be used for CLOSE position actions.")
+            return
+
         orders_created = False
 
         if len(proposal.buys) > 0:
@@ -1230,8 +1234,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
                         order_type=OrderType.MARKET,  # Use market order type
                         position_action=position_action
                     )
-                    if position_action == PositionAction.CLOSE:
-                        self._exit_orders[bid_order_id] = self.current_timestamp
+                    self._exit_orders[bid_order_id] = self.current_timestamp
                     orders_created = True
 
         if len(proposal.sells) > 0:
@@ -1244,12 +1247,12 @@ class WhiteRabbitStrategy(StrategyPyBase):
                         order_type=OrderType.MARKET,  # Use market order type
                         position_action=position_action
                     )
-                    if position_action == PositionAction.CLOSE:
-                        self._exit_orders[ask_order_id] = self.current_timestamp
+                    self._exit_orders[ask_order_id] = self.current_timestamp
                     orders_created = True
 
         if orders_created:
             self.set_timers()
+
 
 
             
