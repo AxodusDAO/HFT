@@ -702,6 +702,21 @@ whiterabbit_config_map = {
         ConfigVar(key="order_override",
                   prompt=None,
                   required_if=lambda: False,
-                  default=True,
+                  default=None,
                   type_str="json"),
 }
+'''        "volatility_buffer_size":
+        ConfigVar(key="volatility_buffer_size",
+                  default=200,
+                  description="The number of ticks that will be stored to calculate volatility.",
+                  le=10_000,
+                  ClientFieldData=lambda mi: "Enter amount of ticks that will be stored to estimate order book liquidity"),
+
+    "trading_intensity_buffer_size":
+        ConfigVar(key="trading_intensity_buffer_size", 
+                  default=200,
+                  description="The number of ticks that will be stored to calculate order book liquidity.",
+                  ge=1,
+                  le=10_000,
+                  ClientFieldData=lambda mi: "Enter amount of ticks that will be stored to estimate order book liquidity"),
+'''
