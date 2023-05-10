@@ -705,22 +705,18 @@ whiterabbit_config_map = {
                   type_str="json"),
 
     "volatility_buffer_size":
-        ConfigVar(key="volatility_buffer_size", 
-                  int = Field(default=200, 
-                              description="The number of ticks that will be stored to calculate volatility.",
-                              ge=1, 
-                              le=10_000, 
-                              client_data=ClientFieldData
-                              (prompt=lambda mi: "Enter amount of ticks that will be stored to estimate order book liquidity")
-                              )),
+        ConfigVar(key="volatility_buffer_size",
+                  default=200,
+                  description="The number of ticks that will be stored to calculate volatility.",
+                  le=10_000,
+                  ClientFieldData=lambda mi: "Enter amount of ticks that will be stored to estimate order book liquidity"),
 
     "trading_intensity_buffer_size":
-        ConfigVar(key="trading_intensity_buffer_size", int = Field(
-                    default=200,
-                    description="The number of ticks that will be stored to calculate order book liquidity.",
-                    ge=1,
-                    le=10_000,
-                    client_data=ClientFieldData(
-                        prompt=lambda mi: "Enter amount of ticks that will be stored to estimate order book liquidity",)))
+        ConfigVar(key="trading_intensity_buffer_size", 
+                  default=200,
+                  description="The number of ticks that will be stored to calculate order book liquidity.",
+                  ge=1,
+                  le=10_000,
+                  ClientFieldData=lambda mi: "Enter amount of ticks that will be stored to estimate order book liquidity"),
 
 }
