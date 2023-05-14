@@ -635,7 +635,7 @@ class WhiteRabbitStrategy(StrategyPyBase):
         # check if stop loss needs to be placed
         proposals = self.stop_loss_proposal(mode, session_positions)
         if proposals is not None:
-            self.execute_orders_proposal(proposals, PositionAction.CLOSE)
+            self.execute_stop_loss_proposal(proposals, PositionAction.CLOSE)
         
         # check if SAFE stop loss needs to be placed
         proposals = self.safe_stop_proposal(mode, session_positions)
@@ -1217,6 +1217,44 @@ class WhiteRabbitStrategy(StrategyPyBase):
         if orders_created:
             self.set_timers()
 
+    def execute_stop_loss_proposal(self, proposal: Proposal, position_action: PositionAction):
+        if position_action != PositionAction.CLOSE:
+            self.logger().info("Stop loss proposal can only be used for CLOSE position actions.")
+            return
+
+        orders_created = False
+
+        if len(proposal.buys) > 0:
+            for buy in proposal.buys:
+                size = buy.size
+                if size > 0:
+                    bid_order_id = self.buy_with_specific_market(
+                        self._market_info,
+                        size,
+                        order_type=OrderType.LIMIT,  # Use limit order type
+                        price=buy.price,
+                        position_action=position_action
+                    )
+                    self._exit_orders[bid_order_id] = self.current_timestamp
+                    orders_created = True
+
+        if len(proposal.sells) > 0:
+            for sell in proposal.sells:
+                size = sell.size
+                if size > 0:
+                    ask_order_id = self.sell_with_specific_market(
+                        self._market_info,
+                        size,
+                        order_type=OrderType.LIMIT,  # Use limit order type
+                        price=sell.price,
+                        position_action=position_action
+                    )
+                    self._exit_orders[ask_order_id] = self.current_timestamp
+                    orders_created = True
+
+        if orders_created:
+            self.set_timers()
+    
     def execute_safe_stop_proposal(self, proposal: Proposal, position_action: PositionAction):
         if position_action != PositionAction.CLOSE:
             self.logger().info("Safe stop proposal can only be used for CLOSE position actions.")
