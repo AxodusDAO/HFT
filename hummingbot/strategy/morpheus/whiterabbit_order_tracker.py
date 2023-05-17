@@ -12,7 +12,7 @@ from hummingbot.strategy.order_tracker import OrderTracker
 NaN = float("nan")
 
 
-class TrinityOrderTracker(OrderTracker):
+class WhiteRabbitOrderTracker(OrderTracker):
     # ETH confirmation requirement of Binance has shortened to 12 blocks as of 7/15/2019.
     # 12 * 15 / 60 = 3 minutes
     SHADOW_MAKER_ORDER_KEEP_ALIVE_DURATION = 60.0 * 3
