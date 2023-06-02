@@ -68,6 +68,18 @@
                 "colEnd": 7,
                 "rowEnd": 5,
                 "events": {}
+            },
+            "f1b95240-c02c-4e67-9f89-cfa982401d9e": {
+                "id": "f1b95240-c02c-4e67-9f89-cfa982401d9e",
+                "type": "click-input",
+                "props": {
+                    "label": "\"Click here!\""
+                },
+                "colStart": 1,
+                "rowStart": 0,
+                "colEnd": 2,
+                "rowEnd": 1,
+                "events": {}
             }
         }
     },
