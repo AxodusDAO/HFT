@@ -1,0 +1,6 @@
+[submodule "gateway"]
+	path = gateway
+	url = https://github.com/Axodus/gateway
+[submodule "dashboard"]
+	path = dashboard
+	url = https://github.com/Axodus/HFT_dashboard
