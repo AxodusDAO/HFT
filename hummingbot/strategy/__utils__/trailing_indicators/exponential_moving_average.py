@@ -1,9 +1,9 @@
-from base_trailing_indicator import BaseTrailingIndicator
+from .base_trailing_indicator import BaseTrailingIndicator
 import pandas as pd
 
 
 class ExponentialMovingAverageIndicator(BaseTrailingIndicator):
-    def __init__(self, sampling_length: int = 30, processing_length: int = 1):
+    def __init__(self, sampling_length: int = 9, processing_length: int = 1):
         if processing_length != 1:
             raise Exception("Exponential moving average processing_length should be 1")
         super().__init__(sampling_length, processing_length)

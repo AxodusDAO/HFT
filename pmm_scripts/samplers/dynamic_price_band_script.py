@@ -14,7 +14,7 @@ class DynamicPriceBandPMMScript(PMMScriptBase):
     # Let's set the upper bound of the band to 5% away from the mid price moving average
     band_upper_bound_pct = Decimal("0.05")
     # Let's set the lower bound of the band to 3% away from the mid price moving average
-    band_lower_bound_pct = Decimal("0.03")
+    band_lower_bound_pct = Decimal("0.025")
     # Let's sample mid prices once every 10 seconds
     avg_interval = 10
     # Let's average the last 5 samples

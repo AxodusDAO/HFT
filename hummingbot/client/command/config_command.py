@@ -23,8 +23,8 @@ from hummingbot.connector.utils import split_hb_trading_pair
 from hummingbot.core.utils import map_df_to_str
 from hummingbot.core.utils.async_utils import safe_ensure_future
 from hummingbot.model.inventory_cost import InventoryCost
-from hummingbot.strategy.perpetual_market_making import PerpetualMarketMakingStrategy
-from hummingbot.strategy.pure_market_making import PureMarketMakingStrategy
+from hummingbot.strategy.whiterabbit import WhiteRabbitStrategy
+from hummingbot.strategy.miner_pot import MinerPOTStrategy
 from hummingbot.user.user_balances import UserBalances
 
 if TYPE_CHECKING:
@@ -320,8 +320,8 @@ class ConfigCommand:
         for config in missings:
             self.notify(f"{config.key}: {str(config.value)}")
         if (
-                isinstance(self.strategy, PureMarketMakingStrategy) or
-                isinstance(self.strategy, PerpetualMarketMakingStrategy)
+                isinstance(self.strategy, MinerPOTStrategy) or
+                isinstance(self.strategy, WhiteRabbitStrategy)
         ):
             updated = ConfigCommand.update_running_mm(self.strategy, key, config_var.value)
             if updated:

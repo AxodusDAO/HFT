@@ -28,7 +28,7 @@ from hummingbot.pmm_script.pmm_script_interface import (
     StrategyParameter,
 )
 from hummingbot.pmm_script.pmm_script_process import run_pmm_script
-from hummingbot.strategy.pure_market_making import PureMarketMakingStrategy
+from hummingbot.strategy.miner_pot import MinerPOTStrategy
 
 sir_logger = None
 
@@ -44,7 +44,7 @@ cdef class PMMScriptIterator(TimeIterator):
     def __init__(self,
                  script_file_path: Path,
                  markets: List[ExchangeBase],
-                 strategy: PureMarketMakingStrategy,
+                 strategy: MinerPOTStrategy,
                  queue_check_interval: float = 0.01,
                  is_unit_testing_mode: bool = False):
         super().__init__()
