@@ -9,6 +9,7 @@ import pandas as pd
 
 from hummingbot.connector.derivative.position import Position
 from hummingbot.connector.derivative_base import DerivativeBase
+from hummingbot.core.clock import Clock
 from hummingbot.core.data_type.common import OrderType, PositionAction, PositionMode, PriceType, TradeType
 from hummingbot.core.data_type.limit_order import LimitOrder
 from hummingbot.core.data_type.order_candidate import PerpetualOrderCandidate
@@ -452,6 +453,9 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
 
         return "\n".join(lines)
 
+    def start(self, clock: Clock, timestamp: float):
+        self._market_info.market.set_leverage(self.trading_pair, self._leverage)
+
     def tick(self, timestamp: float):
         if not self._position_mode_ready:
             self._position_mode_not_ready_counter += 1
@@ -492,14 +496,19 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
                 if self._create_timestamp <= self.current_timestamp:
                     # 1. Create base order proposals
                     proposal = self.create_base_proposal()
+                    self.logger().debug(f"Initial proposals: {proposal}")
                     # 2. Apply functions that limit numbers of buys and sells proposal
                     self.apply_order_levels_modifiers(proposal)
+                    self.logger().debug(f"Proposals after order level modifier: {proposal}")
                     # 3. Apply functions that modify orders price
                     self.apply_order_price_modifiers(proposal)
+                    self.logger().debug(f"Proposals after order price modifiers: {proposal}")
                     # 4. Apply budget constraint, i.e. can't buy/sell more than what you have.
                     self.apply_budget_constraint(proposal)
+                    self.logger().debug(f"Proposals after budget constraints: {proposal}")
 
                     self.filter_out_takers(proposal)
+                    self.logger().debug(f"Proposals after takers filter: {proposal}")
 
                 self.cancel_active_orders(proposal)
                 self.cancel_orders_below_min_spread()
@@ -617,9 +626,14 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
                 for order in existent_stop_loss_orders:
                     previous_stop_loss_price = order.price
                     self.cancel_order(self._market_info, order.client_order_id)
+<<<<<<< HEAD:hummingbot/strategy/perpetual_market_making/perpetual_market_making.py
+                    self.logger().info(f"Canceling the limit order {order.client_order_id} to renew stop loss.")
+                new_price = previous_stop_loss_price or stop_loss_price
+=======
                 #new_price = previous_stop_loss_price or stop_loss_price
                 new_price = previous_stop_loss_price if previous_stop_loss_price is not None else stop_loss_price
 
+>>>>>>> 948e81ccd0d11069fa27c1ea8cd37c87bc983900:hummingbot/strategy/.samplers/perpetual_market_making/perpetual_market_making.py
                 if (top_ask <= stop_loss_price and position.amount > 0):
                     price = market.quantize_order_price(
                         self.trading_pair,
@@ -631,6 +645,9 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
                     # cancel take profit orders if they exist
                     for old_order in take_profit_orders:
                         self.cancel_order(self._market_info, old_order.client_order_id)
+                        self.logger().info(
+                            f"Canceling existing take profit order {order.client_order_id} in favor of stop loss."
+                        )
                     size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
                     if size > 0 and price > 0:
                         self.logger().info("STOP LOSS: Creating stop loss sell order to close long position.")
@@ -648,6 +665,9 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
                     # cancel take profit orders if they exist
                     for old_order in take_profit_orders:
                         self.cancel_order(self._market_info, old_order.client_order_id)
+                        self.logger().info(
+                            f"Canceling existing take profit order {order.client_order_id} in favor of stop loss."
+                        )
                     size = market.quantize_order_amount(self.trading_pair, abs(position.amount))
                     if size > 0 and price > 0:
                         self.logger().info("STOP LOSS: Creating stop loss buy order to close short position.")
@@ -935,6 +955,7 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
         if not to_defer_canceling:
             for order in self.active_orders:
                 self.cancel_order(self._market_info, order.client_order_id)
+                self.logger().info(f"Canceling active order {order.client_order_id}.")
         else:
             self.logger().info(f"Not canceling active orders since difference between new order prices "
                                f"and current order prices is within "
@@ -950,6 +971,7 @@ class PerpetualMarketMakingStrategy(StrategyPyBase):
                                    f" Canceling Order: ({'Buy' if order.is_buy else 'Sell'}) "
                                    f"ID - {order.client_order_id}")
                 self.cancel_order(self._market_info, order.client_order_id)
+                self.logger().info(f"Canceling order {order.client_order_id} below min spread.")
 
     def to_create_orders(self, proposal: Proposal) -> bool:
         return (self._create_timestamp < self.current_timestamp and

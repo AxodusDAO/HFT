@@ -49,7 +49,7 @@ s_logger = None
 
 
 class HummingbotApplication(*commands):
-    KILL_TIMEOUT = 10.0
+    KILL_TIMEOUT = 20.0
     APP_WARNING_EXPIRY_DURATION = 3600.0
     APP_WARNING_STATUS_LIMIT = 6
 
@@ -130,6 +130,10 @@ class HummingbotApplication(*commands):
     @property
     def instance_id(self) -> str:
         return self.client_config_map.instance_id
+
+    @property
+    def fetch_pairs_from_all_exchanges(self) -> bool:
+        return self.client_config_map.fetch_pairs_from_all_exchanges
 
     @property
     def gateway_config_keys(self) -> List[str]:
@@ -321,6 +325,7 @@ class HummingbotApplication(*commands):
             list(self.markets.values()),
             self.strategy_file_name,
             self.strategy_name,
+            self.client_config_map.market_data_collection,
         )
         self.markets_recorder.start()
         if self._mqtt is not None:

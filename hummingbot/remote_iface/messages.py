@@ -14,6 +14,12 @@ class NotifyMessage(PubSubMessage):
     msg: Optional[str] = ''
 
 
+class StatusUpdateMessage(PubSubMessage):
+    timestamp: Optional[int] = -1
+    type: Optional[str] = ''
+    msg: Optional[str] = ''
+
+
 class InternalEventMessage(PubSubMessage):
     timestamp: Optional[int] = -1
     type: Optional[str] = 'ievent'
@@ -39,6 +45,7 @@ class StartCommandMessage(RPCMessage):
     class Request(RPCMessage.Request):
         log_level: Optional[str] = None
         script: Optional[str] = None
+        conf: Optional[str] = None
         is_quickstart: Optional[bool] = False
         async_backend: Optional[bool] = True
 
@@ -63,6 +70,7 @@ class ConfigCommandMessage(RPCMessage):
 
     class Response(RPCMessage.Response):
         changes: Optional[List[Tuple[str, Any]]] = []
+        config: Optional[Dict[str, Any]] = {}
         status: Optional[int] = MQTT_STATUS_CODE.SUCCESS
         msg: Optional[str] = ''
 

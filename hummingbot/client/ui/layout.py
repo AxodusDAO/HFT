@@ -64,7 +64,14 @@ HEADER = """
         ██║  ██║██╔╝ ██╗╚██████╔╝██████╔╝╚██████╔╝███████║    ██║  ██║██║        ██║       
         ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝  ╚═════╝ ╚══════╝    ╚═╝  ╚═╝╚═╝        ╚═╝       
                                                                                    
+======================================================================================
+Hummingbot is an open source software client that helps you build and run
+market making, arbitrage, and other high-frequency trading bots.
 
+- Official repo: https://github.com/hummingbot/hummingbot
+- Join the community: https://discord.gg/hummingbot
+- Learn market making: https://hummingbot.org/botcamp
+=======
 ===============================================================================================
 Welcome to Axodus Trading HFT, high-frequency trading (HFT) bots platform for Cryptocurency
 
@@ -73,11 +80,12 @@ Helpful Links:
 - Learn how to use HFT: https://docs.axodus.finance
 - Earn liquidity rewards: https://miner.axodus.finance
 
+
 Useful Commands:
 - connect     List available exchanges and add API keys to them
-- create      Create a new bot
-- import      Import an existing bot by loading the configuration file
-- help        List available commands
+- balance     See your exchange balances
+- start       Start a script or strategy
+- help        List all commands
 
 """
 

@@ -32,8 +32,6 @@ order_books_db_2 = {
     "db": "**REMOVED***",
 }
 
-kafka_bootstrap_server = "***REMOVED***"
-
 # whether to enable api mocking in unit test cases
 mock_api_enabled = os.getenv("MOCK_API_ENABLED")
 
@@ -59,12 +57,6 @@ coinbase_pro_passphrase = os.getenv("COINBASE_PRO_PASSPHRASE")
 # Huobi Tests
 huobi_api_key = os.getenv("HUOBI_API_KEY")
 huobi_secret_key = os.getenv("HUOBI_SECRET_KEY")
-
-# Loopring Tests
-loopring_accountid = os.getenv("LOOPRING_ACCOUNTID")
-loopring_exchangeid = os.getenv("LOOPRING_EXCHANGEID")
-loopring_api_key = os.getenv("LOOPRING_API_KEY")
-loopring_private_key = os.getenv("LOOPRING_PRIVATE_KEY")
 
 # Bittrex Tests
 bittrex_api_key = os.getenv("BITTREX_API_KEY")
@@ -95,10 +87,6 @@ bitmart_memo = os.getenv("BITMART_MEMO")
 btc_markets_api_key = os.getenv("BTC_MARKETS_API_KEY")
 btc_markets_secret_key = os.getenv("BTC_MARKETS_SECRET_KEY")
 
-# CryptoCom Test
-crypto_com_api_key = os.getenv("CRYPTO_COM_API_KEY")
-crypto_com_secret_key = os.getenv("CRYPTO_COM_SECRET_KEY")
-
 # HitBTC Tests
 hitbtc_api_key = os.getenv("HITBTC_API_KEY")
 hitbtc_secret_key = os.getenv("HITBTC_SECRET_KEY")
@@ -106,10 +94,6 @@ hitbtc_secret_key = os.getenv("HITBTC_SECRET_KEY")
 # Gate.io Tests
 gate_io_api_key = os.getenv("GATE_IO_API_KEY")
 gate_io_secret_key = os.getenv("GATE_IO_SECRET_KEY")
-
-# AltMarkets.io Test
-altmarkets_api_key = os.getenv("ALTMARKETS_API_KEY")
-altmarkets_secret_key = os.getenv("ALTMARKETS_SECRET_KEY")
 
 # Wallet Tests
 test_erc20_token_address = os.getenv("TEST_ERC20_TOKEN_ADDRESS")
@@ -120,8 +104,3 @@ web3_test_private_key_c = os.getenv("TEST_WALLET_PRIVATE_KEY_C")
 coinalpha_order_book_api_username = "***REMOVED***"
 coinalpha_order_book_api_password = "***REMOVED***"
 """
-
-kafka_2 = {
-    "bootstrap_servers": "***REMOVED***",
-    "zookeeper_servers": "***REMOVED***"
-}

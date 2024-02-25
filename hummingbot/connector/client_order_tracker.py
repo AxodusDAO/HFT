@@ -235,7 +235,7 @@ class ClientOrderTracker:
             self._order_not_found_records[client_order_id] += 1
             if self._order_not_found_records[client_order_id] > self._lost_order_count_limit:
                 # Only mark the order as failed if it has not been marked as done already asynchronously
-                if not tracked_order.is_done:
+                if tracked_order.current_state not in [OrderState.CANCELED, OrderState.FILLED, OrderState.FAILED]:
                     self.logger().warning(
                         f"The order {client_order_id}({tracked_order.exchange_order_id}) will be "
                         f"considered lost. Please check its status in the exchange."
@@ -390,7 +390,9 @@ class ClientOrderTracker:
         )
 
     def _trigger_order_creation(self, tracked_order: InFlightOrder, previous_state: OrderState, new_state: OrderState):
-        if previous_state == OrderState.PENDING_CREATE and new_state == OrderState.OPEN:
+        if (previous_state == OrderState.PENDING_CREATE and
+                previous_state != new_state and
+                new_state not in [OrderState.CANCELED, OrderState.FAILED, OrderState.PENDING_CANCEL]):
             self.logger().info(tracked_order.build_order_created_message())
             self._trigger_created_event(tracked_order)
 
